@@ -9,6 +9,7 @@ export function TicketDocumentLinks({ ticket }: { ticket: Ticket }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const docs = db.documents.filter((d) => d.projectId === ticket.projectId);
+  const alreadyLinked = ticket.links.some(link => link.documentId === docId && link.relation === relation);
   return (
     <section className="inspector-section">
       <h3>Linked documents</h3>
@@ -33,7 +34,7 @@ export function TicketDocumentLinks({ ticket }: { ticket: Ticket }) {
             </a>
             <button
               className="iconbutton"
-              aria-label={"Unlink " + doc?.title + " " + l.relation}
+              aria-label={"Unlink " + (doc?.title || "unavailable document") + " " + l.relation}
               disabled={pending}
               onClick={async () => { setPending(true); setError(""); try { await unlinkDocument(ticket,l.documentId,l.relation); } catch(cause) { setError(cause instanceof Error ? cause.message : "Could not unlink document."); } finally { setPending(false); } }}
             >
@@ -76,7 +77,7 @@ export function TicketDocumentLinks({ ticket }: { ticket: Ticket }) {
         </label>
         <button
           type="button"
-          disabled={!docId}
+          disabled={!docId || pending || alreadyLinked}
           onClick={async () => {
             if (
               ticket.links.some(
@@ -88,7 +89,7 @@ export function TicketDocumentLinks({ ticket }: { ticket: Ticket }) {
           }}
           aria-busy={pending}
         >
-          {pending ? "Saving…" : "Link"}
+          {pending ? "Saving…" : alreadyLinked ? "Already linked" : "Link"}
         </button>
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}

@@ -150,6 +150,45 @@ class AgentBuildTests(unittest.TestCase):
             info = json.loads((project / "project-manifest.json").read_text())
             self.assertEqual(info["artifacts"]["vision"]["version"], "0.1.1")
 
+    def test_document_revision_rejects_symlinked_history_parent(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            project, _ = scaffold_module.scaffold("Demo Product", Path(scratch), user_approved_local=True)
+            source = Path(scratch) / "draft.md"
+            source.write_text("# Vision\nFirst draft", encoding="utf-8")
+            command = [sys.executable, str(ROOT / "scripts/save_artifact.py"),
+                       "--project", str(project), "--artifact", "vision", "--source", str(source)]
+            first = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(first.returncode, 0, first.stderr)
+
+            outside_history = Path(scratch) / "outside-history"
+            outside_history.mkdir()
+            (project / "history").symlink_to(outside_history, target_is_directory=True)
+            source.write_text("# Vision\nRevised draft", encoding="utf-8")
+            revised = subprocess.run(command + ["--revise"], capture_output=True, text=True)
+
+            self.assertNotEqual(revised.returncode, 0)
+            self.assertFalse((outside_history / "vision/0.1.0.md").exists())
+
+    def test_document_revision_rejects_dangling_archive_symlink(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            project, _ = scaffold_module.scaffold("Demo Product", Path(scratch), user_approved_local=True)
+            source = Path(scratch) / "draft.md"
+            source.write_text("# Vision\nFirst draft", encoding="utf-8")
+            command = [sys.executable, str(ROOT / "scripts/save_artifact.py"),
+                       "--project", str(project), "--artifact", "vision", "--source", str(source)]
+            first = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(first.returncode, 0, first.stderr)
+
+            outside_archive = Path(scratch) / "outside-archive.md"
+            archive = project / "history/vision/0.1.0.md"
+            archive.parent.mkdir(parents=True)
+            archive.symlink_to(outside_archive)
+            source.write_text("# Vision\nRevised draft", encoding="utf-8")
+            revised = subprocess.run(command + ["--revise"], capture_output=True, text=True)
+
+            self.assertNotEqual(revised.returncode, 0)
+            self.assertFalse(outside_archive.exists())
+
     def test_draft_without_file_is_rejected(self):
         with tempfile.TemporaryDirectory() as scratch:
             project, _ = scaffold_module.scaffold("Demo Product", Path(scratch), user_approved_local=True)

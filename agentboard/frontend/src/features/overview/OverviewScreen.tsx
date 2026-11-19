@@ -51,8 +51,7 @@ export function OverviewScreen() {
               <ApprovalBadge count={pending.length} />
             </div>
             <p className="muted">
-              {pending.length} pending request{pending.length !== 1 ? "s" : ""}.
-              Review protected agent changes in Codex or Claude.
+              {pending.length ? "Review protected agent changes in Codex or Claude." : "Protected agent changes will appear here for review."}
             </p>
             {pending.map((a) => (
               <button
@@ -68,7 +67,6 @@ export function OverviewScreen() {
                 </small>
               </button>
             ))}
-            {!pending.length && <p>No pending requests.</p>}
           </section>
         </div>
         <section className="panel">

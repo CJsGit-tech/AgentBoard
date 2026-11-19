@@ -43,7 +43,7 @@ Gate validates saved structure, files, check outcomes, distinct agent identities
 
 ## Required guidance review
 
-Follow `modern-web-guidance.md`. Both builder and reviewer read the installed dependency and relevant retrieved guides. Record actual search/retrieve commands and a final guidance findings/fixes/verification matrix. Applicable unresolved findings block completion. `latest.json.guidance` requires status=reviewed, cli_version, skill_version, nonempty guides and report; non-web applicability must be explicitly justified.
+Follow `modern-web-guidance.md`. Both builder and reviewer read the installed dependency and relevant retrieved guides. Record actual search/retrieve commands and a final guidance findings/fixes/verification matrix. Applicable unresolved findings block completion. `latest.json.guidance` requires status=reviewed, cli_version, skill_version, nonempty guides and report; iOS/native applicability must be explicitly justified.
 
 ## Scan policy
 

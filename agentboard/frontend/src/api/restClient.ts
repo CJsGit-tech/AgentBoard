@@ -17,13 +17,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!response.ok) throw new ApiError(response.status, body?.error?.message || `Request failed (${response.status})`, body?.error?.code);
   return body as T;
 }
-// SDK run UI shares the paired session and CSRF handling used by the workspace API.
+// SDK run UI shares the local CSRF handling used by the workspace API.
 export function sdkRequest<T>(path: string, init: RequestInit = {}): Promise<T> { return request<T>(path, init); }
 const json = (method: string, body: unknown, key = false): RequestInit => ({ method, headers: key ? { "Idempotency-Key": crypto.randomUUID() } : undefined, body: JSON.stringify(body) });
-export async function pair(token: string) {
-  const result = await request<{ paired: boolean; csrf_token: string }>("/api/v1/session/pair", json("POST", { pairing_token: token }));
-  csrfToken = result.csrf_token; return result;
-}
 export async function restoreSession() { const result = await request<{ csrf_token: string }>("/api/v1/session"); csrfToken = result.csrf_token; }
 async function items<T>(path: string): Promise<T[]> {
   const result: T[] = [];

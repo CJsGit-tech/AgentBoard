@@ -11,7 +11,7 @@ def main() -> None:
     directory.mkdir(mode=0o700, exist_ok=True)
     if directory.is_symlink() or directory.stat().st_mode & 0o077:
         raise SystemExit("Set .local directory permissions to 0700 before creating credentials.")
-    for name in ("db_password", "browser_token", "mcp_token"):
+    for name in ("db_password", "mcp_token"):
         try:
             fd = os.open(directory / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         except FileExistsError:

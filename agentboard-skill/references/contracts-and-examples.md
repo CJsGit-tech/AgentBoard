@@ -75,10 +75,10 @@ REST example schemas are taken from the actual operation's JSON request body or 
 Use standard JSON Schema/OpenAPI validators, not a partial hand-written schema engine. Python >=3.10 is required. Install isolated dependencies explicitly; no script downloads packages during validation:
 
 ```sh
-python3 -m venv ~/.codex/venvs/agentbuild-contracts
-~/.codex/venvs/agentbuild-contracts/bin/python -m pip install -r <skill-root>/requirements-contracts.txt
-~/.codex/venvs/agentbuild-contracts/bin/python <skill-root>/scripts/validate_contracts.py --project <project-path>
-~/.codex/venvs/agentbuild-contracts/bin/python <skill-root>/scripts/validate_project.py --project <project-path>
+python3 -m venv <project-path>/.venv-agentbuild
+<project-path>/.venv-agentbuild/bin/python -m pip install -r <skill-root>/requirements-contracts.txt
+<project-path>/.venv-agentbuild/bin/python <skill-root>/scripts/validate_contracts.py --project <project-path>
+<project-path>/.venv-agentbuild/bin/python <skill-root>/scripts/validate_project.py --project <project-path>
 ```
 
 Project validation invokes these checks when a contract manifest exists; profile-based architecture validation requires the scaffold manifest to be resolved. Without required packages it reports an actionable error, not a pass. Legacy folders with no contract manifest retain their existing validation behavior until the user requests an upgrade.

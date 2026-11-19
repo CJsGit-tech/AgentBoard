@@ -38,7 +38,7 @@ export function ProjectForm({
 
           required
           aria-invalid={!!error && !values.name.trim()}
-          aria-describedby={error ? "projectform-error" : undefined}
+          aria-describedby={error && !values.name.trim() ? "projectform-error" : undefined}
           value={values.name}
           onChange={(e) => {
             setError("");

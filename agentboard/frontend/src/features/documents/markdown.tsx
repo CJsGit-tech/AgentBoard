@@ -177,7 +177,7 @@ export function renderInline(markdown: string): ReactNode[] {
   while ((match = token.exec(markdown))) {
     if (match.index > cursor) result.push(markdown.slice(cursor, match.index));
     const key = `inline-${match.index}`;
-    if (match[1]) {
+    if (match[3] !== undefined) {
       if (match[1].startsWith("!")) {
         result.push(match[2]);
       } else {

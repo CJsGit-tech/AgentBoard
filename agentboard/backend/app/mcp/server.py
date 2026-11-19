@@ -8,11 +8,12 @@ from typing import Any
 from uuid import uuid4
 
 from jsonschema import ValidationError
-from mcp.server import Server, ServerRequestContext
-from mcp.server.request_state import RequestStateBoundary, RequestStateSecurity
-from mcp.server.transport_security import TransportSecuritySettings
-from mcp.types import CallToolRequestParams, CallToolResult, ListToolsResult, PaginatedRequestParams, TextContent, Tool, ToolAnnotations
-from starlette.applications import Starlette
+from mcp.server import ServerRequestContext
+from mcp.server.request_state import RequestStateSecurity
+from fastmcp import FastMCP
+from fastmcp.tools import Tool as FastMCPTool, ToolResult, InputRequiredToolResult
+from fastmcp.server.dependencies import get_context
+from mcp.types import CallToolRequestParams, CallToolResult, TextContent
 
 from app.api.errors import ApiError
 from app.db.session import SessionLocal
@@ -22,29 +23,6 @@ from app.mcp import operations
 
 
 logger = logging.getLogger(__name__)
-
-
-def _tool_objects() -> list[Tool]:
-    result: list[Tool] = []
-    for definition in TOOLS.values():
-        hint = definition["annotations"]
-        result.append(Tool(
-            name=definition["name"], description=definition["description"],
-            input_schema=definition["inputSchema"], output_schema=definition["outputSchema"],
-            annotations=ToolAnnotations(
-                read_only_hint=hint.get("readOnlyHint", False),
-                destructive_hint=hint.get("destructiveHint", False),
-                open_world_hint=hint.get("openWorldHint", False),
-            ),
-        ))
-    return result
-
-
-TOOLS_FOR_DISCOVERY = _tool_objects()
-
-
-async def _list_tools(_ctx: ServerRequestContext, _params: PaginatedRequestParams | None) -> ListToolsResult:
-    return ListToolsResult(tools=TOOLS_FOR_DISCOVERY)
 
 
 def _error_payload(error: ApiError) -> dict:
@@ -114,23 +92,33 @@ async def _call_tool(ctx: ServerRequestContext, params: CallToolRequestParams) -
         operations.input_round.reset(response_token)
 
 
-mcp_server = Server("AgentBoard", on_list_tools=_list_tools, on_call_tool=_call_tool)
-mcp_server.middleware.append(RequestStateBoundary(
-    RequestStateSecurity(keys=[request_state_key()], audience="AgentBoard"),
-    default_audience="AgentBoard",
-))
+class AgentBoardTool(FastMCPTool):
+    async def run(self, arguments: dict[str, Any]) -> ToolResult:
+        context = get_context()
+        request = context.request_context
+        if request is None:
+            raise RuntimeError("An authenticated MCP request is required")
+        params = CallToolRequestParams(name=self.name, arguments=arguments,
+                                      request_state=context.request_state,
+                                      input_responses=context.input_responses)
+        result = await _call_tool(request._srctx, params)
+        from mcp.types import InputRequiredResult
+        if isinstance(result, InputRequiredResult):
+            return InputRequiredToolResult(result)
+        return ToolResult(content=result.content, structured_content=result.structured_content,
+                          is_error=result.is_error)
 
-_transport_app = mcp_server.streamable_http_app(
-    # SSE responses keep the request channel open for legacy client elicitation.
-    # Newer clients can use InputRequiredResult on the same Streamable HTTP endpoint.
-    streamable_http_path="/", json_response=False,
-    host="127.0.0.1",
-    transport_security=TransportSecuritySettings(
-        enable_dns_rebinding_protection=True,
-        allowed_hosts=["127.0.0.1:*", "localhost:*", "[::1]:*"],
-        allowed_origins=["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"],
-    ),
-)
+
+mcp_server = FastMCP("AgentBoard", request_state_security=RequestStateSecurity(
+    keys=[request_state_key()], audience="AgentBoard"))
+for definition in TOOLS.values():
+    mcp_server.add_tool(AgentBoardTool(
+        name=definition["name"], description=definition["description"],
+        parameters=definition["inputSchema"], output_schema=definition["outputSchema"],
+        annotations=definition["annotations"],
+    ))
+
+_transport_app = mcp_server.http_app(path="/", json_response=False,
+    allowed_hosts=["127.0.0.1:*", "localhost:*", "[::1]:*"],
+    allowed_origins=["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"])
 asgi_app = McpBearerMiddleware(_transport_app)
-session_manager = mcp_server.session_manager
-

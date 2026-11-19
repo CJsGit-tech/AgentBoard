@@ -94,7 +94,6 @@ def _prepare(directory: Path, project: str, volume: str, docker: str, port: int,
         },
     }
     _write_private(secret_dir / "db_password", secrets.token_urlsafe(36) + "\n")
-    _write_private(secret_dir / "browser_token", secrets.token_urlsafe(36) + "\n")
     _write_private(credentials_path, json.dumps(identities, indent=2) + "\n")
 
     override = directory / "compose.override.json"
@@ -105,7 +104,6 @@ def _prepare(directory: Path, project: str, volume: str, docker: str, port: int,
         "volumes": {"pgdata": {"name": volume}},
         "secrets": {
             "db_password": {"file": str(secret_dir / "db_password")},
-            "browser_token": {"file": str(secret_dir / "browser_token")},
             "mcp_token": {"file": str(credentials_path)},
         },
     }

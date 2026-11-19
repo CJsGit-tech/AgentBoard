@@ -88,13 +88,13 @@ export function TicketFilters({
           onChange={(e) => onSort(e.target.value)}
         >
           <option value="updated">Recently updated</option>
-          <option value="priority">Priority · all sample records</option>
+          <option value="priority">Priority</option>
         </select>
       </label>
       <TagFilter title="Feature tags" tags={featureTags} selected={featureTag} onChange={onFeatureTag} />
       <TagFilter title="Concern tags" tags={concernTags} selected={concernTag} onChange={onConcernTag} />
       <small className="tag-filter-hint">Any tag within a group matches; feature and concern groups apply together.</small>
-      <span className="result-count">{count} tickets</span>
+      <span className="result-count">{count} {count === 1 ? "ticket" : "tickets"}</span>
     </div>
   );
 }

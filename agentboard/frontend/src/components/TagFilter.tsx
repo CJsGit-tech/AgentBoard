@@ -15,10 +15,11 @@ export function TagFilter({
   const label = selected.length ? selected.join(", ") : `All ${title.toLowerCase()}`;
 
   return (
+    <div className="tag-filter-control">
+      <span className="filter-label">{title}</span>
     <details className="tag-filter-widget">
       <summary aria-label={`${title} filter. ${label}. Choose one or more values.`}>
-        <span>{title}</span>
-        <small>{label}</small>
+        <span>{label}</span>
       </summary>
       <fieldset aria-label={title}>
         <legend>Select one or more {title.toLowerCase()}</legend>
@@ -38,5 +39,6 @@ export function TagFilter({
         {selected.length > 0 && <button type="button" className="text-button" onClick={() => onChange([])}>Clear {title.toLowerCase()}</button>}
       </fieldset>
     </details>
+    </div>
   );
 }

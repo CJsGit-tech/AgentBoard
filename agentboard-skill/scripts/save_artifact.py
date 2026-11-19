@@ -83,11 +83,14 @@ def persist(project: Path, artifact_key: str, source: Path, *, revise: bool = Fa
     new_version = _bump_version(current_version)
     if target.is_file():
         history_dir = project / 'history' / artifact_key
-        if history_dir.is_symlink():
-            raise ValueError(f'Unsafe history directory: {history_dir}')
+        for parent in (history_dir, *history_dir.parents):
+            if parent == project.parent:
+                break
+            if parent.is_symlink():
+                raise ValueError(f'Unsafe history path: {parent}')
         history_dir.mkdir(parents=True, exist_ok=True)
         archive = history_dir / f'{current_version or "unversioned"}{target.suffix}'
-        if archive.exists():
+        if archive.exists() or archive.is_symlink():
             raise ValueError(f'Archive already exists, refusing to overwrite: {archive}')
         shutil.copyfile(target, archive)
 

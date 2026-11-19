@@ -19,9 +19,8 @@ from app.api.errors import ApiError, api_error_handler
 from app.api.routes import router
 from app.artifacts.routes import approval_router, router as artifacts_router
 from app.sdk.routes import router as sdk_router
-from app.auth.browser import issue_session_token, pair_token_matches, session_token_matches
 from app.db.session import SessionLocal, get_db
-from app.db.models import ActivityEvent, Project
+from app.db.models import ActivityEvent, Project, AgentRun
 from app.artifacts.models import Ticket
 from app.schemas.common import ActivityCreate
 from app.services.activity import RETENTION_DAYS, record_activity, serialize_activity
@@ -29,12 +28,20 @@ from app.services.idempotency import reserve
 from pydantic import BaseModel, Field
 from app.settings import settings
 
-from app.mcp.server import asgi_app as mcp_asgi_app, session_manager as mcp_session_manager
+from app.mcp.server import asgi_app as mcp_asgi_app, _transport_app as mcp_transport_app
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    async with mcp_session_manager.run():
+    # Runs are process-local tasks. Never replay provider calls after a restart.
+    with SessionLocal() as db:
+        interrupted = db.scalars(select(AgentRun).where(AgentRun.status.in_(["queued", "running"])))
+        for run in interrupted:
+            run.status = "failed"
+            run.error = "Run interrupted by application restart. Submit a new prompt to retry."
+            run.updated_at = datetime.now(timezone.utc)
+        db.commit()
+    async with mcp_transport_app.lifespan(_app):
         yield
 
 
@@ -53,10 +60,6 @@ async def validation_error_handler(request: Request, exc: RequestValidationError
     return JSONResponse(status_code=422, content={"error": {"code": "invalid_input", "message": "Request fields are invalid", "fields": fields}, "request_id": getattr(request.state, "request_id", "")})
 
 
-class PairRequest(BaseModel):
-    pairing_token: str = Field(min_length=1, max_length=512)
-
-
 @app.middleware("http")
 async def local_request_guard(request: Request, call_next):
     request.state.request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
@@ -71,20 +74,19 @@ async def local_request_guard(request: Request, call_next):
         if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
             if not origin or origin.rstrip("/") != settings.agentboard_origin.rstrip("/"):
                 return JSONResponse(status_code=403, content={"error": {"code": "origin_required", "message": "A trusted Origin is required", "fields": {}}, "request_id": request.state.request_id})
-            is_pair = request.url.path == "/api/v1/session/pair" and request.method == "POST"
-            if not is_pair and not session_token_matches(request.cookies.get("agentboard_session")):
-                return JSONResponse(status_code=401, content={"error": {"code": "session_required", "message": "Pair this browser with the local access token", "fields": {}}, "request_id": request.state.request_id})
             cookie = request.cookies.get("agentboard_csrf")
             header = request.headers.get("x-csrf-token")
-            if not is_pair and (not cookie or not header or not secrets.compare_digest(cookie, header)):
+            if not cookie or not header or not secrets.compare_digest(cookie, header):
                 return JSONResponse(status_code=403, content={"error": {"code": "csrf_failed", "message": "Refresh the local session and retry", "fields": {}}, "request_id": request.state.request_id})
-            content_length = request.headers.get("content-length")
-            if content_length and int(content_length) > settings.max_request_bytes:
-                return JSONResponse(status_code=413, content={"error": {"code": "request_too_large", "message": "Request exceeds the configured limit", "fields": {}}, "request_id": request.state.request_id})
-            if request.headers.get("content-type", "").split(";", 1)[0] != "application/json":
+            # Bound the actual body too, including requests without Content-Length.
+            body = bytearray()
+            async for chunk in request.stream():
+                body.extend(chunk)
+                if len(body) > settings.max_request_bytes:
+                    return JSONResponse(status_code=413, content={"error": {"code": "request_too_large", "message": "Request exceeds the configured limit", "fields": {}}, "request_id": request.state.request_id})
+            request._body = bytes(body)
+            if body and request.headers.get("content-type", "").split(";", 1)[0] != "application/json":
                 return JSONResponse(status_code=415, content={"error": {"code": "content_type_required", "message": "Use application/json", "fields": {}}, "request_id": request.state.request_id})
-        elif not session_token_matches(request.cookies.get("agentboard_session")):
-            return JSONResponse(status_code=401, content={"error": {"code": "session_required", "message": "Pair this browser with the local access token", "fields": {}}, "request_id": request.state.request_id})
     response = await call_next(request)
     response.headers["X-Request-ID"] = request.state.request_id
     return response
@@ -104,17 +106,6 @@ def create_local_session(request: Request):
     token = request.cookies.get("agentboard_csrf") or secrets.token_urlsafe(32)
     response = JSONResponse({"csrf_token": token})
     response.set_cookie("agentboard_csrf", token, httponly=False, secure=False, samesite="strict", path="/")
-    return response
-
-
-@app.post("/api/v1/session/pair")
-def pair_local_browser(body: PairRequest):
-    if not pair_token_matches(body.pairing_token):
-        raise ApiError(401, "invalid_pairing_token", "The local access token is invalid")
-    csrf = secrets.token_urlsafe(32)
-    response = JSONResponse({"csrf_token": csrf, "paired": True})
-    response.set_cookie("agentboard_session", issue_session_token(), httponly=True, secure=False, samesite="strict", path="/")
-    response.set_cookie("agentboard_csrf", csrf, httponly=False, secure=False, samesite="strict", path="/")
     return response
 
 
@@ -259,3 +250,20 @@ async def stream_events(request: Request, project_id: uuid.UUID | None = None):
 @app.exception_handler(SQLAlchemyError)
 async def database_error_handler(request: Request, exc: SQLAlchemyError):
     return JSONResponse(status_code=503, content={"error": {"code": "database_unavailable", "message": "Database is temporarily unavailable", "fields": {}}, "request_id": getattr(request.state, "request_id", "")})
+
+
+# Register the SPA last so application endpoints retain their own errors.
+from pathlib import Path
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+_static = Path(__file__).resolve().parents[1] / "static"
+if _static.is_dir():
+    if (_static / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=_static / "assets"), name="assets")
+
+    @app.get("/{frontend_path:path}")
+    def frontend(frontend_path: str):
+        if frontend_path.split("/", 1)[0] in {"api", "mcp", "events", "healthz", "assets"}:
+            return JSONResponse(status_code=404, content={"error": {"code": "not_found", "message": "Endpoint not found"}})
+        return FileResponse(_static / "index.html")

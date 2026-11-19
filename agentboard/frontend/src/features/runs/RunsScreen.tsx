@@ -1,17 +1,24 @@
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWorkspace } from "../../app/WorkspaceContext";
-import { Approval, Provider, Run, RunSettings, decideApproval, getRun, getRunSettings, listApprovals, listRuns, setRunSettings, startRun } from "./sdkApi";
+import { Approval, Provider, Run, RunSettings, cancelRun, decideApproval, getRun, getRunSettings, listApprovals, listRuns, setRunSettings, startRun } from "./sdkApi";
 import { ApiError } from "../../api/restClient";
 import "./runs.css";
+import { PageHeader } from "../../components/PageHeader";
+import { MarkdownDocument } from "../documents/markdown";
 
-const terminal = (status: Run["status"]) => status === "completed" || status === "failed";
+const terminal = (status: Run["status"]) => status === "completed" || status === "failed" || status === "cancelled";
+const providerLabel = (provider: Provider) => provider === "codex" ? "OpenAI" : "Anthropic";
 const readable = (value: unknown) => typeof value === "string" ? value : JSON.stringify(value, null, 2);
+const activityLabel = (type: string) => type.replaceAll("_", " ");
 
 export function RunsScreen() {
   const { mode, projectId, db } = useWorkspace();
   const [provider, setProvider] = useState<Provider>("codex");
+  const [model, setModel] = useState("");
+  const [modelTouched, setModelTouched] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [contextSelection, setContextSelection] = useState("");
+  const [replyTo, setReplyTo] = useState<Run | null>(null);
   const [runs, setRuns] = useState<Run[]>([]);
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [settings, setSettings] = useState<RunSettings | null>(null);
@@ -20,8 +27,10 @@ export function RunsScreen() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busyApproval, setBusyApproval] = useState("");
+  const [busyCancel, setBusyCancel] = useState("");
   const submittingRef = useRef(false);
-  const runRequestKey = useRef<{ key: string; projectId: string; provider: Provider; prompt: string; context: string } | null>(null);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
+  const runRequestKey = useRef<{ key: string; projectId: string; provider: Provider; model: string; prompt: string; context: string; parent: string } | null>(null);
   const project = db.projects.find((item) => item.id === projectId);
   const projectTickets = db.tickets.filter((item) => item.projectId === projectId);
   const projectDocuments = db.documents.filter((item) => item.projectId === projectId);
@@ -40,16 +49,20 @@ export function RunsScreen() {
     const load = async () => {
       try {
         const settingsResult = await getRunSettings();
-        if (active) { setSettings(settingsResult); setError(""); }
+        if (active) {
+          setSettings(settingsResult);
+          setError("");
+          if (!modelTouched) setModel(settingsResult.providers[provider].default_model);
+        }
         if (!projectId) return;
         const [runResult, approvalResult] = await Promise.all([listRuns(projectId), listApprovals(projectId)]);
         if (active) { setRuns(runResult.items); setApprovals(approvalResult.items); }
-      } catch (cause) { if (active) setError(cause instanceof Error ? cause.message : "Could not load runs."); }
+      } catch (cause) { if (active) setError(cause instanceof Error ? cause.message : "Could not load Playground settings."); }
     };
     void load();
     const timer = window.setInterval(() => { void load(); }, 4000);
     return () => { active = false; window.clearInterval(timer); };
-  }, [mode, projectId]);
+  }, [mode, projectId, provider, modelTouched]);
 
   const toggleRuns = async () => {
     if (!settings) return;
@@ -75,27 +88,61 @@ export function RunsScreen() {
     return () => { active = false; window.clearInterval(timer); };
   }, [mode, projectId, runs]);
 
+  const selectProvider = (next: Provider) => {
+    setProvider(next);
+    setModel(settings?.providers[next].default_model || "");
+    setModelTouched(false);
+  };
+
+  const continueFrom = (run: Run) => {
+    setReplyTo(run);
+    setProvider(run.provider);
+    setModel(run.model || settings?.providers[run.provider].default_model || "");
+    setModelTouched(true);
+    setPrompt("");
+    setError("");
+    setNotice("");
+    window.setTimeout(() => promptRef.current?.focus(), 0);
+  };
+
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     const normalizedPrompt = prompt.trim();
+    const normalizedModel = model.trim();
     if (!projectId || !normalizedPrompt || submittingRef.current) return;
+    const parentRunId = replyTo?.id || "";
     const previousRequest = runRequestKey.current;
-    const sameRequest = previousRequest?.projectId === projectId && previousRequest.provider === provider && previousRequest.prompt === normalizedPrompt && previousRequest.context === contextSelection;
+    const sameRequest = previousRequest?.projectId === projectId && previousRequest.provider === provider && previousRequest.model === normalizedModel && previousRequest.prompt === normalizedPrompt && previousRequest.context === contextSelection && previousRequest.parent === parentRunId;
     const idempotencyKey = sameRequest ? previousRequest.key : crypto.randomUUID();
-    runRequestKey.current = { key: idempotencyKey, projectId, provider, prompt: normalizedPrompt, context: contextSelection };
+    runRequestKey.current = { key: idempotencyKey, projectId, provider, model: normalizedModel, prompt: normalizedPrompt, context: contextSelection, parent: parentRunId };
     submittingRef.current = true;
     setLoading(true); setError(""); setNotice("");
     try {
-      const run = await startRun(projectId, provider, normalizedPrompt, idempotencyKey, selectedContext);
+      const run = await startRun(projectId, provider, normalizedPrompt, normalizedModel, idempotencyKey, selectedContext, parentRunId || undefined);
       setRuns((current) => [run, ...current.filter((item) => item.id !== run.id)]);
       runRequestKey.current = null;
       setPrompt("");
+      setReplyTo(null);
+      setNotice("Message sent to the Playground.");
     } catch (cause) {
       if (cause instanceof ApiError && (cause.code === "sdk_runs_disabled" || cause.code === "provider_disabled")) {
         setError(cause.message);
         if (cause.code === "provider_disabled") void getRunSettings().then(setSettings).catch(() => undefined);
       } else setError(cause instanceof Error ? cause.message : "Could not start the run.");
     } finally { setLoading(false); submittingRef.current = false; }
+  };
+
+  const cancel = async (run: Run) => {
+    setBusyCancel(run.id); setError(""); setNotice("");
+    try {
+      const result = await cancelRun(projectId, run.id);
+      setRuns((current) => current.map((item) => item.id === result.id ? { ...item, status: result.status } : item));
+      setNotice(result.status === "cancelled" ? "Run cancelled." : "Run already finished.");
+      await refresh();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not cancel the run.");
+      await refresh().catch(() => undefined);
+    } finally { setBusyCancel(""); }
   };
 
   const decide = async (approval: Approval, decision: "approve" | "reject") => {
@@ -115,32 +162,85 @@ export function RunsScreen() {
     } finally { setBusyApproval(""); }
   };
 
-  return <section className="runs-screen">
-    <header className="page-header"><div><p className="eyebrow">WORKSPACE EXECUTION</p><h1>Agent runs</h1><p>Choose a configured provider, review progress, and decide on proposed record changes.</p></div></header>
-    {mode !== "connected" ? <section className="run-callout" role="status"><strong>Connect to a workspace to use SDK runs.</strong><p>Run mode is available only with an authenticated server session. Preview mode never makes live calls.</p></section> : <>
-      <section className="run-panel"><div className="run-section-title"><div><h2>Workspace SDK runs</h2><p>Enable or disable SDK execution for everyone in this workspace.</p></div><label className="run-toggle"><input type="checkbox" checked={settings?.enabled ?? false} disabled={!settings || settingsBusy} onChange={() => void toggleRuns()} /><span>{settingsBusy ? "Saving…" : settings?.enabled ? "Enabled" : "Disabled"}</span></label></div>
+  const sendHint = loading ? "Sending your message…"
+    : !settings ? "Loading run settings…"
+    : !settings.enabled ? "Enable model runs above to start a conversation."
+    : !settings.providers[provider].available ? settings.providers[provider].reason || "Configure this provider before sending."
+    : !prompt.trim() ? "Enter a message to start or continue a conversation."
+    : "Send your message to the selected model.";
+
+  const replyHint = (run: Run) => run.status !== "completed"
+    ? run.status === "failed" || run.status === "cancelled"
+      ? "Start a new conversation after a failed or cancelled run."
+      : "Wait for this run to finish before replying."
+    : !settings?.enabled ? "Enable model runs above to reply."
+    : !settings.providers[run.provider].available ? settings.providers[run.provider].reason || "Configure this provider to reply."
+    : "";
+
+  const conversations = useMemo(() => {
+    const byId = new Map(runs.map((run) => [run.id, run]));
+    const groups = new Map<string, Run[]>();
+    const rootId = (run: Run) => {
+      let current = run;
+      const visited = new Set<string>();
+      while (current.parent_run_id && byId.has(current.parent_run_id) && !visited.has(current.parent_run_id)) {
+        visited.add(current.id);
+        current = byId.get(current.parent_run_id)!;
+      }
+      return current.id;
+    };
+    for (const run of runs) {
+      const root = rootId(run);
+      groups.set(root, [...(groups.get(root) || []), run]);
+    }
+    return [...groups.entries()]
+      .map(([id, messages]) => ({ id, messages: messages.sort((a, b) => a.created_at.localeCompare(b.created_at)) }))
+      .sort((a, b) => {
+        const latestA = a.messages[a.messages.length - 1]?.created_at || "";
+        const latestB = b.messages[b.messages.length - 1]?.created_at || "";
+        return latestB.localeCompare(latestA);
+      });
+  }, [runs]);
+
+  return <section className="runs-screen playground-screen">
+    <PageHeader title="Playground" description="Chat with a configured model, inspect tool activity, and review proposed project changes." />
+    {mode !== "connected" ? <section className="run-callout" role="status"><strong>Connect to a workspace to use Playground.</strong><p>Live runs need an authenticated server session. Preview mode does not call a provider.</p></section> : <>
+      <section className="run-panel run-settings"><div className="run-section-title"><div><h2>Run settings</h2><p>Allow model runs in this workspace.</p></div><label className="run-toggle"><input type="checkbox" aria-label="Allow model runs" checked={settings?.enabled ?? false} disabled={!settings || settingsBusy} onChange={() => void toggleRuns()} /><span>{settingsBusy ? "Saving…" : settings?.enabled ? "Enabled" : "Disabled"}</span></label></div>
         {!settings && <p role="status">Loading workspace settings…</p>}
-        <p className="run-ready-state">{settings?.ready ? "At least one provider is ready." : "No configured provider is ready."} {settings && Object.entries(settings.providers).filter(([, value]) => !value.available).map(([name, value]) => `${name}: ${value.reason}`).join(" · ")}</p>
+        <div className="provider-grid">{(["codex", "claude"] as Provider[]).map((item) => {
+          const value = settings?.providers[item];
+          return <div className={`provider-card${value?.available ? " is-ready" : ""}`} key={item}><strong>{providerLabel(item)}</strong><span>{value?.available ? "Ready" : value?.reason || "Checking…"}</span><small>Default model: {value?.default_model || "Not configured"}</small></div>;
+        })}</div>
       </section>
-      {!projectId ? <section className="state-panel"><h2>Select a project</h2><p>Workspace settings are available above. Select a project before starting or reviewing runs.</p></section> : <>
-      <section className="run-panel"><div className="run-section-title"><div><h2>Start a run</h2><p>Runs begin only when you submit this form.</p></div><span className="run-ready-state">{settings?.providers[provider].available ? "Provider ready" : settings?.providers[provider].reason || "Checking provider…"}</span></div>
+      {!projectId ? <section className="state-panel"><h2>Select a project</h2><p>Select a project before starting or reviewing conversations.</p></section> : <>
+      <div className="playground-columns">
+      <div className="playground-compose-column">
+      <section className="run-panel playground-composer"><div className="run-section-title"><div><h2>{replyTo ? "Continue conversation" : "New conversation"}</h2><p>{replyTo ? `Replying to ${providerLabel(replyTo.provider)} · ${replyTo.model || "default model"}` : "Start a new conversation in this project."}</p></div>{replyTo && <button className="secondary" type="button" onClick={() => setReplyTo(null)}>New conversation</button>}</div>
         <form onSubmit={submit} className="run-form">
           <label>Project<input value={project?.name || projectId} readOnly /></label>
-          <label>Provider<select value={provider} onChange={(event) => setProvider(event.target.value as Provider)}><option value="codex" disabled={!settings?.providers.codex.available}>Codex SDK</option><option value="claude" disabled={!settings?.providers.claude.available}>Claude Agent SDK</option></select></label>
+          <label>Provider<select value={provider} onChange={(event) => selectProvider(event.target.value as Provider)}><option value="codex" disabled={!settings?.providers.codex.available}>OpenAI</option><option value="claude" disabled={!settings?.providers.claude.available}>Anthropic</option></select></label>
+          <label>Model<input value={model} onChange={(event) => { setModel(event.target.value); setModelTouched(true); }} maxLength={120} placeholder={settings?.providers[provider].default_model || "Use provider default"} /></label>
           <label>Record context (optional)<select value={contextSelection} onChange={(event) => setContextSelection(event.target.value)}><option value="">No record selected</option><optgroup label="Tickets">{projectTickets.map((item) => <option key={item.id} value={`ticket:${item.id}`}>{item.title}</option>)}</optgroup><optgroup label="Documents">{projectDocuments.map((item) => <option key={item.id} value={`document:${item.id}`}>{item.title}</option>)}</optgroup></select></label>
-          <label className="run-prompt-label">Prompt<textarea required minLength={1} maxLength={20000} rows={5} value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Describe the work for the selected agent…" /></label>
-          <div className="run-form-footer"><span>Server configuration limits which providers are available.</span><button className="primary" disabled={loading || !prompt.trim() || !settings?.enabled || !settings.providers[provider].available}>{loading ? "Starting…" : "Start run"}</button></div>
+          {replyTo && <input type="hidden" name="parent_run_id" value={replyTo.id} />}
+          <label className="run-prompt-label">Your message<textarea ref={promptRef} required minLength={1} maxLength={20000} rows={4} value={prompt} onChange={(event) => setPrompt(event.target.value)} placeholder="Ask a question or describe the work…" /></label>
+          <div className="run-form-footer"><span id="playground-send-hint">{sendHint}</span><button className="primary" aria-describedby="playground-send-hint" disabled={loading || !prompt.trim() || !settings?.enabled || !settings.providers[provider].available}>{loading ? "Sending…" : replyTo ? "Send reply" : "Start conversation"}</button></div>
         </form>
       </section>
       {error && <p role="alert" className="run-error">{error}</p>}{notice && <p role="status" className="run-notice">{notice}</p>}
-      <section className="run-section"><div className="run-section-title"><div><h2>Runs</h2><p>Progress refreshes automatically while a run is active.</p></div><button className="secondary" onClick={() => void refresh().catch((cause) => setError(cause.message))}>Refresh</button></div>
-        {runs.length ? <div className="run-list">{runs.map((run) => <article className="run-card" key={run.id}><div className="run-card-heading"><div><h3>{run.provider === "codex" ? "Codex" : "Claude Agent"} <small>· {new Date(run.created_at).toLocaleString()}</small></h3></div><span className={`run-status status-${run.status}`}>{run.status}</span></div>
-          {!!run.activity.length && <ol className="run-activity">{run.activity.map((item, index) => <li key={`${item.at}-${index}`}><time>{new Date(item.at).toLocaleTimeString()}</time><span>{item.text}</span></li>)}</ol>}
-          {run.status === "failed" && <div className="run-failure" role="alert"><strong>Run failed</strong><p>{run.error || "The provider could not complete this run."}</p></div>}
-          {run.result && <details className="run-result"><summary>Run result</summary><pre>{run.result}</pre></details>}
-          {approvals.filter((approval) => approval.run_id === run.id).map((approval) => <ApprovalPanel key={approval.id} approval={approval} busy={busyApproval === approval.id} onDecision={(decision) => void decide(approval, decision)} />)}
-        </article>)}</div> : <section className="state-panel"><h2>No runs yet</h2><p>Start a run when the selected provider is ready for this workspace.</p></section>}
+      </div>
+      <section className="run-section"><div className="run-section-title"><div><h2>Conversations</h2><p>Prompts, replies, tool activity, and approvals appear here.</p></div><button className="secondary" onClick={() => void refresh().catch((cause) => setError(cause.message))}>Refresh</button></div>
+        {conversations.length ? <div className="conversation-list">{conversations.map((conversation) => <article className="conversation-card" key={conversation.id}><header className="conversation-heading"><div><h3>Conversation</h3><small>{conversation.messages.length} {conversation.messages.length === 1 ? "message" : "messages"} · Updated {new Date(conversation.messages[conversation.messages.length - 1].updated_at).toLocaleString()}</small></div></header>
+          <div className="conversation-messages">{conversation.messages.map((run) => <section className="conversation-message" key={run.id}><div className="message-meta"><span className="message-role">You</span><time>{new Date(run.created_at).toLocaleString()}</time><span className={`run-status status-${run.status}`}>{run.status}</span></div><p className="message-prompt">{run.prompt}</p>
+            <div className="message-meta assistant-meta"><span className="message-role">{providerLabel(run.provider)}</span><span>{run.model || "Default model"}</span>{run.parent_run_id && <span>Reply</span>}</div>
+            {(run.result || run.status === "running" || run.status === "queued") && <div className="message-result markdown-body">{run.result ? <MarkdownDocument source={run.result} /> : (run.status === "queued" ? "Waiting to start…" : "Working…")}</div>}
+            {run.status === "failed" && <div className="run-failure" role="alert"><strong>Run failed</strong><p>{run.error || "The provider could not complete this run."}</p></div>}
+            {!!run.activity.length && <details className="run-activity-details"><summary>Activity ({run.activity.length})</summary><ol className="run-activity">{run.activity.map((item, index) => <li className={`activity-${item.type}`} key={`${item.at}-${index}`}><time>{new Date(item.at).toLocaleTimeString()}</time><span className="activity-type">{activityLabel(item.type)}</span><span>{item.text}</span></li>)}</ol></details>}
+            <div className="message-actions">{replyHint(run) && <small id={`reply-hint-${run.id}`} className="muted">{replyHint(run)}</small>}{!terminal(run.status) && <button className="secondary danger-action" disabled={busyCancel === run.id} onClick={() => void cancel(run)}>{busyCancel === run.id ? "Cancelling…" : "Cancel run"}</button>}<button className="secondary" aria-describedby={replyHint(run) ? `reply-hint-${run.id}` : undefined} disabled={run.status !== "completed" || !settings?.enabled || !settings?.providers[run.provider].available} onClick={() => continueFrom(run)}>Reply</button></div>
+            {approvals.filter((approval) => approval.run_id === run.id).map((approval) => <ApprovalPanel key={approval.id} approval={approval} busy={busyApproval === approval.id} onDecision={(decision) => void decide(approval, decision)} />)}
+          </section>)}</div>
+        </article>)}</div> : <section className="state-panel"><h2>No conversations yet</h2><p>Send a message when a provider is ready for this workspace.</p></section>}
       </section>
+      </div>
       </>}
     </>}
   </section>;

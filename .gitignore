@@ -9,3 +9,5 @@ __pycache__/
 *.dump
 .venv/
 .pytest_cache/
+
+!/agentboard/.dockerignore

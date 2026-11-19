@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileUp, Plus } from "lucide-react";
 import { useWorkspace } from "../../app/WorkspaceContext";
 import { PageHeader } from "../../components/PageHeader";
@@ -16,11 +16,20 @@ type ImportDraft = {
 };
 export function DocumentsScreen() {
   const { db, projectId, navigate, dirty, setDirty, saveDocument, mode } = useWorkspace();
+  const importInput = useRef<HTMLInputElement>(null);
+  const importButton = useRef<HTMLButtonElement>(null);
+  const importHeading = useRef<HTMLHeadingElement>(null);
   const [create, setCreate] = useState(false);
   const [search, setSearch] = useState("");
   const [featureTag, setFeatureTag] = useState<string[]>([]);
   const [concernTag, setConcernTag] = useState<string[]>([]);
   const [importPreview, setImportPreview] = useState<ImportDraft | null>(null);
+  const isImportOpen = importPreview !== null;
+  useEffect(() => {
+    if (!isImportOpen) return;
+    importHeading.current?.focus();
+    return () => { importButton.current?.focus(); };
+  }, [isImportOpen]);
   const [allowedTags, setAllowedTags] = useState<string[]>([]);
   const [tagChecking, setTagChecking] = useState(false);
   const [tagCheckError, setTagCheckError] = useState("");
@@ -119,12 +128,12 @@ export function DocumentsScreen() {
         <TagFilter title="Feature tags" tags={featureTags} selected={featureTag} onChange={setFeatureTag} />
         <TagFilter title="Concern tags" tags={concernTags} selected={concernTag} onChange={setConcernTag} />
         <small className="tag-filter-hint">Any tag within a group matches; feature and concern groups apply together.</small>
-        <span>{docs.length} documents</span>
-        <label className="button secondary" htmlFor="markdown-import">
+        <span>{docs.length} {docs.length === 1 ? "document" : "documents"}</span>
+        <button ref={importButton} type="button" className="secondary" onClick={() => importInput.current?.click()}>
           <FileUp size={16} /> Import Markdown
-        </label>
-        <input id="markdown-import" type="file" accept=".md,.markdown,text/markdown"
-          className="visually-hidden" onChange={async (event) => {
+        </button>
+        <input ref={importInput} id="markdown-import" type="file" accept=".md,.markdown,text/markdown"
+          hidden onChange={async (event) => {
             const file = event.currentTarget.files?.[0];
             event.currentTarget.value = "";
             setImportError(""); setImportPreview(null);
@@ -145,7 +154,7 @@ export function DocumentsScreen() {
       </div>
       {importError && <p className="form-error" role="alert">{importError}</p>}
       {importPreview && <section className="import-review" aria-labelledby="import-review-title">
-        <div><h2 id="import-review-title">Review imported document</h2><p>Extracted values are source-provided suggestions. Edit them as needed; file content is treated as untrusted data. Nothing is saved until you confirm.</p></div>
+        <div><h2 ref={importHeading} tabIndex={-1} id="import-review-title">Review imported document</h2><p>We filled in details from the file. Review them before importing.</p></div>
         {importPreview.issues.length > 0 && <div className="notice" role="status"><strong>Metadata needs review</strong><ul>{importPreview.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul></div>}
         <div className="import-review-fields">
           <label htmlFor="import-title">Title<input id="import-title" name="title" required maxLength={256} value={importPreview.title} onChange={(event) => updateImport({title:event.target.value})} /><small>{metadataOrigin(importPreview.title, importPreview.fromFile.title, importPreview.titleFromFilename)}</small></label>

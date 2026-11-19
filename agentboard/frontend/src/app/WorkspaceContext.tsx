@@ -28,7 +28,6 @@ interface Context {
   liveConnected: boolean;
   liveResync: boolean;
   clearLiveResync: () => void;
-  pair: (token: string) => Promise<void>;
   commit: (change: (db: Database) => Database, action: string, ticketId?: string) => boolean;
   saveProject: (values: { name: string; purpose: string }, current?: Project) => Promise<string>;
   deleteProject: (project: Project) => Promise<void>;
@@ -42,6 +41,7 @@ interface Context {
   notice: string;
   clearNotice: () => void;
   dirty: boolean;
+  hasUnsavedChanges: () => boolean;
   setDirty: (value: boolean) => void;
   navigate: (path: string) => void;
   reset: () => void;
@@ -66,6 +66,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const dirtyProjectRef = useRef("");
   const activeProjectRef = useRef(projectId);
   const refreshStateRef = useRef<{ promise: Promise<void> | null; requestedProjectId: string | null }>({ promise: null, requestedProjectId: null });
+
+  const hasUnsavedChanges = useCallback(() => dirtyRef.current, []);
 
   const setDirty = (value: boolean) => {
     dirtyRef.current = value;
@@ -132,13 +134,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       })
       .catch((error: unknown) => {
         if (!active) return;
-        if (error instanceof api.ApiError && error.status === 401) {
-          setPaired(false);
-          setPreview("Disconnected");
-        } else {
-          setPreview("Error");
-          setNotice(error instanceof Error ? error.message : "Could not connect to AgentBoard.");
-        }
+        setPreview("Error");
+        setNotice(error instanceof Error ? error.message : "Could not connect to AgentBoard.");
       });
     return () => { active = false; };
   }, []);
@@ -159,13 +156,6 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     });
     return () => source.close();
   }, [mode, paired, projectId, refresh]);
-
-  const pair = async (token: string) => {
-    await api.pair(token);
-    await refresh();
-    setPaired(true);
-    setNotice("Connected to AgentBoard.");
-  };
 
   const selectProject = (nextId: string) => {
     if (dirtyRef.current && !confirm("Discard unsaved changes before switching projects?")) return;
@@ -440,9 +430,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
   const value: Context = {
     db, projectId, selectProject, preview, setPreview, failNext, setFailNext,
-    mode, paired, liveConnected, liveResync, clearLiveResync: () => setLiveResync(false), pair, commit, saveProject, deleteProject, saveRole, saveTicket, saveDocument,
+    mode, paired, liveConnected, liveResync, clearLiveResync: () => setLiveResync(false), commit, saveProject, deleteProject, saveRole, saveTicket, saveDocument,
     restoreDocument, linkDocument, unlinkDocument, refresh, notice,
-    clearNotice: () => setNotice(""), dirty, setDirty, navigate, reset,
+    clearNotice: () => setNotice(""), dirty, hasUnsavedChanges, setDirty, navigate, reset,
   };
   return <Workspace.Provider value={value}>{children}</Workspace.Provider>;
 }

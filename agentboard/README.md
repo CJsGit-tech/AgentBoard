@@ -11,11 +11,15 @@ python3 infra/init-secrets.py
 docker compose up --build -d --wait
 ```
 
-Open [AgentBoard](http://127.0.0.1:8080). Use the browser pairing token in `.local/browser_token` when prompted. The database and FastAPI listen on the internal Compose network. Postgres data lives in the `agentboard_pgdata` volume. `docker compose down` stops the service and preserves that volume.
+Open [AgentBoard](http://127.0.0.1:8080). The local workspace opens directly. Browser requests use automatic CSRF protection. The database and FastAPI listen on the internal Compose network. Postgres data lives in the `agentboard_pgdata` volume. `docker compose down` stops the service and preserves that volume.
 
-### Optional SDK runs
+### Playground
 
-SDK execution is disabled by default for each workspace in the database. The Agent runs screen controls that workspace setting; it does not enable a provider that lacks backend configuration. Provider availability defaults on in Compose, and can be explicitly set with `AGENTBOARD_CODEX_SDK_ENABLED` or `AGENTBOARD_CLAUDE_AGENT_SDK_ENABLED` (`true` or `false`). OpenAI uses `OPENAI_API_KEY`; Claude accepts `CLAUDE_API_KEY` as an alias for `ANTHROPIC_API_KEY`. For models, `OPENAI_DEFAULT_MODEL` and `CLAUDE_DEFAULT_MODEL` are fallbacks for `AGENTBOARD_CODEX_MODEL` and `AGENTBOARD_CLAUDE_MODEL`, respectively. Set the `AGENTBOARD_*` model or `ANTHROPIC_API_KEY` value to override its fallback. These values are passed only to the backend runtime and never to the browser. The adapters run text-only turns with tools and external MCP disabled, in a read-only sandbox, using `/tmp` as their working directory. They do not read `.env` files or invoke a provider during startup.
+Open the Playground tab, enable workspace runs, and select OpenAI or Anthropic. Choose a model, enter a prompt, and optionally select a ticket or document as context. Continue a conversation with Reply, inspect tool activity, and cancel active runs. Proposed updates and deletions require an explicit browser approval tied to the exact changes and record revision.
+
+Configure provider credentials in the local `.env` file before starting Compose. OpenAI reads `OPENAI_API_KEY` and `OPENAI_DEFAULT_MODEL`. Anthropic reads `ANTHROPIC_API_KEY` or `CLAUDE_API_KEY`, and `CLAUDE_DEFAULT_MODEL`. Explicit `AGENTBOARD_CODEX_MODEL` and `AGENTBOARD_CLAUDE_MODEL` values override the defaults. Credentials remain in the backend runtime. The playground uses provider HTTP APIs.
+
+The packaged FastAPI application serves the React build, REST endpoints, live events, and the mounted FastMCP server on the same address. For development, run the backend on port 8000 and `npm run dev` in `frontend/`; Vite proxies application requests to the backend. Set `VITE_AGENTBOARD_MODE=connected` and `AGENTBOARD_ORIGIN=http://localhost:4203` for a connected development session.
 
 See the [architecture](docs/technical-architecture/README.md) and [engineering backlog](docs/tickets/README.md) for implementation context.
 
@@ -59,7 +63,7 @@ Claude Desktop runs a local MCP server process. Run `command -v docker` in a ter
       "args": [
         "compose",
         "-f",
-        "/absolute/path/to/AgentBoard/projects/agentboard/compose.yaml",
+        "/absolute/path/to/AgentBoard/agentboard/compose.yaml",
         "exec",
         "-T",
         "backend",

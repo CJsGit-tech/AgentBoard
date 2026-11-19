@@ -28,8 +28,10 @@ export function TicketEditor({
     concernTags: ticket?.concernTags?.join(", ") || "",
   });
   const [error, setError] = useState("");
+  const [errorField, setErrorField] = useState("");
   const change = (key: string, value: string) => {
     setError("");
+    setErrorField("");
     setValues({ ...values, [key]: value });
     setDirty(true);
   };
@@ -42,11 +44,13 @@ export function TicketEditor({
         e.preventDefault();
         if (!values.title.trim()) {
           setError("A ticket title is required.");
+          setErrorField("title");
           e.currentTarget.querySelector<HTMLInputElement>("input")?.focus();
           return;
         }
         if (values.status === "Blocked" && !values.blocker.trim()) {
           setError("Explain the blocker before saving.");
+          setErrorField("blocker");
           e.currentTarget
             .querySelector<HTMLTextAreaElement>(
               '[aria-label="Blocker explanation"]',
@@ -56,6 +60,8 @@ export function TicketEditor({
         }
         if (values.estimateDays && (!Number.isFinite(Number(values.estimateDays)) || Number(values.estimateDays) <= 0)) {
           setError("Estimate must be a positive number of days.");
+          setErrorField("estimate");
+          e.currentTarget.querySelector<HTMLInputElement>("#ticketeditor-estimate")?.focus();
           return;
         }
         if (
@@ -68,6 +74,8 @@ export function TicketEditor({
           ].includes(values.ownerId)
         ) {
           setError("Choose an owner from this project.");
+          setErrorField("owner");
+          e.currentTarget.querySelector<HTMLSelectElement>("#ticketeditor-2")?.focus();
           return;
         }
         setSaving(true);
@@ -85,7 +93,7 @@ export function TicketEditor({
           aria-label="Ticket title"
           required
           aria-invalid={!!error && !values.title.trim()}
-          aria-describedby={error ? "ticketeditor-error" : undefined}
+          aria-describedby={errorField === "title" ? "ticketeditor-error" : undefined}
           value={values.title}
           onChange={(e) => change("title", e.target.value)}
         />
@@ -96,6 +104,8 @@ export function TicketEditor({
           <select
             id="ticketeditor-2"
             aria-label="Ticket owner"
+            aria-invalid={errorField === "owner"}
+            aria-describedby={errorField === "owner" ? "ticketeditor-error" : undefined}
             value={values.ownerId}
             onChange={(e) => change("ownerId", e.target.value)}
           >
@@ -159,7 +169,7 @@ export function TicketEditor({
             aria-invalid={
               !!error && values.status === "Blocked" && !values.blocker.trim()
             }
-            aria-describedby={error ? "ticketeditor-error" : undefined}
+            aria-describedby={errorField === "blocker" ? "ticketeditor-error" : undefined}
             value={values.blocker}
             onChange={(e) => change("blocker", e.target.value)}
           />
@@ -198,7 +208,7 @@ export function TicketEditor({
         <textarea id="ticketeditor-details" aria-label="Ticket details" rows={4} value={values.details} onChange={e => change("details", e.target.value)} />
       </label>
       <label htmlFor="ticketeditor-estimate">Estimate (days)
-        <input id="ticketeditor-estimate" type="number" min="0.1" step="0.1" value={values.estimateDays} onChange={e => change("estimateDays", e.target.value)} />
+        <input id="ticketeditor-estimate" aria-invalid={errorField === "estimate"} aria-describedby={errorField === "estimate" ? "ticketeditor-error" : undefined} type="number" min="0.1" step="0.1" value={values.estimateDays} onChange={e => change("estimateDays", e.target.value)} />
       </label>
       <label htmlFor="ticketeditor-feature-tags">Feature tags
         <input id="ticketeditor-feature-tags" placeholder="feature:task-coordination, ..." value={values.featureTags} onChange={e => change("featureTags", e.target.value)} />

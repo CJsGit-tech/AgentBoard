@@ -46,12 +46,7 @@ async def _run() -> None:
     identity = _claude_desktop_identity()
     identity_token = current_client.set(identity)
     try:
-        async with stdio_server() as (read_stream, write_stream):
-            await mcp_server.run(
-                read_stream,
-                write_stream,
-                mcp_server.create_initialization_options(),
-            )
+        await mcp_server.run_async(transport="stdio")
     finally:
         current_client.reset(identity_token)
 

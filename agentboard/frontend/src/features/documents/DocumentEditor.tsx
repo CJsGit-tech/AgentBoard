@@ -48,7 +48,7 @@ export function DocumentEditor({
 
           required
           aria-invalid={!!error && !title.trim()}
-          aria-describedby={error ? "documenteditor-error" : undefined}
+          aria-describedby={error && !title.trim() ? "documenteditor-error" : undefined}
           value={title}
           onChange={(e) => {
             setError("");
@@ -65,7 +65,7 @@ export function DocumentEditor({
           rows={15}
           required
           aria-invalid={!!error && !content.trim()}
-          aria-describedby={error ? "documenteditor-error" : undefined}
+          aria-describedby={error && !content.trim() ? "documenteditor-error" : undefined}
           value={content}
           onChange={(e) => {
             setError("");

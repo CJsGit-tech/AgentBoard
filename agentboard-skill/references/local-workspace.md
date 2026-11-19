@@ -14,7 +14,7 @@ Exact recommended question:
 
 Before the user chooses file-only mode, perform read-only availability checks, inspect existing metadata and calculate the proposed path. Do not create `projects/`, `agents/`, `docs/`, temporary draft files, or manifests. Do not run the scaffold or artifact-saving tools. Cancel leaves both app records and files unchanged.
 
-Consent is **scoped to the named project** and recorded in `project-manifest.json` as `project.local_storage_confirmed: true` and `project.local_storage_confirmed_at`. An explicit request to use local storage, e.g. `AgentBuild Setup "Project" --local`, constitutes approval. A prior manifest with this confirmation permits subsequent document commands without re-prompting. An old local project **without** recorded confirmation must request approval before being modified. Do not assume existing files imply consent to migrate their status.
+Consent is **scoped to the named project** and recorded in `project-manifest.json` as `project.local_storage_confirmed: true` and `project.local_storage_confirmed_at`. An explicit request to use local storage, e.g. `AgentBuild Setup "Project" --local`, constitutes approval. The helper scripts trust that recorded flag for subsequent writes; they cannot determine whether a folder was copied. The agent must retain project provenance from the conversation. If the user says a project was copied/imported, or provenance is unclear, ask for fresh approval before writing even when the flag is true. An old local project **without** recorded confirmation must request approval before it is modified. Do not assume existing files imply consent to migrate their status.
 
 ## Path and setup, only after consent
 
@@ -24,6 +24,8 @@ Use the existing approved local project path where available. Otherwise default 
 python3 <skill-root>/scripts/scaffold_project.py \
   --name "<ProjectName>" --user-approved-local
 ```
+
+Pass `<ProjectName>` as one argv value; do not build shell commands by string interpolation. If a shell call is required, use its standard argument-quoting function.
 
 `--user-approved-local` is a **required explicit assertion of user approval** for first-time local writes, never a flag agents may set as a shortcut. Running the script without the flag does not create/update an unconfirmed local project. Existing projects with recorded approval can be reused without the flag.
 

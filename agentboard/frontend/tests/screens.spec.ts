@@ -333,7 +333,7 @@ test("document associations deduplicate, unlink without deleting and return to c
   await page
     .getByLabel("Document relationship", { exact: true })
     .selectOption("Context");
-  await page.getByRole("button", { name: "Link", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Already linked", exact: true })).toBeDisabled();
   await expect(page.locator(".document-link")).toHaveCount(1);
   await page
     .getByLabel("Document relationship", { exact: true })

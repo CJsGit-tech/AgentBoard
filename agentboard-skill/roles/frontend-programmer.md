@@ -21,4 +21,4 @@ For Create-Screens, follow `references/create-screens.md`: each meaningful custo
 
 ## Create-Screens builder
 
-When dispatched as builder, implement all inventoried screens in the confirmed stack with shared mock data and meaningful components in separate files. Run real automated checks and save evidence. Hand off source paths, coverage, commands and captures to a distinct reviewer; never author the independent verdict or claim completion before its pass and the evidence gate.
+When dispatched as builder, use the existing code checkout for source and verification evidence. In connected mode, AgentBoard remains canonical for planning records; do not create a parallel local project or planning-document copy. Implement all inventoried screens in the confirmed stack with shared mock data and meaningful components in separate files. Run real automated checks and save evidence. Hand off source paths, coverage, commands and captures to a distinct reviewer; never author the independent verdict or claim completion before its pass and the evidence gate.

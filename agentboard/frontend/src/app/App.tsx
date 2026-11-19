@@ -37,17 +37,8 @@ function Routes() {
   return <WorkspaceShell route={route}>{screen}</WorkspaceShell>;
 }
 function ConnectedGate({ children }: { children: ReactNode }) {
-  const { mode, paired, preview, pair, refresh } = useWorkspace();
-  const [token, setToken] = useState("");
+  const { mode, preview, refresh } = useWorkspace();
   const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  if (mode === "connected" && !paired) return <main className="pair-screen"><section className="pair-panel">
-    <h1>Connect to AgentBoard</h1><p>Enter the local access token shown by your AgentBoard server.</p>
-    <form aria-label="Connect to AgentBoard" onSubmit={async (event) => { event.preventDefault(); setBusy(true); setError(""); try { await pair(token.trim()); } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not connect. Check the token and try again."); } finally { setBusy(false); } }}>
-      <label htmlFor="pairing-token">Local access token</label><input id="pairing-token" name="pairing_token" type="password" autoComplete="current-password" required value={token} onChange={e=>setToken(e.target.value)} />
-      {error && <p role="alert" className="form-error">{error}</p>}<button className="primary" disabled={busy}>{busy ? "Connecting…" : "Connect"}</button>
-    </form><small>Your token is sent to the configured local AgentBoard API.</small>
-  </section></main>;
   if (mode === "connected" && preview === "Loading") return <main className="pair-screen"><section className="pair-panel" role="status"><h1>Loading workspace…</h1></section></main>;
   if (mode === "connected" && preview === "Error") return <main className="pair-screen"><section className="pair-panel" role="alert"><h1>AgentBoard is unavailable</h1><p>{error || "The workspace could not be loaded."}</p><button className="primary" onClick={()=>void refresh().catch(e=>setError(e.message))}>Retry connection</button></section></main>;
   return <>{children}</>;

@@ -4,7 +4,6 @@ import {
   UsersRound,
   FileText,
   Activity,
-  ChevronsUpDown,
   FolderOpen,
   Bot,
 } from "lucide-react";
@@ -17,7 +16,7 @@ export function Sidebar({ route }: { route: string }) {
     ["Roles", "/roles", UsersRound],
     ["Documents", "/documents", FileText],
     ["Activity", "/activity", Activity],
-    ["Agent runs", "/runs", Bot],
+    ["Playground", "/runs", Bot],
   ] as const;
   return (
     <aside className="sidebar">

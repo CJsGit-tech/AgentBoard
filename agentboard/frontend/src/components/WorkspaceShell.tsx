@@ -48,7 +48,7 @@ export function WorkspaceShell({
         <main id="main-content" tabIndex={-1}>
           {children}
           <footer>
-            <span>{mode === "mock" ? "Local preview · no real agent execution" : "Connected workspace · SDK runs available"}</span>
+            <span>{mode === "mock" ? "Local preview · no real agent execution" : "Connected workspace · Playground available"}</span>
             <span>AgentBoard</span>
           </footer>
         </main>

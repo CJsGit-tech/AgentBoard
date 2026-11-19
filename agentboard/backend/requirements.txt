@@ -1,10 +1,10 @@
-fastapi==0.115.12
-uvicorn[standard]==0.34.2
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
 SQLAlchemy==2.0.40
 psycopg[binary]==3.2.6
 alembic==1.15.2
 pydantic-settings==2.8.1
 jsonschema==4.23.0
 mcp==2.3.0
-openai-codex==0.170.0
-claude-agent-sdk==0.2.180
+fastmcp==4.2.2
+httpx==0.28.1

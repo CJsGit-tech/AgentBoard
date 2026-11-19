@@ -1,6 +1,6 @@
 # AgentBuild
 
-AgentBuild runs ten explicit product-planning commands, builds confirmed-stack screens with mock data, and creates engineering tickets. Its entrypoint is [SKILL.md](SKILL.md); that file's command table and linked contracts are authoritative.
+AgentBuild has ten project commands plus Help. It builds confirmed-stack screens with mock data and creates engineering tickets. Its entrypoint is [SKILL.md](SKILL.md); that file's command table and linked contracts are authoritative.
 
 ```text
 AgentBuild Help
@@ -17,7 +17,7 @@ AgentBuild Status "Project"
 AgentBuild Review "Project"
 ```
 
-Install the whole folder through the current host's skill installation mechanism. Codex and Claude use different discovery locations; preserve working installations. For distribution, exclude `__pycache__` and other generated files. No skill creates actual agent processes or authenticated app integrations merely by being installed.
+Install the whole folder through the current host's skill installation mechanism. For a local Codex install, copy `agentboard-skill/` to `~/.codex/skills/agentbuild/` only if that destination does not already exist; review an existing installation before replacing it. Claude uses a different discovery location. For distribution, exclude `__pycache__` and other generated files. No skill creates actual agent processes or authenticated app integrations merely by being installed.
 
 First-time local storage requires explicit project-scoped consent; subsequent commands reuse it. Setup creates a manifest, six role charters and an empty docs folder. Documents, screens and tickets are created only by their commands. Revisions preserve history; local mode never implies pending remote synchronization.
 

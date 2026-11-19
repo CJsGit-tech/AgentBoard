@@ -66,7 +66,7 @@ export function ActivityFeed({ events, onAgentFilter, onLabelFilter }: {
             <div className="event-meta">
               <time dateTime={e.time}>{formatTime(e.time)}</time>
               <span>{e.provenance}</span>
-              {onLabelFilter ? <button type="button" className="label-chip event-filter" aria-label={`Show activity labeled ${e.label}`} onClick={() => onLabelFilter(e.label)}>{e.label}</button> : <span className="label-chip">{e.label}</span>}
+              {e.label?.trim() && (onLabelFilter ? <button type="button" className="label-chip event-filter" aria-label={`Show activity labeled ${e.label}`} onClick={() => onLabelFilter(e.label)}>{e.label}</button> : <span className="label-chip">{e.label}</span>)}
             </div>
           </div>
         </li>

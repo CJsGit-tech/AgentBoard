@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { Ticket, ticketDisplayReference } from "../../api/types";
 import { useWorkspace } from "../../app/WorkspaceContext";
@@ -18,6 +18,12 @@ export function TicketInspector({
   onSaved: (id: string) => void;
 }) {
   const { db } = useWorkspace();
+  const panel = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    panel.current?.querySelector<HTMLInputElement>('input[aria-label="Ticket title"]')?.focus();
+    return () => { if (opener?.isConnected) opener.focus(); };
+  }, []);
   const count = db.approvals.filter(
     (a) =>
       a.ticketId === ticket?.id && ["Pending", "Unsupported"].includes(a.state),
@@ -30,7 +36,7 @@ export function TicketInspector({
     return () => window.removeEventListener("keydown", listener);
   }, [onClose]);
   return (
-    <aside className="ticket-inspector" aria-label="Ticket details">
+    <aside ref={panel} className="ticket-inspector" aria-label="Ticket details">
       <div className="inspector-top">
         <small>TICKET DETAILS{ticket ? ticketDisplayReference(ticket) ? ` · ${ticketDisplayReference(ticket)}` : "" : " · NEW"}</small>
         <button

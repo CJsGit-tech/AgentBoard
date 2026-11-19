@@ -9,12 +9,6 @@ fi
 # Compose file secrets retain host permissions. Copy only the credentials
 # this service receives into a directory owned by its unprivileged worker.
 install -d -m 0700 -o 10001 -g 10001 /tmp/agentboard-secrets
-if [ -f /run/secrets/browser_token ]; then
-  install -m 0600 -o 10001 -g 10001 /run/secrets/browser_token /tmp/agentboard-secrets/browser_token
-  export AGENTBOARD_BROWSER_TOKEN_FILE=/tmp/agentboard-secrets/browser_token
-else
-  unset AGENTBOARD_BROWSER_TOKEN_FILE
-fi
 if [ -f /run/secrets/mcp_token ]; then
   install -m 0600 -o 10001 -g 10001 /run/secrets/mcp_token /tmp/agentboard-secrets/mcp_token
   export AGENTBOARD_MCP_TOKEN_FILE=/tmp/agentboard-secrets/mcp_token

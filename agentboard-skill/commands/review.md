@@ -14,6 +14,8 @@ Read `references/document-folders.md` first. For folder-layout projects, inspect
 
 Read real current records from the canonical AgentBoard project, or files from an explicitly selected local-only project; inspect approved decisions, status/version, `references/quality-gates.md`, and `assets/templates/review-report.md`.
 
+When Review includes frontend source checks or screen evidence, use an existing code checkout as an implementation/evidence workspace. In connected mode, keep planning records and the review report in AgentBoard; the checkout does not switch the project to file-only mode. Do not create a local project copy automatically. See `references/agentboard-integration.md#local-implementation-and-evidence`.
+
 ## Execution
 1. Resolve the canonical AgentBoard project or approved local-only project and gather only artifacts that actually exist. Use the verified MCP connection to the manually started Compose app. Do not initialize a project without verified app capability or explicit local consent.
 2. Run the applicable structural/contract checks for the selected target and separate semantic evaluation. Passing structural checks does not equal correctness.

@@ -23,7 +23,7 @@ Project name, actual workspace/root, existing local manifest if any, verified Ag
    > AgentBoard is not installed. Choose a storage target for **<ProjectName>**: **Use file-only mode** at **<resolved-path>**, or **Cancel** and install/connect AgentBoard first. File-only records will not be part of an AgentBoard workspace.
 
 5. **Do not write until a target is selected.** File-only projects require recorded consent, an explicit current file-only choice, or an affirmative answer to the prompt. Cancel means **no local files and no app records changed**. Do not infer permission from the initial Setup request.
-6. On `Yes`, execute `python3 <skill-root>/scripts/scaffold_project.py --name "<ProjectName>" --user-approved-local` with `--root` only for an established alternative projects root. Explicit command option `--local` from the user also counts as prior consent.
+6. On `Yes`, execute `python3 <skill-root>/scripts/scaffold_project.py --name "<ProjectName>" --user-approved-local` with `--root` only for an established alternative projects root. Pass the project name as one argv value; never interpolate it into shell text. Explicit command option `--local` from the user also counts as prior consent.
 7. The scaffold creates/reuses `project-manifest.json`, empty `docs/` and `agents/*.md` for Product Manager, Product Designer, Solution Architect, Backend Programmer, Frontend Programmer, and Code Reviewer. Preserve existing edits; do not create blank product documents.
 8. Validate project structure. Report target, created/reused role records or local charters, and next command `Vision-Document <ProjectName>`. Local role files are not running subagents.
 

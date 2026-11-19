@@ -16,6 +16,7 @@ export function ProgressSummary({ tickets }: { tickets: Ticket[] }) {
           <small> / {tickets.length} tickets done</small>
         </span>
       </div>
+      <div className="distribution-label"><span>Ticket distribution</span><span>{tickets.length} total</span></div>
       <div
         className="progress-bar"
         aria-hidden="true"

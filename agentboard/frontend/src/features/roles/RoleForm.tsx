@@ -42,7 +42,7 @@ export function RoleForm({
 
           required
           aria-invalid={!!error && !name.trim()}
-          aria-describedby={error ? "roleform-error" : undefined}
+          aria-describedby={error && !name.trim() ? "roleform-error" : undefined}
           value={name}
           onChange={(e) => {
             setError("");
@@ -59,7 +59,7 @@ export function RoleForm({
           rows={5}
           required
           aria-invalid={!!error && !responsibilities.trim()}
-          aria-describedby={error ? "roleform-error" : undefined}
+          aria-describedby={error && !responsibilities.trim() ? "roleform-error" : undefined}
           value={responsibilities}
           onChange={(e) => {
             setError("");

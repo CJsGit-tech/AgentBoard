@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useWorkspace } from "./WorkspaceContext";
 
 export function useRoute() {
-  const { dirty, setDirty } = useWorkspace();
+  const { hasUnsavedChanges, setDirty } = useWorkspace();
   const [route, setRoute] = useState(location.hash.slice(1) || "/overview");
   const currentRoute = useRef(route);
 
@@ -10,7 +10,7 @@ export function useRoute() {
     const listener = () => {
       const next = location.hash.slice(1) || "/overview";
       if (next === currentRoute.current) return;
-      if (dirty && !confirm("Discard unsaved changes in this preview?")) {
+      if (hasUnsavedChanges() && !confirm("Discard unsaved changes?")) {
         // Back/Forward and direct hash navigation must protect the same draft
         // as in-app navigation. Replacing the URL does not emit hashchange.
         history.replaceState(null, "", "#" + currentRoute.current);
@@ -22,6 +22,6 @@ export function useRoute() {
     };
     window.addEventListener("hashchange", listener);
     return () => window.removeEventListener("hashchange", listener);
-  }, [dirty, setDirty]);
+  }, [hasUnsavedChanges, setDirty]);
   return route;
 }

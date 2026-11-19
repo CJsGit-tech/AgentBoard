@@ -38,7 +38,6 @@ export function DocumentList({ documents }: { documents: Doc[] }) {
                   <FileText size={17} />
                   {d.title}
                 </a>
-                <small>Version {d.revisions[0].number} · Updated {formatTime(d.revisions[0].updated)}</small>
                 {d.description && <small>{d.description}</small>}
                 {(d.kind || d.featureTags?.length || d.concernTags?.length) && <small>{[d.kind, ...(d.featureTags || []), ...(d.concernTags || [])].filter(Boolean).join(" · ")}</small>}
                 {d.sourceFilename && <small>Uploaded from {d.sourceFilename} · {formatTime(d.uploadedAt || d.revisions[0].updated)}</small>}

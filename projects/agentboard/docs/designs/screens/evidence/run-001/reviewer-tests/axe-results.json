@@ -1,0 +1,78 @@
+{
+  "axeVersion": "4.14.1",
+  "createdAt": "2026-11-18T07:25:22.573Z",
+  "outputs": [
+    {
+      "route": "/projects",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 21
+    },
+    {
+      "route": "/overview",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 30
+    },
+    {
+      "route": "/roles",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 21
+    },
+    {
+      "route": "/tickets",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 27
+    },
+    {
+      "route": "/tickets/8f24c9e7",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 29
+    },
+    {
+      "route": "/documents",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 26
+    },
+    {
+      "route": "/documents/doc-mcp",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 21
+    },
+    {
+      "route": "/documents/doc-mcp/history",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 23
+    },
+    {
+      "route": "/activity",
+      "violations": [],
+      "incomplete": [
+        "color-contrast"
+      ],
+      "passes": 26
+    }
+  ]
+}

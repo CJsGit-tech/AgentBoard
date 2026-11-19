@@ -1,0 +1,99 @@
+name: agentboard
+x-backend: &backend
+  image: agentboard-backend:local
+  build:
+    context: ./backend
+    dockerfile: ../infra/backend.Dockerfile
+    additional_contexts:
+      infra: ./infra
+      contracts: ./docs/technical-architecture/contracts
+  environment:
+    AGENTBOARD_ORIGIN: http://127.0.0.1:8080
+    AGENTBOARD_BROWSER_TOKEN_FILE: /run/secrets/browser_token
+    AGENTBOARD_MCP_TOKEN_FILE: /run/secrets/mcp_token
+  logging: &logging
+    driver: local
+    options:
+      max-size: "10m"
+      max-file: "3"
+services:
+  db:
+    image: postgres:17-alpine@sha256:a77aa70e641402a21411b92b721c58d10f23b50ae5fdd2333efd22d166e1e5f7
+    environment:
+      POSTGRES_DB: agentboard
+      POSTGRES_USER: agentboard
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets: [db_password]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD, pg_isready, -h, "127.0.0.1", -U, agentboard, -d, agentboard]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    logging: *logging
+  migrate:
+    <<: *backend
+    command: [alembic, upgrade, head]
+    secrets: [db_password]
+    depends_on:
+      db:
+        condition: service_healthy
+  backend:
+    <<: *backend
+    environment:
+      AGENTBOARD_ORIGIN: http://127.0.0.1:8080
+      AGENTBOARD_BROWSER_TOKEN_FILE: /run/secrets/browser_token
+      AGENTBOARD_MCP_TOKEN_FILE: /run/secrets/mcp_token
+      # Provider availability defaults on; workspace execution stays off in the database.
+      AGENTBOARD_CODEX_SDK_ENABLED: ${AGENTBOARD_CODEX_SDK_ENABLED:-true}
+      AGENTBOARD_CLAUDE_AGENT_SDK_ENABLED: ${AGENTBOARD_CLAUDE_AGENT_SDK_ENABLED:-true}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-${CLAUDE_API_KEY:-}}
+      AGENTBOARD_CODEX_MODEL: ${AGENTBOARD_CODEX_MODEL:-${OPENAI_DEFAULT_MODEL:-}}
+      AGENTBOARD_CLAUDE_MODEL: ${AGENTBOARD_CLAUDE_MODEL:-${CLAUDE_DEFAULT_MODEL:-}}
+    secrets: [db_password, browser_token, mcp_token]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, python, -c, "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/healthz', timeout=2).close()"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  maintenance:
+    <<: *backend
+    command: [sh, -ec, 'while true; do python -m app.maintenance.expire_activity; sleep 3600; done']
+    secrets: [db_password]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+  web:
+    build:
+      context: .
+      dockerfile: infra/web.Dockerfile
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/healthz"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+    logging: *logging
+volumes:
+  pgdata:
+    name: agentboard_pgdata
+secrets:
+  db_password:
+    file: ./.local/db_password
+  browser_token:
+    file: ./.local/browser_token
+  mcp_token:
+    file: ./.local/mcp_token

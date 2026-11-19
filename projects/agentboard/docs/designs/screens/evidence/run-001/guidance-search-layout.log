@@ -1,0 +1,16 @@
+Command: ['npx', '-y', 'modern-web-guidance@latest', 'search', 'responsive data table', '--skill-version', '2026_11_10-47b4c80e']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T06:51:03.643490+00:00
+Finished: 2026-11-18T06:51:04.008703+00:00
+Exit code: 0
+
+[{"id":"responsive-table","description":"Build a data table that presents tabular data with proper header semantics, and remains readable and navigable on small screens and with assistive technologies."},
+{"id":"sortable-table","description":"Progressively enhance a data table with behaviors that allow users to sort rows by clicking on column headers."},
+{"id":"accessibility","description":"Actionable coding guidelines for building accessible web applications, covering semantic HTML, focus management, forms, media, and testing. Use this skill when auditing or implementing accessibility features, keyboard navigation, or ARIA."},
+{"id":"form-factor-adaptation","description":"Adapt layouts, controls, and text to any device or container so touch targets stay usable, content fits its space, and nothing collides with system UI."},
+{"id":"responsive-design","description":"Build UI that adapts to container and viewport size, including container queries, dynamic viewport units, aspect ratios, and responsive typography."},
+{"id":"css-layout","description":"Modern CSS layouts such as flexbox, grid, subgrid, container queries, anchor positioning, and intrinsic sizing. Use this skill when architecting responsive UI components or page layouts."},
+{"id":"dynamic-sort","description":"Best practices for handling dynamic user-triggered reordering of a container's children (e.g. list items, table rows, or a card grid), with optional animated reordering that respects user preferences, good screen reader UX, and optimal performance for large lists."},
+{"id":"navbar","description":"Build a site navigation bar that adapts across screen sizes and indicates the current page."},
+{"id":"respect-os-text-scale","description":"Respect the operating system's text scale preference for a page so font sizes, layout, and rem-based measurements follow the user's accessibility settings."},
+{"id":"tabs","description":"Build a responsive tabbed interface with good UX when not all tabs fit on screen."}]

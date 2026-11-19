@@ -1,0 +1,3 @@
+# Python >=3.10. Isolated design-validation environment; not app runtime dependencies.
+jsonschema==4.26.0
+openapi-spec-validator==0.9.0

@@ -1,0 +1,7 @@
+Command: ['node', '../docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/changed-controls.cjs']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T08:10:00.605376+00:00
+Finished: 2026-11-18T08:10:01.487495+00:00
+Exit code: 0
+
+PASS: keyboard agent/label filtering, distinct Edit descriptions, inset focus, 24px target, desktop 900/1280 widths; no runtime errors.

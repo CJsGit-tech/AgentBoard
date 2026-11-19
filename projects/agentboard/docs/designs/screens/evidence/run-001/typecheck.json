@@ -1,0 +1,9 @@
+{
+  "id": "typecheck",
+  "command": "npm run typecheck",
+  "cwd": "frontend",
+  "exit_code": 0,
+  "status": "pass",
+  "finished_at": "2026-11-18T07:23:28.670341+00:00",
+  "log": "docs/designs/screens/evidence/run-001/typecheck.log"
+}

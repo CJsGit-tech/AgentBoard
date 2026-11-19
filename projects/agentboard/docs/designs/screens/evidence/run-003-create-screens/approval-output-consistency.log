@@ -1,0 +1,3 @@
+Output consistency: PASS
+{"mcp_tools": 31, "registered_examples": 73, "rest_operations": 32, "story_files": 15}
+Structural consistency of existing outputs; not proof of semantic review, approval or runtime behavior.

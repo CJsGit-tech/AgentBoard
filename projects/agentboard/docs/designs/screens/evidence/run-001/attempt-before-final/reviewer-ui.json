@@ -1,0 +1,9 @@
+{
+  "id": "reviewer-ui",
+  "command": "node node_modules/@playwright/test/cli.js test --config=../docs/designs/screens/evidence/run-001/reviewer-tests/full-suite.config.cjs",
+  "cwd": "frontend",
+  "exit_code": 1,
+  "status": "fail",
+  "finished_at": "2026-11-18T07:00:38.999739+00:00",
+  "log": "docs/designs/screens/evidence/run-001/reviewer-ui.log"
+}

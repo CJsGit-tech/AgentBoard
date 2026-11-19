@@ -1,0 +1,9 @@
+{
+  "id": "guidance-search-forms",
+  "command": "npx -y modern-web-guidance@latest search validate form inputs --skill-version 2026_11_10-47b4c80e",
+  "cwd": "frontend",
+  "exit_code": 0,
+  "status": "pass",
+  "finished_at": "2026-11-18T06:51:04.288813+00:00",
+  "log": "docs/designs/screens/evidence/run-001/guidance-search-forms.log"
+}

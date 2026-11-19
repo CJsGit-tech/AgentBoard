@@ -1,0 +1,52 @@
+.runs-screen { max-width: 1080px; margin: 0 auto; padding: 32px; }
+.runs-screen .page-header { margin-bottom: 24px; }
+.runs-screen .eyebrow { margin: 0 0 6px; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .09em; }
+.runs-screen .page-header h1 { margin: 0; }
+.runs-screen .page-header p:last-child, .run-section-title p { color: var(--muted); }
+.run-panel, .run-card, .run-callout { padding: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-panel); }
+.run-panel { margin-bottom: 28px; }
+.run-section-title, .run-card-heading, .approval-heading, .run-form-footer, .approval-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.run-section-title h2, .run-card h3 { margin: 0; }
+.run-section-title p { margin: 5px 0 0; }
+.run-ready-state { color: var(--muted); font-size: 12px; }
+.run-toggle { display: inline-flex; align-items: center; gap: 9px; font-weight: 700; }
+.run-toggle input { width: 20px; height: 20px; accent-color: var(--blue); }
+.run-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .7fr); gap: 16px; margin-top: 22px; }
+.run-form label { display: grid; gap: 7px; font-weight: 600; }
+.run-form input, .run-form select, .run-form textarea { width: 100%; min-height: 44px; padding: 10px 12px; color: var(--text); font: inherit; }
+.run-form input[readonly] { background: var(--canvas); }
+.run-prompt-label, .run-form-footer { grid-column: 1 / -1; }
+.run-form textarea { resize: vertical; }
+.run-form-footer { color: var(--muted); font-size: 12px; }
+.run-section { margin-top: 30px; }
+.run-list { display: grid; gap: 14px; margin-top: 18px; }
+.run-card { padding: 20px; }
+.run-card h3 { font-size: 16px; }
+.run-card h3 small { color: var(--muted); font-weight: 400; }
+.run-card code { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+.run-status { display: inline-flex; padding: 4px 9px; border-radius: 999px; background: var(--canvas); color: var(--text); font-size: 12px; text-transform: capitalize; }
+.status-running, .status-queued, .status-pending { background: #fff3cd; color: #6a4b00; }
+.status-completed, .status-approved { background: #e5f5eb; color: #17663a; }
+.status-failed, .status-rejected { background: #fde9e7; color: #922b21; }
+.run-activity { display: grid; gap: 8px; margin: 18px 0; padding-left: 20px; }
+.run-activity li { padding-left: 4px; line-height: 1.45; }
+.run-activity time { margin-right: 10px; color: var(--muted); font-size: 12px; }
+.run-failure { margin-top: 16px; padding: 14px; border-left: 3px solid #b42318; background: #fff4f2; }
+.run-failure p { margin: 6px 0 0; overflow-wrap: anywhere; }
+.run-result { margin-top: 14px; }
+.run-result pre, .approval-change { max-height: 360px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--canvas); font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+.run-approval { margin-top: 18px; padding: 18px; border: 1px solid var(--border); border-left: 4px solid var(--blue); border-radius: var(--radius-control); background: var(--canvas); }
+.run-approval h4 { margin: 0; }
+.run-approval .eyebrow { color: var(--blue); }
+.approval-meta { display: flex; flex-wrap: wrap; gap: 24px; margin: 14px 0; }
+.approval-meta div { display: grid; gap: 4px; }
+.approval-meta dt { color: var(--muted); font-size: 12px; }
+.approval-meta dd { margin: 0; overflow-wrap: anywhere; }
+.run-approval h5 { margin: 14px 0 8px; }
+.approval-change { margin: 0; }
+.approval-ack { display: flex; align-items: flex-start; gap: 9px; margin: 14px 0; line-height: 1.4; }
+.approval-ack input { width: 18px; height: 18px; margin: 0; flex: none; }
+.run-error, .run-notice { padding: 12px 14px; border-radius: var(--radius-control); }
+.run-error { background: #fde9e7; color: #922b21; }
+.run-notice { background: #e5f5eb; color: #17663a; }
+@media (max-width: 700px) { .runs-screen { padding: 22px 16px; } .run-form { grid-template-columns: 1fr; } .run-prompt-label, .run-form-footer { grid-column: auto; } .run-section-title, .run-card-heading, .approval-heading { align-items: flex-start; } .run-form-footer { align-items: flex-start; flex-direction: column; } }

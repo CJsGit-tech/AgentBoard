@@ -1,0 +1,18 @@
+{
+  "id": "ada38f6a-1fb6-5eab-a02a-409cf045d136",
+  "project_id": "ba4c647a-788c-532f-924a-8a150af927d8",
+  "ticket_id": "1916befb-d67d-53cb-b509-9f8cdb6383b0",
+  "target_kind": "ticket",
+  "target_id": "1916befb-d67d-53cb-b509-9f8cdb6383b0",
+  "operation": "update",
+  "proposed_changes": {
+    "status": "done"
+  },
+  "base_revision": 3,
+  "payload_hash": "e378058155516106ec27571a247c0a3985759e505d4ab2351d638a9ac6ce7c25",
+  "requester_client_id": "9e770e46-8b46-5cb3-b50c-21e5df4a9f89",
+  "status": "pending",
+  "created_at": "2026-11-18T09:30:00Z",
+  "expires_at": "2026-11-19T09:30:00Z",
+  "decided_at": null
+}

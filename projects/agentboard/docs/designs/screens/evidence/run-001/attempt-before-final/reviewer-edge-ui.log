@@ -1,0 +1,17 @@
+Command: ['npm', 'exec', 'playwright', 'test', '--', '--config', '../docs/designs/screens/evidence/run-001/reviewer-tests/playwright.config.cjs']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T06:51:47.026441+00:00
+Finished: 2026-11-18T06:51:49.248102+00:00
+Exit code: 0
+
+
+Running 4 tests using 1 worker
+
+(node:30563) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ../docs/designs/screens/evidence/run-001/reviewer-tests/reviewer.spec.cjs:3:1 › reviewer: failed document draft stays on navigation cancellation and adds no revision (507ms)
+  ✓  2 ../docs/designs/screens/evidence/run-001/reviewer-tests/reviewer.spec.cjs:11:1 › reviewer: relation dedupe and project switch do not leak linked documents (435ms)
+  ✓  3 ../docs/designs/screens/evidence/run-001/reviewer-tests/reviewer.spec.cjs:16:1 › reviewer: modal keyboard focus traps and primary focus is visibly internal (230ms)
+  ✓  4 ../docs/designs/screens/evidence/run-001/reviewer-tests/reviewer.spec.cjs:22:1 › reviewer: activity disconnection buffers once, reconnects and retains only matching events (302ms)
+
+  4 passed (1.9s)

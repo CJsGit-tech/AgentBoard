@@ -1,0 +1,10 @@
+{
+  "project_id": "ba4c647a-788c-532f-924a-8a150af927d8",
+  "limit": 50,
+  "feature_tags": [
+    "feature:document-management"
+  ],
+  "concern_tags": [
+    "concern:retention"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "agent_id": "/root/legacy_scan_review",
+  "command": "npx -y modern-web-guidance@latest legacy-scan src --json",
+  "cwd": "frontend",
+  "started_at": "2026-11-18T07:46:43.520110+00:00",
+  "finished_at": "2026-11-18T07:46:44.084743+00:00",
+  "exit_code": 0
+}

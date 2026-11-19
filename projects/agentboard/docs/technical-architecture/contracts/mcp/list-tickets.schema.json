@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "list_tickets",
+  "x-status": "draft",
+  "$defs": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 50
+        },
+        "cursor": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "planned",
+            "in_progress",
+            "blocked",
+            "done"
+          ]
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "high",
+            "normal",
+            "low"
+          ]
+        },
+        "owner_kind": {
+          "type": "string",
+          "enum": [
+            "unassigned",
+            "builder",
+            "role"
+          ]
+        },
+        "feature_tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^feature:[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "maxItems": 30,
+          "uniqueItems": true
+        },
+        "concern_tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^concern:[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "maxItems": 30,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "const": "success"
+            },
+            "applied": {
+              "const": false
+            },
+            "data": {
+              "$ref": "../schemas/domain.schema.json#/$defs/TicketViewPage"
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "error",
+                "rejected",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "applied": {
+              "const": false
+            },
+            "error": {
+              "$ref": "../schemas/domain.schema.json#/$defs/ErrorDetail"
+            },
+            "request_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "error",
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

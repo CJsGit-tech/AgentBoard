@@ -1,0 +1,287 @@
+{
+  "config": {
+    "argv": [
+      "/private/tmp/node-v24.22.3-darwin-arm64/bin/node",
+      "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "../docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/playwright.config.cjs"
+    ],
+    "configFile": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/playwright.config.cjs",
+    "rootDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests",
+        "snapshotDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "channel": "chrome",
+          "baseURL": "http://127.0.0.1:4203",
+          "viewport": {
+            "width": 1600,
+            "height": 1100
+          },
+          "screenshot": "only-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "reviewer.spec.cjs",
+      "file": "reviewer.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "reviewer: failed document draft stays on navigation cancellation and adds no revision",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 516,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:56.284Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9431076049af5a62930-30d720fed83c967f4133",
+          "file": "reviewer.spec.cjs",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "reviewer: relation dedupe and project switch do not leak linked documents",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 487,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:56.993Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9431076049af5a62930-23d7666c17a9c06f9a06",
+          "file": "reviewer.spec.cjs",
+          "line": 11,
+          "column": 1
+        },
+        {
+          "title": "reviewer: native modal prevents page focus, returns focus and primary focus is visibly internal",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 253,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:57.489Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9431076049af5a62930-465b1352bdb4a0b09634",
+          "file": "reviewer.spec.cjs",
+          "line": 16,
+          "column": 1
+        },
+        {
+          "title": "reviewer: activity disconnection buffers once, reconnects and retains only matching events",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 317,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:57.747Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9431076049af5a62930-2cc5348e4c20030f7833",
+          "file": "reviewer.spec.cjs",
+          "line": 22,
+          "column": 1
+        },
+        {
+          "title": "reviewer: failed document draft is protected when browser Back is used",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 399,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:58.071Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "d9431076049af5a62930-57dc514eb5ff43563881",
+          "file": "reviewer.spec.cjs",
+          "line": 27,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-18T08:08:56.129Z",
+    "duration": 2399.212,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

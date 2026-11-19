@@ -1,0 +1,10 @@
+Command: ['npm', 'run', 'typecheck']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T06:59:17.428653+00:00
+Finished: 2026-11-18T06:59:18.048271+00:00
+Exit code: 0
+
+
+> agentboard-frontend@0.1.0 typecheck
+> tsc --noEmit
+

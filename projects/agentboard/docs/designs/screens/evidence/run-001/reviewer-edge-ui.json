@@ -1,0 +1,9 @@
+{
+  "id": "reviewer-edge-ui",
+  "command": "node node_modules/@playwright/test/cli.js test --config=../docs/designs/screens/evidence/run-001/reviewer-tests/playwright.config.cjs",
+  "cwd": "frontend",
+  "exit_code": 0,
+  "status": "pass",
+  "finished_at": "2026-11-18T07:25:21.191489+00:00",
+  "log": "docs/designs/screens/evidence/run-001/reviewer-edge-ui.log"
+}

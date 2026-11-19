@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1120" viewBox="0 0 1120 1120">
+<g transform="translate(0 150)">
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10Z" fill="#315d86"/></marker></defs>
+<rect width="1120" height="1120" fill="#f4f7fb"/>
+<g font-family="Arial, sans-serif" fill="#17304c">
+<text x="48" y="52" font-size="28" font-weight="bold">AgentBoard · Local System Architecture</text>
+<text x="48" y="82" font-size="16">Draft v0.1.0 · Docker Compose · single builder · manual agent coordination</text>
+<rect x="32" y="108" width="1056" height="608" rx="20" fill="white" stroke="#a5b5ca" stroke-dasharray="7 5"/>
+<text x="52" y="138" font-size="16" font-weight="bold">Local computer / trusted OS account</text>
+<rect x="64" y="190" width="270" height="280" rx="14" fill="#eaf2ff" stroke="#8aa7ce"/>
+<text x="88" y="225" font-size="21" font-weight="bold">Desktop browser</text>
+<text x="88" y="262" font-size="17">React + TypeScript UI</text>
+<text x="88" y="303" font-size="16">Projects · roles · tasks</text>
+<text x="88" y="333" font-size="16">Documents · progress</text>
+<text x="88" y="383" font-size="15">Unsaved edits kept on error</text>
+<text x="88" y="413" font-size="15">Same-origin API requests</text>
+<rect x="470" y="167" width="560" height="353" rx="16" fill="#f0f8f6" stroke="#76a899"/>
+<text x="492" y="199" font-size="18" font-weight="bold">Docker Compose · app service</text>
+<rect x="495" y="219" width="510" height="70" rx="9" fill="white" stroke="#a2bfb5"/>
+<text x="515" y="247" font-size="18" font-weight="bold">FastAPI / Uvicorn · port 8000</text>
+<text x="515" y="273" font-size="15">Compiled UI assets + /api/v1 + health endpoints</text>
+<rect x="495" y="325" width="510" height="78" rx="9" fill="white" stroke="#a2bfb5"/>
+<text x="515" y="355" font-size="18" font-weight="bold">Application services</text>
+<text x="515" y="382" font-size="15">Validation · project isolation · revision checks</text>
+<rect x="495" y="439" width="510" height="56" rx="9" fill="white" stroke="#a2bfb5"/>
+<text x="515" y="473" font-size="17">SQLite repository · atomic state + activity writes</text>
+<path d="M334 254 H495" stroke="#315d86" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="349" y="222" font-size="14">Loopback HTTP</text>
+<text x="349" y="242" font-size="13">127.0.0.1:8080</text>
+<path d="M750 289 V325 M750 403 V439" stroke="#315d86" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="495" y="568" width="510" height="94" rx="14" fill="#fff5de" stroke="#c6a866"/>
+<text x="515" y="598" font-size="19" font-weight="bold">Named volume · agentboard_data</text>
+<text x="515" y="626" font-size="16">/data/agentboard.sqlite3 + SQLite journal files</text>
+<text x="515" y="648" font-size="14">Persistent local records · backup outside this volume</text>
+<path d="M750 495 V568" stroke="#315d86" stroke-width="2" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="770" y="550" font-size="14">Mounted at /data</text>
+<text x="64" y="550" font-size="16" font-weight="bold">Runtime boundary</text>
+<text x="64" y="581" font-size="15">No cloud dependency</text>
+<text x="64" y="609" font-size="15">No agent execution or Docker socket</text>
+<text x="64" y="637" font-size="15">No automatic planning-file import</text>
+<text x="48" y="745" font-size="14">Build: Vite assets copied into Python image. Database and API stay inside one local application boundary.</text>
+</g></g></svg>

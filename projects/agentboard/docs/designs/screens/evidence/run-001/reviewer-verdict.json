@@ -1,0 +1,11 @@
+{
+  "agent_id": "/root/screens_reviewer_finish",
+  "independent": true,
+  "verdict": "pass",
+  "role_file": "agents/code-reviewer.md",
+  "source_fingerprint": "a773e87a417b92d37555940f4b5b822b096811ca6a0eca796e703a7c434f301e",
+  "context_fingerprint": "760a3640978ee58ee4e0ae0b32529f0c76e7307fb465757a1564c8eda4eea812",
+  "report": "docs/designs/screens/evidence/run-001/reviewer-report.md",
+  "unresolved_required_items": [],
+  "status": "verified_pending_review"
+}

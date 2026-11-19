@@ -1,0 +1,8 @@
+Command: ['npx', '-y', 'modern-web-guidance@latest', 'retrieve', 'dialog,responsive-table,forms,accessibility']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T06:51:13.715087+00:00
+Finished: 2026-11-18T06:51:14.014333+00:00
+Exit code: 0
+
+Output (86.1 KB, 1351 lines) saved to /var/folders/2s/r8lzt4kj4sg3lwxcjrlc670w0000gn/T/mwg-guide-30420-1794984674008.md to prevent CLI stdout truncation.
+Read /var/folders/2s/r8lzt4kj4sg3lwxcjrlc670w0000gn/T/mwg-guide-30420-1794984674008.md in full using your file-reading tool (1351 lines total)—do not use cat or head.

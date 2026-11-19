@@ -1,0 +1,16 @@
+{
+  "outcome": "success",
+  "applied": false,
+  "data": {
+    "project_id": "ba4c647a-788c-532f-924a-8a150af927d8",
+    "counts": {
+      "planned": 1,
+      "in_progress": 1,
+      "blocked": 0,
+      "done": 2
+    },
+    "total": 4,
+    "pending_approval_count": 1,
+    "has_tasks": true
+  }
+}

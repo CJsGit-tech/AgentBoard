@@ -1,0 +1,122 @@
+{
+  "config": {
+    "argv": [
+      "/private/tmp/node-v24.22.3-darwin-arm64/bin/node",
+      "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/node_modules/.bin/playwright",
+      "test",
+      "tests/screens.spec.ts",
+      "-g",
+      "project edit preserves|project delete confirms"
+    ],
+    "configFile": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/playwright.config.ts",
+    "rootDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-001/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "",
+        "name": "",
+        "testDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-001/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "name": "",
+        "testDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+        "snapshotDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/159.0.8154.6 Safari/537.36",
+          "viewport": {
+            "width": 1600,
+            "height": 1100
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "channel": "chrome",
+          "baseURL": "http://127.0.0.1:4203",
+          "screenshot": "only-on-failure",
+          "trace": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../docs/designs/screens/evidence/run-001/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev -- --port 4203",
+      "url": "http://127.0.0.1:4203",
+      "reuseExistingServer": true
+    }
+  },
+  "suites": [],
+  "errors": [
+    {
+      "message": "Error: Process from config.webServer was not able to start. Exit code: 1",
+      "stack": "Error: Process from config.webServer was not able to start. Exit code: 1"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-11-19T06:48:56.478Z",
+    "duration": 179.51800000000003,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

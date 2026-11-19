@@ -1,0 +1,379 @@
+{
+  "schema_version": 1,
+  "status": "verified_pending_review",
+  "target_platform": "web",
+  "source_root": "frontend",
+  "source_fingerprint": "a773e87a417b92d37555940f4b5b822b096811ca6a0eca796e703a7c434f301e",
+  "context_fingerprint": "760a3640978ee58ee4e0ae0b32529f0c76e7307fb465757a1564c8eda4eea812",
+  "finished_at": "2026-11-18T07:27:14.662942+00:00",
+  "builder": {
+    "agent_id": "/root/screens_builder_finish",
+    "role_file": "agents/frontend-programmer.md"
+  },
+  "reviewer": {
+    "agent_id": "/root/screens_reviewer_finish",
+    "role_file": "agents/code-reviewer.md",
+    "independent": true,
+    "verdict": "pass",
+    "source_fingerprint": "a773e87a417b92d37555940f4b5b822b096811ca6a0eca796e703a7c434f301e",
+    "context_fingerprint": "760a3640978ee58ee4e0ae0b32529f0c76e7307fb465757a1564c8eda4eea812",
+    "report": "docs/designs/screens/evidence/run-001/reviewer-report.md"
+  },
+  "guidance": {
+    "status": "reviewed",
+    "cli_version": "1.0.1",
+    "skill_version": "2026_11_10-47b4c80e",
+    "guides": [
+      "dialog",
+      "responsive-table",
+      "forms",
+      "accessibility"
+    ],
+    "report": "docs/designs/screens/evidence/run-001/modern-web-guidance-review.md"
+  },
+  "checks": [
+    {
+      "id": "build",
+      "command": "npm run build",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:23:29.954176+00:00",
+      "log": "docs/designs/screens/evidence/run-001/build.log",
+      "kind": "build"
+    },
+    {
+      "id": "typecheck",
+      "command": "npm run typecheck",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:23:28.670341+00:00",
+      "log": "docs/designs/screens/evidence/run-001/typecheck.log",
+      "kind": "typecheck"
+    },
+    {
+      "id": "ui",
+      "command": "npm run test:ui",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:24:17.052009+00:00",
+      "log": "docs/designs/screens/evidence/run-001/ui.log",
+      "kind": "ui"
+    },
+    {
+      "id": "reviewer-build",
+      "command": "npm run build",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:25:11.663308+00:00",
+      "log": "docs/designs/screens/evidence/run-001/reviewer-build.log",
+      "kind": "build"
+    },
+    {
+      "id": "reviewer-typecheck",
+      "command": "npm run typecheck",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:25:10.373994+00:00",
+      "log": "docs/designs/screens/evidence/run-001/reviewer-typecheck.log",
+      "kind": "typecheck"
+    },
+    {
+      "id": "reviewer-ui",
+      "command": "node node_modules/@playwright/test/cli.js test --config=../docs/designs/screens/evidence/run-001/reviewer-tests/full-suite.config.cjs",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:25:18.917455+00:00",
+      "log": "docs/designs/screens/evidence/run-001/reviewer-ui.log",
+      "kind": "ui"
+    },
+    {
+      "id": "reviewer-edge-ui",
+      "command": "node node_modules/@playwright/test/cli.js test --config=../docs/designs/screens/evidence/run-001/reviewer-tests/playwright.config.cjs",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:25:21.191489+00:00",
+      "log": "docs/designs/screens/evidence/run-001/reviewer-edge-ui.log",
+      "kind": "ui"
+    },
+    {
+      "id": "reviewer-a11y",
+      "command": "node ../docs/designs/screens/evidence/run-001/reviewer-tests/audit.cjs",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:25:22.619002+00:00",
+      "log": "docs/designs/screens/evidence/run-001/reviewer-a11y.log",
+      "kind": "ui"
+    },
+    {
+      "id": "reviewer-contrast",
+      "command": "node ../docs/designs/screens/evidence/run-001/reviewer-tests/contrast.cjs",
+      "cwd": "frontend",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:25:23.221508+00:00",
+      "log": "docs/designs/screens/evidence/run-001/reviewer-contrast.log",
+      "kind": "ui"
+    },
+    {
+      "id": "captures",
+      "command": "node docs/designs/screens/evidence/run-001/capture-screens.mjs",
+      "cwd": ".",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:21:26.814693+00:00",
+      "log": "docs/designs/screens/evidence/run-001/captures.log",
+      "kind": "ui"
+    },
+    {
+      "id": "output-consistency",
+      "command": "/Users/cjhuang/.codex/venvs/agentbuild-contracts/bin/python /Users/cjhuang/.codex/skills/agentbuild/scripts/check_outputs.py --project /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard --strict",
+      "cwd": ".",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:10:32.927978+00:00",
+      "log": "docs/designs/screens/evidence/run-001/output-consistency.log",
+      "kind": "output-consistency"
+    },
+    {
+      "id": "reviewer-output-consistency",
+      "command": "/Users/cjhuang/.codex/venvs/agentbuild-contracts/bin/python /Users/cjhuang/.codex/skills/agentbuild/scripts/check_outputs.py --project /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard --strict",
+      "cwd": ".",
+      "exit_code": 0,
+      "status": "pass",
+      "finished_at": "2026-11-18T07:13:48.169619+00:00",
+      "log": "docs/designs/screens/evidence/run-001/reviewer-output-consistency.log",
+      "kind": "output-consistency"
+    }
+  ],
+  "screens": [
+    {
+      "id": "projects",
+      "requirements": [
+        "US-001",
+        "US-002"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/projects/ProjectsScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/projects.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures",
+        "reviewer-edge-ui"
+      ]
+    },
+    {
+      "id": "project-form",
+      "requirements": [
+        "US-001",
+        "US-002"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/projects/ProjectForm.tsx",
+      "captures": [
+        "docs/designs/screens/captures/project-form.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures",
+        "reviewer-edge-ui"
+      ]
+    },
+    {
+      "id": "overview",
+      "requirements": [
+        "US-009",
+        "US-012"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/overview/OverviewScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/overview.png",
+        "docs/designs/screens/captures/overview-error.png",
+        "docs/designs/screens/captures/overview-empty.png",
+        "docs/designs/screens/captures/overview-loading.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures"
+      ]
+    },
+    {
+      "id": "roles",
+      "requirements": [
+        "US-003",
+        "US-005"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/roles/RolesScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/roles.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures",
+        "reviewer-edge-ui"
+      ]
+    },
+    {
+      "id": "role-form",
+      "requirements": [
+        "US-003"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/roles/RoleForm.tsx",
+      "captures": [
+        "docs/designs/screens/captures/role-form.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures",
+        "reviewer-edge-ui"
+      ]
+    },
+    {
+      "id": "tickets",
+      "requirements": [
+        "US-004",
+        "US-005",
+        "US-006"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/tickets/TicketsScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/tickets.png",
+        "docs/designs/screens/captures/board.png",
+        "docs/designs/screens/captures/tickets-1280.png",
+        "docs/designs/screens/captures/tickets-900.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures"
+      ]
+    },
+    {
+      "id": "ticket-detail",
+      "requirements": [
+        "US-004",
+        "US-005",
+        "US-006",
+        "US-008",
+        "US-010",
+        "US-012"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/tickets/TicketInspector.tsx",
+      "captures": [
+        "docs/designs/screens/captures/ticket-detail.png",
+        "docs/designs/screens/captures/ticket-create.png",
+        "docs/designs/screens/captures/approval-unsupported.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures",
+        "reviewer-edge-ui"
+      ]
+    },
+    {
+      "id": "documents",
+      "requirements": [
+        "US-007"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/documents/DocumentsScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/documents.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures"
+      ]
+    },
+    {
+      "id": "document-detail",
+      "requirements": [
+        "US-007",
+        "US-008"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/documents/DocumentDetailScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/document-detail.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures"
+      ]
+    },
+    {
+      "id": "document-editor",
+      "requirements": [
+        "US-007"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/documents/DocumentEditor.tsx",
+      "captures": [
+        "docs/designs/screens/captures/document-editor.png",
+        "docs/designs/screens/captures/document-conflict.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures",
+        "reviewer-edge-ui"
+      ]
+    },
+    {
+      "id": "document-history",
+      "requirements": [
+        "US-015"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/documents/DocumentHistoryScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/document-history.png",
+        "docs/designs/screens/captures/revision-unavailable.png",
+        "docs/designs/screens/captures/document-history-900.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures"
+      ]
+    },
+    {
+      "id": "activity",
+      "requirements": [
+        "US-010",
+        "US-011",
+        "US-013",
+        "US-014"
+      ],
+      "status": "verified",
+      "source": "frontend/src/features/activity/ActivityScreen.tsx",
+      "captures": [
+        "docs/designs/screens/captures/activity.png",
+        "docs/designs/screens/captures/activity-1280.png",
+        "docs/designs/screens/captures/activity-900.png"
+      ],
+      "ui_checks": [
+        "reviewer-ui",
+        "captures",
+        "reviewer-edge-ui"
+      ]
+    }
+  ],
+  "unresolved_required_items": [],
+  "limitations": [
+    "Mock data only; no production backend, MCP execution, durable persistence or deployment certified.",
+    "Tested Chrome; no cross-browser or full assistive-technology user certification.",
+    "Automated contrast audit incomplete; representative computed pairs independently assessed."
+  ]
+}

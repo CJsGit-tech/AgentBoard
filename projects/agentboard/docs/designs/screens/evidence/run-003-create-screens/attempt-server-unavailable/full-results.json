@@ -1,0 +1,1149 @@
+{
+  "config": {
+    "argv": [
+      "/private/tmp/node-v24.22.3-darwin-arm64/bin/node",
+      "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "../docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-suite.config.cjs"
+    ],
+    "configFile": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-suite.config.cjs",
+    "rootDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+        "snapshotDir": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "channel": "chrome",
+          "baseURL": "http://127.0.0.1:4203",
+          "viewport": {
+            "width": 1600,
+            "height": 1100
+          },
+          "screenshot": "only-on-failure",
+          "trace": "retain-on-failure"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "screens.spec.ts",
+      "file": "screens.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "all screens render without runtime errors and all main navigation works",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 199,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:29:16",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 16,
+                      "line": 29
+                    },
+                    "snippet": " \u001b[90m 27 |\u001b[39m     [\u001b[32m\"/activity\"\u001b[39m\u001b[33m,\u001b[39m \u001b[32m\"Activity\"\u001b[39m]\u001b[33m,\u001b[39m\n \u001b[90m 28 |\u001b[39m   ]) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 29 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#\"\u001b[39m \u001b[33m+\u001b[39m route)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 30 |\u001b[39m     \u001b[36mawait\u001b[39m expect(\n \u001b[90m 31 |\u001b[39m       page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"heading\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m heading\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mfirst()\u001b[33m,\u001b[39m\n \u001b[90m 32 |\u001b[39m     )\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 16,
+                        "line": 29
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n\n  27 |     [\"/activity\", \"Activity\"],\n  28 |   ]) {\n> 29 |     await page.goto(\"/#\" + route);\n     |                ^\n  30 |     await expect(\n  31 |       page.getByRole(\"heading\", { name: heading, exact: true }).first(),\n  32 |     ).toBeVisible();\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:29:16"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:07:57.063Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-all-screens-render-35c4e-d-all-main-navigation-works/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-all-screens-render-35c4e-d-all-main-navigation-works/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-all-screens-render-35c4e-d-all-main-navigation-works/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 16,
+                    "line": 29
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-7dd38e295d924a5f969b",
+          "file": "screens.spec.ts",
+          "line": 14,
+          "column": 1
+        },
+        {
+          "title": "project validation, failure retention, create and switch keep project context isolated",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 200,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:58:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 58
+                    },
+                    "snippet": " \u001b[90m 56 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 57 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 58 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/projects\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 59 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"New project\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 60 |\u001b[39m   \u001b[36mawait\u001b[39m expect(\n \u001b[90m 61 |\u001b[39m     modal(page)\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"textbox\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Project name\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m,\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 58
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n\n  56 |   page,\n  57 | }) => {\n> 58 |   await page.goto(\"/#/projects\");\n     |              ^\n  59 |   await page.getByRole(\"button\", { name: \"New project\", exact: true }).click();\n  60 |   await expect(\n  61 |     modal(page).getByRole(\"textbox\", { name: \"Project name\", exact: true }),\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:58:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:07:57.715Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-project-validation-bba90-ep-project-context-isolated/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-project-validation-bba90-ep-project-context-isolated/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-project-validation-bba90-ep-project-context-isolated/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 58
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-6bfa798350f20b4dd476",
+          "file": "screens.spec.ts",
+          "line": 55,
+          "column": 1
+        },
+        {
+          "title": "project edit preserves associations and has no discard dialog after save",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 176,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:122:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 122
+                    },
+                    "snippet": " \u001b[90m 120 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 121 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 122 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/projects\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 123 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m\".project-card\"\u001b[39m)\u001b[33m.\u001b[39mfilter({ hasText\u001b[33m:\u001b[39m \u001b[32m\"AgentBoard\"\u001b[39m })\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Edit\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }))\u001b[33m.\u001b[39mtoHaveAccessibleDescription(\u001b[32m\"AgentBoard\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 124 |\u001b[39m   \u001b[36mawait\u001b[39m page\n \u001b[90m 125 |\u001b[39m     \u001b[33m.\u001b[39mlocator(\u001b[32m\".project-card\"\u001b[39m)"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 122
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n\n  120 |   page,\n  121 | }) => {\n> 122 |   await page.goto(\"/#/projects\");\n      |              ^\n  123 |   await expect(page.locator(\".project-card\").filter({ hasText: \"AgentBoard\" }).getByRole(\"button\", { name: \"Edit\", exact: true })).toHaveAccessibleDescription(\"AgentBoard\");\n  124 |   await page\n  125 |     .locator(\".project-card\")\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:122:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:07:58.245Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-project-edit-prese-5d1f3-o-discard-dialog-after-save/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-project-edit-prese-5d1f3-o-discard-dialog-after-save/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-project-edit-prese-5d1f3-o-discard-dialog-after-save/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 122
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-68106f078d97951e658c",
+          "file": "screens.spec.ts",
+          "line": 119,
+          "column": 1
+        },
+        {
+          "title": "role create/edit keeps assignments and filters owners by project",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 196,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/roles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/roles\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/roles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/roles\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:149:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 149
+                    },
+                    "snippet": " \u001b[90m 147 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 148 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 149 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/roles\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 150 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m\".role-card\"\u001b[39m)\u001b[33m.\u001b[39mfilter({ has\u001b[33m:\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"heading\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Backend\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }) })\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Edit\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }))\u001b[33m.\u001b[39mtoHaveAccessibleDescription(\u001b[32m\"Backend\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 151 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"New role\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 152 |\u001b[39m   \u001b[36mawait\u001b[39m expect("
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 149
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/roles\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/roles\", waiting until \"load\"\u001b[22m\n\n\n  147 |   page,\n  148 | }) => {\n> 149 |   await page.goto(\"/#/roles\");\n      |              ^\n  150 |   await expect(page.locator(\".role-card\").filter({ has: page.getByRole(\"heading\", { name: \"Backend\", exact: true }) }).getByRole(\"button\", { name: \"Edit\", exact: true })).toHaveAccessibleDescription(\"Backend\");\n  151 |   await page.getByRole(\"button\", { name: \"New role\", exact: true }).click();\n  152 |   await expect(\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:149:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:07:58.788Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-role-create-edit-k-7d331-d-filters-owners-by-project/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-role-create-edit-k-7d331-d-filters-owners-by-project/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-role-create-edit-k-7d331-d-filters-owners-by-project/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 149
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-abbdacf80a2972677edf",
+          "file": "screens.spec.ts",
+          "line": 146,
+          "column": 1
+        },
+        {
+          "title": "ticket validation, failed save, reassignment and status changes stay consistent",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 200,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n\n    at ticket (/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:8:14)\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:202:9",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 8
+                    },
+                    "snippet": " \u001b[90m  6 |\u001b[39m \u001b[36mconst\u001b[39m modal \u001b[33m=\u001b[39m (page\u001b[33m:\u001b[39m \u001b[33mPage\u001b[39m) \u001b[33m=>\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"dialog\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  7 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m ticket(page\u001b[33m:\u001b[39m \u001b[33mPage\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  8 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/tickets/8f24c9e7\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  9 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m\"Ticket title\"\u001b[39m\u001b[33m,\u001b[39m { exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }))\u001b[33m.\u001b[39mtoHaveValue(\n \u001b[90m 10 |\u001b[39m     \u001b[32m\"Build MCP ticket tools\"\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 11 |\u001b[39m   )\u001b[33m;\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 8
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n\n\n   6 | const modal = (page: Page) => page.getByRole(\"dialog\");\n   7 | async function ticket(page: Page) {\n>  8 |   await page.goto(\"/#/tickets/8f24c9e7\");\n     |              ^\n   9 |   await expect(page.getByLabel(\"Ticket title\", { exact: true })).toHaveValue(\n  10 |     \"Build MCP ticket tools\",\n  11 |   );\n    at ticket (/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:8:14)\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:202:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:07:59.340Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-ticket-validation--5a65a-tus-changes-stay-consistent/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-ticket-validation--5a65a-tus-changes-stay-consistent/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-ticket-validation--5a65a-tus-changes-stay-consistent/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 8
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-734fa4f43136452f3682",
+          "file": "screens.spec.ts",
+          "line": 199,
+          "column": 1
+        },
+        {
+          "title": "ticket create and board use shared records and explicit statuses",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 180,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:252:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 252
+                    },
+                    "snippet": " \u001b[90m 250 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 251 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 252 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/tickets\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 253 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"New ticket\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 254 |\u001b[39m   \u001b[36mawait\u001b[39m page\n \u001b[90m 255 |\u001b[39m     \u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Create ticket\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 252
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets\", waiting until \"load\"\u001b[22m\n\n\n  250 |   page,\n  251 | }) => {\n> 252 |   await page.goto(\"/#/tickets\");\n      |              ^\n  253 |   await page.getByRole(\"button\", { name: \"New ticket\", exact: true }).click();\n  254 |   await page\n  255 |     .getByRole(\"button\", { name: \"Create ticket\", exact: true })\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:252:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:07:59.874Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-ticket-create-and--1d1e5-cords-and-explicit-statuses/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-ticket-create-and--1d1e5-cords-and-explicit-statuses/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-ticket-create-and--1d1e5-cords-and-explicit-statuses/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 252
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-50389e0922ee033f139b",
+          "file": "screens.spec.ts",
+          "line": 249,
+          "column": 1
+        },
+        {
+          "title": "document associations deduplicate, unlink without deleting and return to correct ticket",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 194,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n\n    at ticket (/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:8:14)\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:284:9",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 8
+                    },
+                    "snippet": " \u001b[90m  6 |\u001b[39m \u001b[36mconst\u001b[39m modal \u001b[33m=\u001b[39m (page\u001b[33m:\u001b[39m \u001b[33mPage\u001b[39m) \u001b[33m=>\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"dialog\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  7 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m ticket(page\u001b[33m:\u001b[39m \u001b[33mPage\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  8 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/tickets/8f24c9e7\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  9 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m\"Ticket title\"\u001b[39m\u001b[33m,\u001b[39m { exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }))\u001b[33m.\u001b[39mtoHaveValue(\n \u001b[90m 10 |\u001b[39m     \u001b[32m\"Build MCP ticket tools\"\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 11 |\u001b[39m   )\u001b[33m;\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 8
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n\n\n   6 | const modal = (page: Page) => page.getByRole(\"dialog\");\n   7 | async function ticket(page: Page) {\n>  8 |   await page.goto(\"/#/tickets/8f24c9e7\");\n     |              ^\n   9 |   await expect(page.getByLabel(\"Ticket title\", { exact: true })).toHaveValue(\n  10 |     \"Build MCP ticket tools\",\n  11 |   );\n    at ticket (/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:8:14)\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:284:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:00.389Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-document-associati-9188c-nd-return-to-correct-ticket/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-document-associati-9188c-nd-return-to-correct-ticket/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-document-associati-9188c-nd-return-to-correct-ticket/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 8
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-f4cd8e4707e879868ba1",
+          "file": "screens.spec.ts",
+          "line": 281,
+          "column": 1
+        },
+        {
+          "title": "document create validates, preserves failed input, and edit retains revisions",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 201,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/documents\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/documents\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/documents\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/documents\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:327:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 327
+                    },
+                    "snippet": " \u001b[90m 325 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 326 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 327 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/documents\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 328 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"New document\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 329 |\u001b[39m   \u001b[36mawait\u001b[39m modal(page)\n \u001b[90m 330 |\u001b[39m     \u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"Save document\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 327
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/documents\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/documents\", waiting until \"load\"\u001b[22m\n\n\n  325 |   page,\n  326 | }) => {\n> 327 |   await page.goto(\"/#/documents\");\n      |              ^\n  328 |   await page.getByRole(\"button\", { name: \"New document\", exact: true }).click();\n  329 |   await modal(page)\n  330 |     .getByRole(\"button\", { name: \"Save document\", exact: true })\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:327:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:00.939Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-document-create-va-d54e0--and-edit-retains-revisions/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-document-create-va-d54e0--and-edit-retains-revisions/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-document-create-va-d54e0--and-edit-retains-revisions/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 327
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-0d90611e01c4401d464f",
+          "file": "screens.spec.ts",
+          "line": 324,
+          "column": 1
+        },
+        {
+          "title": "arbitrary revision comparison, failed restore, successful restore and retention cap",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 197,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/documents/doc-mcp/history\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/documents/doc-mcp/history\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/documents/doc-mcp/history\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/documents/doc-mcp/history\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:371:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 371
+                    },
+                    "snippet": " \u001b[90m 369 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 370 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 371 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/documents/doc-mcp/history\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 372 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m\".revision-list li\"\u001b[39m))\u001b[33m.\u001b[39mtoHaveCount(\u001b[35m4\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 373 |\u001b[39m   \u001b[36mawait\u001b[39m page\n \u001b[90m 374 |\u001b[39m     \u001b[33m.\u001b[39mgetByLabel(\u001b[32m\"Selected revision\"\u001b[39m\u001b[33m,\u001b[39m { exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 371
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/documents/doc-mcp/history\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/documents/doc-mcp/history\", waiting until \"load\"\u001b[22m\n\n\n  369 |   page,\n  370 | }) => {\n> 371 |   await page.goto(\"/#/documents/doc-mcp/history\");\n      |              ^\n  372 |   await expect(page.locator(\".revision-list li\")).toHaveCount(4);\n  373 |   await page\n  374 |     .getByLabel(\"Selected revision\", { exact: true })\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:371:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:01.481Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-arbitrary-revision-16282-l-restore-and-retention-cap/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-arbitrary-revision-16282-l-restore-and-retention-cap/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-arbitrary-revision-16282-l-restore-and-retention-cap/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 371
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-549b5cbe783a7cedd1af",
+          "file": "screens.spec.ts",
+          "line": 368,
+          "column": 1
+        },
+        {
+          "title": "approval states never apply changes and badges remain separate from status",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 208,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n\n    at ticket (/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:8:14)\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:418:9",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 8
+                    },
+                    "snippet": " \u001b[90m  6 |\u001b[39m \u001b[36mconst\u001b[39m modal \u001b[33m=\u001b[39m (page\u001b[33m:\u001b[39m \u001b[33mPage\u001b[39m) \u001b[33m=>\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"dialog\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m  7 |\u001b[39m \u001b[36masync\u001b[39m \u001b[36mfunction\u001b[39m ticket(page\u001b[33m:\u001b[39m \u001b[33mPage\u001b[39m) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m  8 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/tickets/8f24c9e7\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m  9 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m\"Ticket title\"\u001b[39m\u001b[33m,\u001b[39m { exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m }))\u001b[33m.\u001b[39mtoHaveValue(\n \u001b[90m 10 |\u001b[39m     \u001b[32m\"Build MCP ticket tools\"\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 11 |\u001b[39m   )\u001b[33m;\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 8
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets/8f24c9e7\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets/8f24c9e7\", waiting until \"load\"\u001b[22m\n\n\n   6 | const modal = (page: Page) => page.getByRole(\"dialog\");\n   7 | async function ticket(page: Page) {\n>  8 |   await page.goto(\"/#/tickets/8f24c9e7\");\n     |              ^\n   9 |   await expect(page.getByLabel(\"Ticket title\", { exact: true })).toHaveValue(\n  10 |     \"Build MCP ticket tools\",\n  11 |   );\n    at ticket (/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:8:14)\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:418:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:02.017Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-approval-states-ne-47e92-remain-separate-from-status/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-approval-states-ne-47e92-remain-separate-from-status/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-approval-states-ne-47e92-remain-separate-from-status/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 8
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-8950c5e71dafa58ecbff",
+          "file": "screens.spec.ts",
+          "line": 415,
+          "column": 1
+        },
+        {
+          "title": "activity filters, duplicate keys, disconnect/reconnect and retention preserve records",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 167,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/activity\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/activity\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/activity\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/activity\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:440:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 440
+                    },
+                    "snippet": " \u001b[90m 438 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 439 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 440 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/activity\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 441 |\u001b[39m   \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m\".activity-feed\"\u001b[39m))\u001b[33m.\u001b[39mnot\u001b[33m.\u001b[39mtoContainText(\n \u001b[90m 442 |\u001b[39m     \u001b[32m\"Expired example event\"\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 443 |\u001b[39m   )\u001b[33m;\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 440
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/activity\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/activity\", waiting until \"load\"\u001b[22m\n\n\n  438 |   page,\n  439 | }) => {\n> 440 |   await page.goto(\"/#/activity\");\n      |              ^\n  441 |   await expect(page.locator(\".activity-feed\")).not.toContainText(\n  442 |     \"Expired example event\",\n  443 |   );\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:440:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:02.563Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-activity-filters-d-3f315--retention-preserve-records/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-activity-filters-d-3f315--retention-preserve-records/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 440
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-816e58f5a2fd4c412114",
+          "file": "screens.spec.ts",
+          "line": 437,
+          "column": 1
+        },
+        {
+          "title": "global states retry, recover connection and retain conflict drafts",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 199,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/overview\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/overview\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/overview\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/overview\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:491:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 491
+                    },
+                    "snippet": " \u001b[90m 489 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 490 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 491 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/overview\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 492 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m\"Preview state\"\u001b[39m\u001b[33m,\u001b[39m { exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mselectOption(\u001b[32m\"Error\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 493 |\u001b[39m   \u001b[36mawait\u001b[39m expect(\n \u001b[90m 494 |\u001b[39m     page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"heading\"\u001b[39m\u001b[33m,\u001b[39m {"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 491
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/overview\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/overview\", waiting until \"load\"\u001b[22m\n\n\n  489 |   page,\n  490 | }) => {\n> 491 |   await page.goto(\"/#/overview\");\n      |              ^\n  492 |   await page.getByLabel(\"Preview state\", { exact: true }).selectOption(\"Error\");\n  493 |   await expect(\n  494 |     page.getByRole(\"heading\", {\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:491:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:03.092Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-global-states-retr-a15a3--and-retain-conflict-drafts/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-global-states-retr-a15a3--and-retain-conflict-drafts/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-global-states-retr-a15a3--and-retain-conflict-drafts/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 491
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-7a41ebcf4153ad148385",
+          "file": "screens.spec.ts",
+          "line": 488,
+          "column": 1
+        },
+        {
+          "title": "desktop responsive layouts and control focus stay contained",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 192,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:546:16",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 16,
+                      "line": 546
+                    },
+                    "snippet": " \u001b[90m 544 |\u001b[39m   \u001b[36mfor\u001b[39m (\u001b[36mconst\u001b[39m width \u001b[36mof\u001b[39m [\u001b[35m1600\u001b[39m\u001b[33m,\u001b[39m \u001b[35m1280\u001b[39m\u001b[33m,\u001b[39m \u001b[35m900\u001b[39m]) {\n \u001b[90m 545 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39msetViewportSize({ width\u001b[33m,\u001b[39m height\u001b[33m:\u001b[39m \u001b[35m1000\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 546 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/tickets\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 547 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"▥ Board\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mfocus()\u001b[33m;\u001b[39m\n \u001b[90m 548 |\u001b[39m     \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mkeyboard\u001b[33m.\u001b[39mpress(\u001b[32m\"Tab\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 549 |\u001b[39m     \u001b[36mconst\u001b[39m style \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 16,
+                        "line": 546
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/tickets\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/tickets\", waiting until \"load\"\u001b[22m\n\n\n  544 |   for (const width of [1600, 1280, 900]) {\n  545 |     await page.setViewportSize({ width, height: 1000 });\n> 546 |     await page.goto(\"/#/tickets\");\n      |                ^\n  547 |     await page.getByRole(\"button\", { name: \"▥ Board\", exact: true }).focus();\n  548 |     await page.keyboard.press(\"Tab\");\n  549 |     const style = await page\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:546:16"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:03.642Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-desktop-responsive-6c3d1-ontrol-focus-stay-contained/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-desktop-responsive-6c3d1-ontrol-focus-stay-contained/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-desktop-responsive-6c3d1-ontrol-focus-stay-contained/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 16,
+                    "line": 546
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-93a1142302e57d15069c",
+          "file": "screens.spec.ts",
+          "line": 539,
+          "column": 1
+        },
+        {
+          "title": "native modal keeps page inert, restores invoker focus and has contrasting internal focus",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 13,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 195,
+                  "error": {
+                    "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n",
+                    "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:587:14",
+                    "location": {
+                      "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                      "column": 14,
+                      "line": 587
+                    },
+                    "snippet": " \u001b[90m 585 |\u001b[39m   page\u001b[33m,\u001b[39m\n \u001b[90m 586 |\u001b[39m }) \u001b[33m=>\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 587 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m\"/#/projects\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m              \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 588 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[32m\"New project\"\u001b[39m\u001b[33m,\u001b[39m exact\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m.\u001b[39mclick()\u001b[33m;\u001b[39m\n \u001b[90m 589 |\u001b[39m   \u001b[36mconst\u001b[39m save \u001b[33m=\u001b[39m modal(page)\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"button\"\u001b[39m\u001b[33m,\u001b[39m {\n \u001b[90m 590 |\u001b[39m     name\u001b[33m:\u001b[39m \u001b[32m\"Create project\"\u001b[39m\u001b[33m,\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                        "column": 14,
+                        "line": 587
+                      },
+                      "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4203/#/projects\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4203/#/projects\", waiting until \"load\"\u001b[22m\n\n\n  585 |   page,\n  586 | }) => {\n> 587 |   await page.goto(\"/#/projects\");\n      |              ^\n  588 |   await page.getByRole(\"button\", { name: \"New project\", exact: true }).click();\n  589 |   const save = modal(page).getByRole(\"button\", {\n  590 |     name: \"Create project\",\n    at /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts:587:14"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T08:08:04.176Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-native-modal-keeps-6d97f--contrasting-internal-focus/test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-native-modal-keeps-6d97f--contrasting-internal-focus/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/full-test-results/screens-native-modal-keeps-6d97f--contrasting-internal-focus/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/tests/screens.spec.ts",
+                    "column": 14,
+                    "line": 587
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2676ef668c5398eed988-d3c743a7f6ced6546401",
+          "file": "screens.spec.ts",
+          "line": 584,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-18T08:07:56.865Z",
+    "duration": 7705.88,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 14,
+    "flaky": 0
+  }
+}

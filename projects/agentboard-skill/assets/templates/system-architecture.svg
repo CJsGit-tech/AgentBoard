@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="580" viewBox="0 0 1100 580" role="img" aria-labelledby="title desc">
+  <title id="title">Example system architecture layout — replace for the actual project</title>
+  <desc id="desc">This template demonstrates three placeholder modules and labeled directional arrows. It is not a system design.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto-start-reverse">
+      <path d="M 2 2 L 10 6 L 2 10" fill="none" stroke="#617489" stroke-width="2"/>
+    </marker>
+  </defs>
+  <rect width="1100" height="580" fill="#F7F9FB"/>
+  <text x="55" y="65" fill="#15293D" font-family="Arial, sans-serif" font-size="27" font-weight="bold">TEMPLATE — REPLACE WITH PROJECT ARCHITECTURE</text>
+  <text x="55" y="99" fill="#52657B" font-family="Arial, sans-serif" font-size="16">Do not publish placeholder modules as actual project decisions</text>
+  <rect x="60" y="180" width="270" height="190" rx="16" fill="#EAF1FB" stroke="#91AFCF" stroke-width="2"/>
+  <rect x="415" y="180" width="270" height="190" rx="16" fill="#E8F4ED" stroke="#8DB99D" stroke-width="2"/>
+  <rect x="770" y="180" width="270" height="190" rx="16" fill="#F5ECE4" stroke="#C9A88F" stroke-width="2"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle" fill="#1B3248">
+    <text x="195" y="252" font-size="25" font-weight="bold">Module A</text>
+    <text x="195" y="292" font-size="16">Replace with real role</text>
+    <text x="550" y="252" font-size="25" font-weight="bold">Module B</text>
+    <text x="550" y="292" font-size="16">Replace with real role</text>
+    <text x="905" y="252" font-size="25" font-weight="bold">Module C</text>
+    <text x="905" y="292" font-size="16">Replace with real role</text>
+  </g>
+  <g fill="none" stroke="#617489" stroke-width="2.5" marker-end="url(#arrow)">
+    <path d="M 335 268 L 403 268"/>
+    <path d="M 690 268 L 758 268"/>
+  </g>
+  <g fill="#465C73" font-family="Arial, sans-serif" font-size="15" text-anchor="middle">
+    <text x="369" y="250">flow</text>
+    <text x="724" y="250">flow</text>
+  </g>
+  <text x="55" y="485" fill="#52657B" font-family="Arial, sans-serif" font-size="17">Use labeled data flows, trust boundaries and integrations appropriate to the real project.</text>
+</svg>

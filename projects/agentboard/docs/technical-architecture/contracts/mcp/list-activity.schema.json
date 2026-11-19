@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "list_activity",
+  "x-status": "draft",
+  "$defs": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 50
+        },
+        "cursor": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "ticket_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "agent_client_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "event_type": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          }
+        },
+        "since": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "until": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "Z$"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "provenance": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "const": "success"
+            },
+            "applied": {
+              "const": false
+            },
+            "data": {
+              "$ref": "../schemas/domain.schema.json#/$defs/ActivityEventPage"
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "error",
+                "rejected",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "applied": {
+              "const": false
+            },
+            "error": {
+              "$ref": "../schemas/domain.schema.json#/$defs/ErrorDetail"
+            },
+            "request_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "error",
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

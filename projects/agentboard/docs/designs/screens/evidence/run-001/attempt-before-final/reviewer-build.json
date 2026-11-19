@@ -1,0 +1,9 @@
+{
+  "id": "reviewer-build",
+  "command": "npm run build",
+  "cwd": "frontend",
+  "exit_code": 0,
+  "status": "pass",
+  "finished_at": "2026-11-18T06:59:19.525480+00:00",
+  "log": "docs/designs/screens/evidence/run-001/reviewer-build.log"
+}

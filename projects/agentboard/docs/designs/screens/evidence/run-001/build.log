@@ -1,0 +1,19 @@
+Command: ['npm', 'run', 'build']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T07:23:28.691108+00:00
+Finished: 2026-11-18T07:23:29.954176+00:00
+Exit code: 0
+
+
+> agentboard-frontend@0.1.0 build
+> tsc -b && vite build
+
+vite v6.4.6 building for production...
+transforming...
+✓ 1628 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:  0.28 kB
+dist/assets/index-DlbafXqs.css   25.92 kB │ gzip:  5.79 kB
+dist/assets/index-CeGOGj8y.js   291.01 kB │ gzip: 87.02 kB
+✓ built in 556ms

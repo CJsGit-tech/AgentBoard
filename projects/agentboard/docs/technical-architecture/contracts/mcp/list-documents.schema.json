@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "list_documents",
+  "x-status": "draft",
+  "$defs": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 50
+        },
+        "cursor": {
+          "type": "string",
+          "maxLength": 512
+        },
+        "include_content": {
+          "type": "boolean",
+          "default": true,
+          "description": "Set false to return searchable document metadata without content or uploaded frontmatter. Omit or set true to include full content. Use get_document to read a selected document in full."
+        },
+        "feature_tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^feature:[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "maxItems": 30,
+          "uniqueItems": true
+        },
+        "concern_tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^concern:[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "maxItems": 30,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "project_id"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "const": "success"
+            },
+            "applied": {
+              "const": false
+            },
+            "data": {
+              "anyOf": [
+                {
+                  "$ref": "../schemas/domain.schema.json#/$defs/DocumentPage"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/id"
+                          },
+                          "revision": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/revision"
+                          },
+                          "created_at": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/created_at"
+                          },
+                          "updated_at": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/updated_at"
+                          },
+                          "project_id": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/project_id"
+                          },
+                          "title": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/title"
+                          },
+                          "version": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/version"
+                          },
+                          "current_version_id": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/current_version_id"
+                          },
+                          "description": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/description"
+                          },
+                          "kind": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/kind"
+                          },
+                          "tags": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/tags"
+                          },
+                          "source": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/source"
+                          },
+                          "source_id": {
+                            "$ref": "../schemas/domain.schema.json#/$defs/Document/properties/source_id"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "revision",
+                          "created_at",
+                          "updated_at",
+                          "project_id",
+                          "title",
+                          "version",
+                          "current_version_id",
+                          "description",
+                          "kind",
+                          "tags",
+                          "source",
+                          "source_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "next_cursor": {
+                      "$ref": "../schemas/domain.schema.json#/$defs/DocumentPage/properties/next_cursor"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "next_cursor"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "error",
+                "rejected",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "applied": {
+              "const": false
+            },
+            "error": {
+              "$ref": "../schemas/domain.schema.json#/$defs/ErrorDetail"
+            },
+            "request_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "error",
+            "request_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

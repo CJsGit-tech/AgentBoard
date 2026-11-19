@@ -1,0 +1,15 @@
+Command: ['node', '../docs/designs/screens/evidence/run-001/reviewer-tests/audit.cjs']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T07:25:21.213165+00:00
+Finished: 2026-11-18T07:25:22.619002+00:00
+Exit code: 0
+
+/projects PASS
+/overview PASS
+/roles PASS
+/tickets PASS
+/tickets/8f24c9e7 PASS
+/documents PASS
+/documents/doc-mcp PASS
+/documents/doc-mcp/history PASS
+/activity PASS

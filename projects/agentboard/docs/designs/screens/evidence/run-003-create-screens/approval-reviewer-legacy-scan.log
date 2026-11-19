@@ -1,0 +1,14 @@
+Command: ['npx', '-y', 'modern-web-guidance@latest', 'legacy-scan', 'src', '--json']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T09:05:21.780377+00:00
+Finished: 2026-11-18T09:05:22.328463+00:00
+Exit code: 0
+
+{
+  "targetDir": "src",
+  "totalFindings": 0,
+  "guides": [],
+  "activeRuleCount": 52,
+  "activeGuideCount": 38,
+  "note": "No legacy patterns found across 38 guides (52 rules; ~20% of the guidance corpus). Use 'search <topic>' for feature-specific guidance."
+}

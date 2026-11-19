@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "features": [
+    {
+      "id": "feature:product-project-management",
+      "label": "Product project management",
+      "source": "docs/product-vision.md"
+    },
+    {
+      "id": "feature:agent-role-management",
+      "label": "Agent role management",
+      "source": "docs/product-vision.md"
+    },
+    {
+      "id": "feature:task-coordination",
+      "label": "Task coordination",
+      "source": "docs/product-vision.md"
+    },
+    {
+      "id": "feature:document-management",
+      "label": "Document management",
+      "source": "docs/product-vision.md"
+    },
+    {
+      "id": "feature:progress-tracking",
+      "label": "Progress tracking",
+      "source": "docs/product-vision.md"
+    }
+  ],
+  "concerns": [
+    {
+      "id": "concern:authorization",
+      "definition": "Protects which actors may create, read, update, delete, or approve records."
+    },
+    {
+      "id": "concern:auditability",
+      "definition": "Makes agent and application actions attributable and reviewable."
+    },
+    {
+      "id": "concern:data-integrity",
+      "definition": "Preserves correct, current, and consistently linked records and revisions."
+    },
+    {
+      "id": "concern:retention",
+      "definition": "Defines time or count limits for logs, documents, and revisions."
+    },
+    {
+      "id": "concern:privacy",
+      "definition": "Limits exposure and collection of local project data and sensitive content."
+    },
+    {
+      "id": "concern:reliability",
+      "definition": "Covers failure handling, restart, reconnect, and recovery behavior."
+    },
+    {
+      "id": "concern:compatibility",
+      "definition": "Covers interoperability across Codex and Claude MCP clients."
+    },
+    {
+      "id": "concern:accessibility",
+      "definition": "Covers keyboard access, focus, contrast, and assistive technology."
+    },
+    {
+      "id": "concern:security",
+      "definition": "Protects credentials, origins, containers, inputs, and access boundaries."
+    }
+  ],
+  "kinds": [
+    "document-index",
+    "document",
+    "product-vision",
+    "metadata-catalog",
+    "user-story-index",
+    "user-story",
+    "architecture-index",
+    "architecture-topic",
+    "contract-index",
+    "mcp-contract-index",
+    "schema-index",
+    "example-index",
+    "api-example-index",
+    "design-index",
+    "design-topic",
+    "screen-inventory",
+    "screen-approval",
+    "ticket-index",
+    "ticket"
+  ],
+  "format": {
+    "required": [
+      "name",
+      "description",
+      "kind",
+      "tags"
+    ],
+    "tags": "JSON-compatible YAML sequence of namespaced feature:/concern: IDs"
+  }
+}

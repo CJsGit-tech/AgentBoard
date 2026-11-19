@@ -1,0 +1,14 @@
+ Container agentboard-backend-run-eb47011880ec Creating 
+ Container agentboard-backend-run-eb47011880ec Created 
+2026-07-28 transport created one synthetic project.
+Initial request returned approval form and signed state with the record unchanged.
+requestState rejected on tools/call: request binding
+A standalone answer and a changed payload bound to the old state were refused.
+A default credential returned pending approval without elicitation.
+A bound accept applied exactly once and replay preserved revision 2.
+Bound decline returned rejected and preserved the saved revision.
+Default Delete pended; cancellation and stale approvals preserved the record.
+Two concurrent accepts of the same request applied one change and kept the same revision.
+Approving one of two requests kept Needs approval until the other was declined; ticket status stayed unchanged.
+2025-11-25 SDK legacy callback explicitly accepted and applied once.
+Cleaned up the synthetic project.

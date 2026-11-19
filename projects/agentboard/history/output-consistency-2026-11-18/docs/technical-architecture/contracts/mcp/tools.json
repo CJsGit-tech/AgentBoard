@@ -1,0 +1,563 @@
+{
+  "description": "Draft discovery catalog. Resolve/bundle local schema refs before publishing through a live MCP server.",
+  "tools": [
+    {
+      "name": "list_projects",
+      "description": "List project-scoped records with bounded pagination; no mutation.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "list-projects.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "list-projects.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "get_project",
+      "description": "Read one record; enforce project membership.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "get-project.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "get-project.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "create_project",
+      "description": "Create a new record idempotently; never overwrite an existing record.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "create-project.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "create-project.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "create"
+    },
+    {
+      "name": "update_project",
+      "description": "Request exact revision-bound update; execute only after verified client approval.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "update-project.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "update-project.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "delete_project",
+      "description": "Request approved deletion; enforce linked-record deletion restrictions.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "delete-project.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "delete-project.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "list_roles",
+      "description": "List project-scoped records with bounded pagination; no mutation.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "list-roles.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "list-roles.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "get_role",
+      "description": "Read one record; enforce project membership.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "get-role.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "get-role.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "create_role",
+      "description": "Create a new record idempotently; never overwrite an existing record.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "create-role.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "create-role.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "create"
+    },
+    {
+      "name": "update_role",
+      "description": "Request exact revision-bound update; execute only after verified client approval.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "update-role.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "update-role.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "delete_role",
+      "description": "Request approved deletion; enforce linked-record deletion restrictions.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "delete-role.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "delete-role.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "list_tickets",
+      "description": "List project-scoped records with bounded pagination; no mutation.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "list-tickets.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "list-tickets.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "get_ticket",
+      "description": "Read one record; enforce project membership.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "get-ticket.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "get-ticket.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "create_ticket",
+      "description": "Create a new record idempotently; never overwrite an existing record.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "create-ticket.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "create-ticket.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "create"
+    },
+    {
+      "name": "update_ticket",
+      "description": "Request exact revision-bound update; execute only after verified client approval.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "update-ticket.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "update-ticket.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "delete_ticket",
+      "description": "Request approved deletion; enforce linked-record deletion restrictions.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "delete-ticket.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "delete-ticket.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "list_documents",
+      "description": "List project-scoped records with bounded pagination; no mutation.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "list-documents.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "list-documents.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "get_document",
+      "description": "Read one record; enforce project membership.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "get-document.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "get-document.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "create_document",
+      "description": "Create a new record idempotently; never overwrite an existing record.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "create-document.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "create-document.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "create"
+    },
+    {
+      "name": "update_document",
+      "description": "Request exact revision-bound update; execute only after verified client approval.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "update-document.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "update-document.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "delete_document",
+      "description": "Request approved deletion; enforce linked-record deletion restrictions.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "delete-document.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "delete-document.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "list_document_versions",
+      "description": "Read current and up to three retained previous versions.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "list-document-versions.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "list-document-versions.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "get_document_version",
+      "description": "Read a retained version; missing/pruned version returns error.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "get-document-version.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "get-document-version.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "compare_document_versions",
+      "description": "Compare two retained versions without mutation.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "compare-document-versions.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "compare-document-versions.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "restore_document_version",
+      "description": "After verified approval, copy retained content into a new current version.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "restore-document-version.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "restore-document-version.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "link_document",
+      "description": "Create a same-project document association idempotently.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "link-document.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "link-document.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "create"
+    },
+    {
+      "name": "unlink_document",
+      "description": "Approve removing an association; do not delete the document.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "unlink-document.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "unlink-document.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    },
+    {
+      "name": "append_activity",
+      "description": "Append minimal agent-reported activity; server sets client provenance and receipt time.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "append-activity.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "append-activity.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "create"
+    },
+    {
+      "name": "list_activity",
+      "description": "Read filtered retained activity; enforce server receipt-time 30-day cutoff.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "list-activity.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "list-activity.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "get_project_progress",
+      "description": "Read status counts and separate pending-approval count.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "get-project-progress.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "get-project-progress.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "get_mutation_request",
+      "description": "Read a request outcome; never approve it.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "get-mutation-request.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "get-mutation-request.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "read"
+    },
+    {
+      "name": "retry_mutation_request",
+      "description": "Retry verified client approval of the unchanged pending payload; reject stale/expired requests.",
+      "inputSchema": {
+        "type": "object",
+        "$ref": "retry-mutation-request.schema.json#/$defs/input"
+      },
+      "outputSchema": {
+        "type": "object",
+        "$ref": "retry-mutation-request.schema.json#/$defs/output"
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "openWorldHint": false
+      },
+      "x-agentbuild-permission": "approval_required"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "outcome": "success",
+  "applied": false,
+  "data": {
+    "document_id": "71a83d57-a574-53b4-a35c-bad6e473c623",
+    "from_version_id": "111aceef-53af-5b35-a81b-b98727f7efea",
+    "to_version_id": "ff34fe48-f269-5248-a029-1a1e9ade467b",
+    "unified_diff": "--- version-3\n+++ version-4\n-Coordinate product work.\n+Coordinate agents and projects."
+  }
+}

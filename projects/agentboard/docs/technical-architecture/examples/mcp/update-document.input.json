@@ -1,0 +1,9 @@
+{
+  "project_id": "ba4c647a-788c-532f-924a-8a150af927d8",
+  "document_id": "71a83d57-a574-53b4-a35c-bad6e473c623",
+  "operation_key": "3ff2782b-ad32-51a3-9ab3-eab69a0dbdf8",
+  "expected_revision": 3,
+  "changes": {
+    "content": "# AgentBoard\n\nCoordinate agents and projects with clear responsibilities."
+  }
+}

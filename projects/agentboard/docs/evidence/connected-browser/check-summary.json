@@ -1,0 +1,28 @@
+{
+  "saved_at_utc": "2026-11-18T15:35:05.430443+00:00",
+  "browser": "Chrome 158.0.8127.36 (macOS arm64)",
+  "mode": "AgentBoard Docker Compose with synthetic records",
+  "frontend_css_sha256": "f2e4d2b0c6c9c405196abf1e7163a4fa324585fdfbc0763a3d78d9fd01287050",
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "exit_code": 0
+    },
+    {
+      "command": "npm run build",
+      "exit_code": 0,
+      "bundle": "index-C19o2zIg.js",
+      "css": "index-C9kDj71k.css"
+    },
+    {
+      "command": "npm run test:ui",
+      "exit_code": 0,
+      "mock_tests_passed": 14
+    },
+    {
+      "command": "modern-web-guidance legacy-scan frontend/src --json",
+      "cli_version": "1.0.1",
+      "exit_code": 0
+    }
+  ]
+}

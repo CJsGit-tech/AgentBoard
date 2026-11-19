@@ -1,0 +1,167 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1040" width="1500" height="1040" role="img" aria-labelledby="t d">
+<title id="t">AgentBoard system architecture by module</title>
+<desc id="d">A layered map of browser and MCP clients, the web and FastAPI containers, AgentBoard code modules, external SDK providers, and Postgres persistence.</desc>
+<style>svg{--bg:#fff;--ink:#1f2933;--muted:#5b6875;--line:#8a96a3;--fe:#e6f0fa;--fel:#7aa5d2;--be:#fdf1dc;--bel:#d6a550;--dt:#e3f4e8;--dtl:#6bb184;--ex:#f1f3f5;--mod:#f6f7f8}
+@media (prefers-color-scheme:dark){svg{--bg:#14191f;--ink:#e6eaee;--muted:#9aa7b4;--line:#7b8794;--fe:#1b2a3a;--fel:#4f7fae;--be:#33291a;--bel:#9a7a3a;--dt:#16301f;--dtl:#3f8a5c;--ex:#232c35;--mod:#1b222a}}
+text{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;fill:var(--ink)}
+.bg{fill:var(--bg)} .fe{fill:var(--fe);stroke:var(--fel)} .be{fill:var(--be);stroke:var(--bel)} .dt{fill:var(--dt);stroke:var(--dtl)} .ex{fill:var(--ex);stroke:var(--line)}
+.grp{fill:none;stroke:var(--line);stroke-width:1.2} .mod{fill:var(--mod);stroke:var(--line)} .net{fill:none;stroke:var(--line);stroke-dasharray:7 5}
+.ar,.ard,.ln{stroke:var(--muted);stroke-width:1.4;fill:none} .ar,.ard{marker-end:url(#ae)} .ard{stroke-dasharray:6 4}
+.lb{fill:var(--bg);stroke:none} .gt{font-size:14px;font-weight:700} .sm{font-size:12px;fill:var(--muted)}
+rect.fe,rect.be,rect.dt,rect.ex{stroke-width:1.2}
+</style><defs><marker id="ae" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="var(--muted)"/></marker><marker id="as" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M10 0L0 5L10 10z" fill="var(--muted)"/></marker></defs>
+
+<rect class="bg" width="1500" height="1040"/>
+<text x="32" y="34" class="gt">AgentBoard · System architecture</text>
+<rect x="30" y="120" width="1160" height="812" rx="10" class="net"/>
+<text x="48" y="144" class="gt">Docker Compose network</text>
+<rect x="48" y="165" width="1124" height="159" rx="7" class="grp"/>
+<text x="66" y="190" class="gt">Web container · React / NGINX</text>
+<rect x="48" y="365" width="1124" height="340" rx="7" class="grp"/>
+<text x="66" y="389" class="gt">Backend container · FastAPI</text>
+<rect x="48" y="758" width="1124" height="144" rx="7" class="grp"/>
+<text x="66" y="782" class="gt">Database and operations</text>
+<path d="M230 96V164" class="ar"/>
+<path d="M610 96V164" class="ar"/>
+<path d="M990 96V120" class="ard"/>
+<path d="M610 324V364" class="ar"/>
+<path d="M608 689V801" class="ar"/>
+<path d="M410 848H349" class="ar"/>
+<path d="M809 848H750" class="ard"/>
+<path d="M516 875V957" class="ar"/>
+<a href="../../frontend/src/app/App.tsx">
+<rect x="65" y="48" width="330" height="48" rx="7" class="ex"/>
+<text x="230.0" y="77.0" class="gt" text-anchor="middle">Paired browser</text>
+</a>
+<a href="../../backend/app/mcp/server.py">
+<rect x="445" y="48" width="330" height="48" rx="7" class="ex"/>
+<text x="610.0" y="77.0" class="gt" text-anchor="middle">Codex / Claude MCP clients</text>
+</a>
+<a href="../../backend/app/settings.py">
+<rect x="825" y="48" width="330" height="48" rx="7" class="ex"/>
+<text x="990.0" y="77.0" class="gt" text-anchor="middle">Local configuration</text>
+</a>
+<text x="259" y="114" class="sm">127.0.0.1:8080</text>
+<text x="635" y="114" class="sm">MCP</text>
+<a href="../../frontend/src/features/overview/OverviewScreen.tsx">
+<rect x="66" y="207" width="144" height="47" rx="7" class="fe"/>
+<text x="138.0" y="235.5" class="gt" text-anchor="middle">Overview</text>
+</a>
+<a href="../../frontend/src/features/projects/ProjectsScreen.tsx">
+<rect x="222" y="207" width="144" height="47" rx="7" class="fe"/>
+<text x="294.0" y="235.5" class="gt" text-anchor="middle">Projects</text>
+</a>
+<a href="../../frontend/src/features/roles/RolesScreen.tsx">
+<rect x="378" y="207" width="144" height="47" rx="7" class="fe"/>
+<text x="450.0" y="235.5" class="gt" text-anchor="middle">Roles</text>
+</a>
+<a href="../../frontend/src/features/tickets/TicketsScreen.tsx">
+<rect x="534" y="207" width="144" height="47" rx="7" class="fe"/>
+<text x="606.0" y="235.5" class="gt" text-anchor="middle">Tickets</text>
+</a>
+<a href="../../frontend/src/features/documents/DocumentsScreen.tsx">
+<rect x="690" y="207" width="144" height="47" rx="7" class="fe"/>
+<text x="762.0" y="235.5" class="gt" text-anchor="middle">Documents</text>
+</a>
+<a href="../../frontend/src/features/activity/ActivityScreen.tsx">
+<rect x="846" y="207" width="144" height="47" rx="7" class="fe"/>
+<text x="918.0" y="235.5" class="gt" text-anchor="middle">Activity</text>
+</a>
+<a href="../../frontend/src/features/runs/RunsScreen.tsx">
+<rect x="1002" y="207" width="144" height="47" rx="7" class="fe"/>
+<text x="1074.0" y="235.5" class="gt" text-anchor="middle">Agent Runs</text>
+</a>
+<a href="../../frontend/src/app/WorkspaceContext.tsx">
+<rect x="66" y="272" width="524" height="33" rx="7" class="ex"/>
+<text x="328.0" y="293.5" class="gt" text-anchor="middle">Browser session</text>
+</a>
+<a href="../../infra/proxy.conf">
+<rect x="608" y="272" width="546" height="33" rx="7" class="ex"/>
+<text x="881.0" y="293.5" class="gt" text-anchor="middle">REST / SSE / MCP proxy</text>
+</a>
+<a href="../../backend/app/api/routes.py">
+<rect x="66" y="407" width="326" height="43" rx="7" class="be"/>
+<text x="229.0" y="433.5" class="gt" text-anchor="middle">REST API</text>
+</a>
+<a href="../../backend/app/main.py">
+<rect x="448" y="407" width="326" height="43" rx="7" class="be"/>
+<text x="611.0" y="433.5" class="gt" text-anchor="middle">SSE activity</text>
+</a>
+<a href="../../backend/app/mcp/server.py">
+<rect x="828" y="407" width="326" height="43" rx="7" class="be"/>
+<text x="991.0" y="433.5" class="gt" text-anchor="middle">MCP transport</text>
+</a>
+<path d="M229 450V466" class="ar"/>
+<path d="M611 450V466" class="ar"/>
+<path d="M991 450V466" class="ar"/>
+<a href="../../backend/app/main.py">
+<rect x="66" y="467" width="1088" height="42" rx="7" class="ex"/>
+<text x="610.0" y="493.0" class="gt" text-anchor="middle">Browser pairing / CSRF · MCP authentication</text>
+</a>
+<rect x="66" y="531" width="168" height="77" rx="7" class="grp"/>
+<a href="../../backend/app/artifacts/routes.py">
+<rect x="73" y="541" width="154" height="57" rx="7" class="be"/>
+<text x="150.0" y="574.5" class="gt" text-anchor="middle">Workspace records</text>
+</a>
+<rect x="248" y="531" width="168" height="77" rx="7" class="grp"/>
+<a href="../../backend/app/artifacts/service.py">
+<rect x="255" y="541" width="154" height="57" rx="7" class="be"/>
+<text x="332.0" y="574.5" class="gt" text-anchor="middle">Artifact history</text>
+</a>
+<rect x="430" y="531" width="168" height="77" rx="7" class="grp"/>
+<a href="../../backend/app/sdk/adapters.py">
+<rect x="437" y="541" width="154" height="57" rx="7" class="be"/>
+<text x="514.0" y="574.5" class="gt" text-anchor="middle">SDK runs</text>
+</a>
+<rect x="612" y="531" width="168" height="77" rx="7" class="grp"/>
+<a href="../../backend/app/sdk/routes.py">
+<rect x="619" y="541" width="154" height="57" rx="7" class="be"/>
+<text x="696.0" y="574.5" class="gt" text-anchor="middle">Browser approval</text>
+</a>
+<rect x="794" y="531" width="168" height="77" rx="7" class="grp"/>
+<a href="../../backend/app/mcp/operations.py">
+<rect x="801" y="541" width="154" height="57" rx="7" class="be"/>
+<text x="878.0" y="574.5" class="gt" text-anchor="middle">MCP operations</text>
+</a>
+<path d="M610 509V520" class="ln"/>
+<path d="M152 520V540" class="ar"/>
+<path d="M334 520V540" class="ar"/>
+<path d="M516 520V540" class="ar"/>
+<path d="M698 520V540" class="ar"/>
+<path d="M880 520V540" class="ar"/>
+<path d="M152 520H880" class="ln"/>
+<path d="M152 609V627" class="ln"/>
+<path d="M334 609V627" class="ln"/>
+<path d="M516 609V627" class="ln"/>
+<path d="M698 609V627" class="ln"/>
+<path d="M880 609V627" class="ln"/>
+<path d="M152 627H880" class="ln"/>
+<path d="M608 627V645" class="ar"/>
+<path d="M591 569H607V615H1207V560H1231" class="ar"/>
+<rect x="1230" y="523" width="240" height="76" rx="7" class="ex"/>
+<text x="1350.0" y="566.0" class="gt" text-anchor="middle">OpenAI / Anthropic</text>
+<a href="../../backend/app/db/session.py">
+<rect x="66" y="646" width="1088" height="43" rx="7" class="be"/>
+<text x="610.0" y="672.5" class="gt" text-anchor="middle">Shared services · SQLAlchemy / psycopg</text>
+</a>
+<a href="../../backend/app/maintenance/expire_activity.py">
+<rect x="66" y="818" width="283" height="57" rx="7" class="ex"/>
+<text x="207.5" y="851.5" class="gt" text-anchor="middle">Activity maintenance</text>
+</a>
+<a href="../../backend/app/db/models.py">
+<rect x="410" y="802" width="340" height="73" rx="7" class="dt"/>
+<text x="580.0" y="843.5" class="gt" text-anchor="middle">Postgres</text>
+</a>
+<a href="../../backend/migrations/versions">
+<rect x="809" y="818" width="345" height="57" rx="7" class="ex"/>
+<text x="981.5" y="851.5" class="gt" text-anchor="middle">Alembic migrations</text>
+</a>
+<a href="../../compose.yaml">
+<rect x="296" y="958" width="440" height="47" rx="7" class="dt"/>
+<text x="516.0" y="986.5" class="gt" text-anchor="middle">Docker volume · agentboard_pgdata</text>
+</a>
+<path d="M881 977H935" class="ar"/>
+<text x="947" y="981" class="sm">Runtime flow</text>
+<path d="M1086 977H1140" class="ard"/>
+<text x="1152" y="981" class="sm">Startup / migration</text>
+</svg>

@@ -1,0 +1,16 @@
+Command: ['npx', '-y', 'modern-web-guidance@latest', 'search', 'validate form inputs', '--skill-version', '2026_11_10-47b4c80e']
+Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend
+Started: 2026-11-18T06:51:03.933485+00:00
+Finished: 2026-11-18T06:51:04.288813+00:00
+Exit code: 0
+
+[{"id":"validate-input-after-interaction","description":"Show form field validation feedback (e.g. password complexity or email format requirements) only after the user has finished their initial interaction, avoiding premature errors on page load or while the user is typing."},
+{"id":"autofill-sign-up-form","description":"Build a sign-up form with correct autocomplete values and autofill support."},
+{"id":"forms","description":"Best practices for building accessible, secure, and user-friendly web forms. Use this guide when creating or modifying forms, inputs, and submission flows."},
+{"id":"autofill-sign-in-form","description":"Build a sign-in form with correct autocomplete values and autofill support."},
+{"id":"autofill-payment-form","description":"Build a payment form that collects card details with correct autocomplete values and autofill support."},
+{"id":"form-associated-custom-elements","description":"Make a custom control participate natively in forms with formAssociated and ElementInternals, submitting its own value, integrating with constraint validation, and reacting to reset, disable, and state-restore."},
+{"id":"autofill-address-form","description":"Build an address form with correct autocomplete attributes and autofill support."},
+{"id":"select-menu-interaction","description":"Validate that a non-default option has been chosen in a select menu only after the user has interacted with the control."},
+{"id":"sms-otp-form","description":"Verify user phone numbers and one-time passcodes delivered over SMS with automatic code extraction and accessible form input."},
+{"id":"style-parent-with-has","description":"Style parent elements of a form field (e.g. labels or fieldsets) when the field is invalid."}]

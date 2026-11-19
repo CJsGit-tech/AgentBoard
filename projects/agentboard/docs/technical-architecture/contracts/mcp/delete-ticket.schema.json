@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "delete_ticket",
+  "x-status": "draft",
+  "$defs": {
+    "input": {
+      "type": "object",
+      "properties": {
+        "project_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "ticket_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operation_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "expected_revision": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "project_id",
+        "ticket_id",
+        "operation_key",
+        "expected_revision"
+      ],
+      "additionalProperties": false
+    },
+    "output": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "const": "success"
+            },
+            "applied": {
+              "const": true
+            },
+            "data": {
+              "$ref": "../schemas/domain.schema.json#/$defs/Deleted"
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "data"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": [
+                "error",
+                "rejected",
+                "cancelled",
+                "expired"
+              ]
+            },
+            "applied": {
+              "const": false
+            },
+            "error": {
+              "$ref": "../schemas/domain.schema.json#/$defs/ErrorDetail"
+            },
+            "request_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "outcome",
+            "applied",
+            "error",
+            "request_id"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "outcome": {
+              "const": "approval_required"
+            },
+            "request_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "ticket_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "applied": {
+              "const": false
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "request_id",
+            "ticket_id",
+            "applied",
+            "message"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

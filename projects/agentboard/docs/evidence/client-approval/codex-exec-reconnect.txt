@@ -1,0 +1,7 @@
+CLI exit: 0
+Tool sequence: create_project,create_project,get_project,create_document,get_document,list_document_versions,get_document_version,append_activity,list_activity,get_project,get_document,get_document_version,list_activity
+MCP outputs received: 9
+Step evidence: create_project returned project id; duplicate create returned same project id; get_project returned the created project; create_document returned document id; get_document read fixture content; list_document_versions returned version id; get_document_version read fixture content; append_activity returned activity id; list_activity read appended fixture
+Fresh reconnect tool sequence: get_project,get_document,get_document_version,list_activity
+Fresh reconnect evidence: project persisted across new CLI process; document persisted across new CLI process; version read succeeded after reconnect; activity persisted across new CLI process
+Synthetic IDs available: 4

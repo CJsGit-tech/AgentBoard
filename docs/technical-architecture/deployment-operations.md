@@ -15,19 +15,18 @@ tags: ["feature:product-project-management", "feature:agent-role-management", "f
 
 | Service | Responsibility / access |
 | --- | --- |
-| `web` | Vite static build + reverse proxy; only published port: `127.0.0.1:8080` |
-| `backend` | FastAPI REST/MCP/SSE and shared services; internal `8000` |
+| `backend` | Serves the built React app and FastAPI REST/MCP/SSE; published only on `127.0.0.1:8080`, listens on `8000` inside Compose |
 | `db` | Postgres; internal `5432`; volume `agentboard_pgdata` |
 | `migrate` | One-shot Alembic job after database health |
 | `maintenance` | Backend image, database access, no listener; expiry/cleanup; no Redis/queue required |
 
 ```text
-db healthy → migrations succeed → backend + maintenance → ready web proxy
+db healthy → migrations succeed → backend + maintenance → healthy app
 ```
 
 - Readiness requires healthchecks/dependency conditions, not merely container startup.
 - Unready backend produces an explicit unavailable state.
-- Proxy `/api/`, `/mcp` and `/events` to FastAPI with streaming preserved and buffering disabled. Browser navigation falls back to the SPA; unknown API paths return JSON errors rather than HTML.
+- The FastAPI app serves the packaged frontend and API from the same origin. Event streams use the same service; no separate public web proxy is part of the supported local deployment.
 - Pin tested images/dependencies; keep stable Compose project/volume names.
 - Build Vite assets in a Node stage; production web serves static files.
 - Run migrations once, never concurrently in workers. Clean/filter expired data before serving.

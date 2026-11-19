@@ -252,6 +252,16 @@ async def database_error_handler(request: Request, exc: SQLAlchemyError):
     return JSONResponse(status_code=503, content={"error": {"code": "database_unavailable", "message": "Database is temporarily unavailable", "fields": {}}, "request_id": getattr(request.state, "request_id", "")})
 
 
+# Keep unknown API paths as JSON 404s for every supported API method.
+@app.api_route("/api", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
+@app.api_route("/api/{api_path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"])
+def api_not_found(request: Request, api_path: str = ""):
+    return JSONResponse(status_code=404, content={
+        "error": {"code": "not_found", "message": "Endpoint not found", "fields": {}},
+        "request_id": getattr(request.state, "request_id", ""),
+    })
+
+
 # Register the SPA last so application endpoints retain their own errors.
 from pathlib import Path
 from fastapi.responses import FileResponse

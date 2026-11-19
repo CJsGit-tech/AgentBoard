@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1040" viewBox="0 0 1440 1040" role="img" aria-labelledby="title desc">
   <title id="title">AgentBoard system architecture</title>
-  <desc id="desc">A paired browser and external MCP clients connect through the loopback NGINX proxy to FastAPI. The backend supports project operations and an opt-in SDK runtime that calls OpenAI and Anthropic. SDK proposals wait for a browser decision before an approved revision-bound change is committed. Postgres persists records on a named Docker volume.</desc>
+  <desc id="desc">A paired browser and external MCP clients connect to the loopback AgentBoard container. FastAPI serves the React build and application endpoints. The backend supports project operations and an opt-in SDK runtime that calls OpenAI and Anthropic. SDK proposals wait for a browser decision before an approved revision-bound change is committed. Postgres persists records on a named Docker volume.</desc>
   <defs>
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
       <path d="M0 0L9 4.5L0 9Z" fill="#475b74"/>
@@ -36,13 +36,13 @@
   <path d="M293 224V300" class="edge"/>
   <path d="M804 224V300" class="edge"/>
   <rect x="76" y="301" width="953" height="80" rx="12" class="accent"/>
-  <text x="96" y="335" class="heading">Web container · NGINX reverse proxy and React build</text>
+  <text x="96" y="335" class="heading">AgentBoard container · FastAPI and React build</text>
   <text x="96" y="359" class="body">127.0.0.1:8080 · browser REST and live events · MCP over HTTP</text>
   <path d="M551 381V411" class="edge"/>
 
   <!-- Application paths -->
   <rect x="76" y="412" width="953" height="310" rx="12" class="card"/>
-  <text x="96" y="445" class="heading">Backend container · FastAPI</text>
+  <text x="96" y="445" class="heading">Application services · FastAPI</text>
   <text x="96" y="469" class="body">Local browser pairing, origin and CSRF checks · authenticated MCP client identity</text>
   <rect x="96" y="491" width="414" height="105" rx="9" class="accent"/>
   <text x="114" y="519" class="heading">Workspace and MCP services</text>

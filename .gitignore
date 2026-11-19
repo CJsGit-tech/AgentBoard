@@ -1,13 +1,29 @@
-.env*
+# Local credentials and provider configuration
+.env
+.env.*
+!.env.example
 .local/
-node_modules/
-dist/
-__pycache__/
-*.pyc
-*.tsbuildinfo
-.DS_Store
-*.dump
+
+# Docker build context and GitHub automation
+!.dockerignore
+!.github/
+!.github/workflows/
+!.github/workflows/ci.yml
+
+# Python
 .venv/
+venv/
+__pycache__/
+*.py[cod]
 .pytest_cache/
 
-!/agentboard/.dockerignore
+# JavaScript build output and dependencies
+node_modules/
+dist/
+*.tsbuildinfo
+frontend/test-results/
+frontend/playwright-report/
+
+# Local database and editor files
+*.dump
+.DS_Store

@@ -15,12 +15,13 @@ tags: ["feature:product-project-management", "feature:agent-role-management", "f
 
 AgentBoard is a single-user local web app for projects, agent roles, tickets, documents and activity. Codex/Claude operate it through MCP; they run independently. The workspace contains the FastAPI, Postgres, MCP, and React implementation. See the [project index](../README.md) and the [review report](../review-report.md) for setup and evidence.
 
-| Confirmed | Proposed implementation |
+| Current implementation | Runtime |
 | --- | --- |
-| Personal computer; Docker Compose is the first install/run path | Separate web/backend/database and helper services |
-| React/Vite, Python FastAPI, local Postgres | SQLAlchemy/psycopg/Alembic; SSE; exact ports |
-| Agent Create/Read freely; Update/Delete approved in client | Capability-tested client approval mediation |
-| Current document + three previous versions; 30-day logs | Transactional pruning and scheduled cleanup |
+| React/Vite frontend, served by FastAPI | One backend container; loopback port `127.0.0.1:8080` |
+| Python FastAPI REST, MCP, and event endpoints | Internal container port `8000` |
+| PostgreSQL records and Alembic migrations | Named volume `agentboard_pgdata`; migration service runs before backend |
+| Create/Read access and approved agent updates/deletions | Per-client MCP credentials and approval-aware operations |
+| Document revisions and activity retention | Hourly maintenance process |
 
 ## High-Level System Architecture
 
@@ -28,7 +29,7 @@ AgentBoard is a single-user local web app for projects, agent roles, tickets, do
 
 ```text
 Browser ── REST / live events ──┐
-                              ├→ web proxy → FastAPI services → Postgres
+                              ├→ FastAPI app + React static files → Postgres
 Codex / Claude ── MCP ─────────┘                    ↑
                                           client approval for U/D
 ```

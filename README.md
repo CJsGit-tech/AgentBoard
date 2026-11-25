@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Turn scattered agent sessions into project work you can follow.</strong>
+  <strong>One project. Shared context. Work you can verify.</strong>
 </p>
 
 <p align="center">
@@ -13,42 +13,37 @@
 </p>
 
 <p align="center">
-  <a href="#why-agentboard">Why AgentBoard</a> ·
-  <a href="#install-the-service">Install service</a> ·
-  <a href="#install-the-skill">Install skill</a> ·
-  <a href="#first-project">First project</a> ·
-  <a href="#software-bill-of-materials">Software BOM</a> ·
-  <a href="#troubleshooting">Troubleshooting</a>
+  <a href="#why-agentboard">🎯 Why</a> ·
+  <a href="#install-the-service">🚀 Start service</a> ·
+  <a href="#install-the-skill">🧩 Add skill</a> ·
+  <a href="#first-project">🗂️ Workflows</a> ·
+  <a href="#software-bill-of-materials">📦 Software BOM</a>
 </p>
 
-**AgentBoard** is a local project workspace for one person working with coding agents. **AgentBuild** is its reusable skill: four named workflows that connect Codex or Claude Code to the same project records through MCP.
+**AgentBoard** keeps your project’s requirements, designs, tickets and evidence together. **AgentBuild** connects that workspace to Codex or Claude Code.
 
-The service works without a model API key. An optional InApp Assistant adds model-backed project conversations and reviewed editing tasks. A fresh installation starts empty; the author's projects, conversations and design snapshots are not bundled.
+> [!TIP]
+> The board and external agent connection work **without a model API key**. A new installation starts with an empty workspace.
 
-## Why AgentBoard
+<a id="why-agentboard"></a>
 
-A useful chat can still leave you with a hard-to-follow project. Requirements live in one session, designs in another, and “done” arrives without a clear record of what was checked.
+## 🎯 Keep context between sessions
 
-| Pain point | How AgentBoard helps |
+| When work gets scattered… | AgentBoard gives it a home |
 | --- | --- |
-| The next session loses the reasons behind a decision. | Keep requirements, designs and source-document relationships with the project. |
-| Multiple agents work from different task descriptions. | Give them shared milestone tickets, context links, acceptance criteria and saved project roles. |
-| A requested edit quietly changes the agreed scope. | Compare changes with saved requirements and record scope decisions in Runs & activity. |
-| A completion message is hard to verify later. | Link output evidence, save reported run states and retain record history. |
-| Planning tools and agent commands feel disconnected. | Read and update the same PostgreSQL records through the browser, API and MCP tools. |
+| Decisions disappear in old chats. | **Shared requirements and designs**, linked to the work. |
+| Agents follow different task descriptions. | **Milestones and tickets** with context, roles and acceptance criteria. |
+| “Done” has no trail to inspect. | **Output evidence, scope decisions and history** you can revisit. |
 
-AgentBoard records reported work. It does not supervise unrelated external agent processes, and a saved role is not proof that a specialist agent ran.
+**Plan** the work · **Design** the experience · **Build** with context · **Review** the result
 
-## What you can do
+<picture>
+  <source media="(max-width: 600px)" srcset="assets/agentboard-system-mobile.svg">
+  <img src="assets/agentboard-system.svg" alt="You use AgentBoard in the browser. Codex or Claude Code uses AgentBuild through MCP. Both work with the same project records." width="100%">
+</picture>
 
-- **Plan:** manage projects, milestones, tickets, roles and documents.
-- **Design:** prepare local Canvas drafts and publish approved versions with source revisions.
-- **Deliver:** link Context and Output documents to tickets and follow dependencies.
-- **Review:** inspect changes, reported runs, document impact and scope decisions.
-- **Work visibly:** see saving/syncing states and open supplementary guidance through info controls.
-- **Use the optional Assistant:** keep project chat and task history, with separately configured file execution and Git recovery.
-
-## How the pieces fit
+<details>
+<summary><strong>How the service, skill and optional Assistant connect</strong></summary>
 
 ```mermaid
 flowchart LR
@@ -64,7 +59,28 @@ flowchart LR
 
 The skill supplies workflow instructions. The service stores records and enforces record validation and review gates. Installing one does not install the other.
 
-## Install the service
+AgentBoard records reported work. It does not supervise unrelated external agent processes; a saved role does not prove that a specialist agent ran.
+
+</details>
+
+<a id="install-the-service"></a>
+
+## 🚀 Start the service
+
+**Have ready:** Git, Docker with Compose v2, a POSIX shell and OpenSSL. Start Docker first; the first build needs internet access.
+
+```sh
+git clone https://github.com/CJsGit-tech/AgentBoard.git
+cd AgentBoard
+./scripts/setup.sh
+```
+
+**Open → [localhost:8080](http://127.0.0.1:8080)**
+
+Setup builds the app, generates the local database password and preserves existing workspace data. Keep `.local/db_password` with the database volume.
+
+<details>
+<summary><strong>Full prerequisites and service health check</strong></summary>
 
 ### Requirements
 
@@ -79,18 +95,6 @@ The skill supplies workflow instructions. The service stores records and enforce
 
 The shell commands below target macOS/Linux-style environments. Windows requires a compatible shell and Docker integration; native Windows installation has not been verified.
 
-### Start
-
-```sh
-git clone https://github.com/CJsGit-tech/AgentBoard.git
-cd AgentBoard
-./scripts/setup.sh
-```
-
-Open **[AgentBoard at localhost:8080](http://127.0.0.1:8080)**.
-
-Setup creates `.local/db_password` if missing, builds the images and starts the services. Keep this password with the database volume. Use the same setup command for later starts; it preserves configured execution settings and workspace data.
-
 ### Verify
 
 ```sh
@@ -100,33 +104,34 @@ docker compose exec -T api python -c "import urllib.request; print(urllib.reques
 
 Expected: `db`, `api` and `web` are running and healthy, and the API prints `{"status":"ok"}`. An empty Projects screen is expected on a new installation. The web proxy does not expose the API health endpoint at `localhost:8080/healthz`; use the container check above.
 
-## Install the skill
+</details>
 
-Keep this checkout available: it contains both the canonical skill and the local MCP launcher.
+<a id="install-the-skill"></a>
+
+## 🧩 Connect your coding agent
+
+You need **Python 3.12+** and a local Codex or Claude Code installation. Run the commands for your host from the AgentBoard checkout.
 
 ### Codex
-
-Run from the AgentBoard checkout:
 
 ```sh
 python3 scripts/install-skill.py install --host codex --scope project
 codex mcp add agentboard-mvp -- "$PWD/scripts/agentboard-mcp" Codex
 ```
 
-The skill is installed at `.agents/skills/agentbuild/` in the selected project. Codex's explicit invocation policy is bundled in `agents/openai.yaml`.
-
 ### Claude Code
-
-Run from the AgentBoard checkout:
 
 ```sh
 python3 scripts/install-skill.py install --host claude --scope project
 claude mcp add --scope local --transport stdio agentboard-mvp -- "$PWD/scripts/agentboard-mcp" Claude
 ```
 
-The skill is installed at `.claude/skills/agentbuild/`. The installer adds Claude's explicit-only invocation setting. Its local MCP registration belongs to the directory where you run the registration command.
+**Check the connection:** open a fresh host session if needed, then ask it to **list projects using `agentboard-mvp`**. An empty list is a successful connection.
 
-### Use another source repository
+<details>
+<summary><strong>Installation paths, another repository and personal scope</strong></summary>
+
+Project skills go to `.agents/skills/agentbuild/` for Codex or `.claude/skills/agentbuild/` for Claude. The installer keeps explicit-only invocation settings for each host. The source bundle is [skills/agentbuild](skills/agentbuild/SKILL.md); installation does not start the service or register MCP.
 
 For either host, install into that repository using `--project /absolute/path/to/your/project`. Register MCP from that repository using the **absolute path** to AgentBoard's `scripts/agentboard-mcp`, keeping `Codex` or `Claude` as its argument. The launcher always connects to the AgentBoard checkout it belongs to.
 
@@ -138,21 +143,26 @@ Open a fresh host session if the skill or tools are not visible. Ask the host:
 
 An empty list proves the connection works. The host must be able to run the local Docker CLI; this launcher is not a hosted/cloud connection.
 
-## First project
+</details>
 
-In Codex:
+<a id="first-project"></a>
 
-```text
-$agentbuild Setup My Project
-```
+## 🗂️ Start with one named workflow
 
-In Claude Code:
+| Host | First message |
+| --- | --- |
+| Codex | `$agentbuild Setup My Project` |
+| Claude Code | `/agentbuild Setup My Project` |
 
-```text
-/agentbuild Setup My Project
-```
+| Workflow | Outcome |
+| --- | --- |
+| **Setup** | Project, default roles and a core-document check. |
+| **Create Documents** | Product, technical and design drafts for review. |
+| **Create Visuals** | A local interactive Canvas; publish when requested. |
+| **Create Tickets** | Planned milestone tickets with context and acceptance criteria. |
 
-Then use one of the four named workflows:
+<details>
+<summary><strong>Example prompts and review boundaries</strong></summary>
 
 | Workflow | What you get | Example following the skill name |
 | --- | --- | --- |
@@ -163,12 +173,19 @@ Then use one of the four named workflows:
 
 Ordinary conversation does not start a new workflow. Review document/design drafts before approving storage. A change to agreed scope requires your explicit decision. See the [complete command contracts](skills/agentbuild/references/commands.md) and [connection guide](skills/agentbuild/references/connection.md).
 
-## Optional InApp Assistant
+</details>
+
+<a id="optional-inapp-assistant"></a>
+
+## 🧪 Optional InApp Assistant
 
 > [!WARNING]
-> The InApp Assistant is experimental and has not been fully tested end to end. Use it with a disposable project or a backed-up source folder, and review file changes and saved results before relying on them.
+> **Experimental — not fully tested end to end.** Use a disposable project or backed-up source folder. Review file changes and saved results before relying on them.
 
-The external Codex/Claude MCP connection does not require an OpenAI API key. The **InApp Assistant** is a separate, model-backed feature.
+This is a separate, model-backed feature. **Provider usage may incur charges.** A model connection does not grant file access.
+
+<details>
+<summary><strong>Configure a model, key and selected source folder</strong></summary>
 
 1. Open a project and select InApp Assistant.
 2. Open Assistant settings, configure your key if needed, choose a model and test its connection. Provider usage may incur charges.
@@ -184,7 +201,17 @@ python3 scripts/setup-execution.py --folder "/absolute/path/to/your/source-folde
 
 Choose a dedicated source folder. Commands can access the entire selected folder; it is not a per-project operating-system sandbox. The executor has no network, provider key, database password or Docker socket. Dependencies needed by builds must already be available in its Linux environment. Editing also requires a reviewed ticket, Git and a Ready execution state. Inspect saved evidence before continuing or restoring an uncertain run.
 
-## Updates, shutdown and data
+</details>
+
+<a id="updates-shutdown-and-data"></a>
+
+## 🔄 Updates and your data
+
+> [!IMPORTANT]
+> Stop with `docker compose stop`. **Do not run `docker compose down --volumes` on a working installation** — it deletes stored workspace data.
+
+<details>
+<summary><strong>Service shutdown, skill updates and data storage</strong></summary>
 
 | Task | Command or behavior |
 | --- | --- |
@@ -199,7 +226,14 @@ Board records, chat and run history live in the `agentboard_mvp_workspace_v1` Do
 
 **Do not run `docker compose down --volumes` on a working installation.** It removes stored workspace data. Preserve the database volume and its matching `.local/db_password` when moving or backing up the installation. There is no automated backup/restore procedure documented here; verify a restorable backup before attempting a move or upgrade of important data.
 
-## Development and verification
+</details>
+
+<a id="development-and-verification"></a>
+
+## 🛠️ Development and verification
+
+<details>
+<summary><strong>Build, test and inspect the repository structure</strong></summary>
 
 Python 3.12+ and Node.js 22 are needed for these host-side checks:
 
@@ -238,7 +272,16 @@ AgentBoard/
 
 Keep credentials, database dumps, dependencies, caches and generated host installations out of commits. The author's `.github/`, `docs/`, `demo/`, `walkthrough/`, `.gitignore`, design snapshots and V3-specific export/preview helpers are excluded from publication. A clone does not inherit the author's private ignore rules; review an explicit file list before committing. Design artifacts can be prepared locally through AgentBuild; a clone does not include the author's Canvas publications.
 
-## Software bill of materials
+</details>
+
+<a id="software-bill-of-materials"></a>
+
+## 📦 Software bill of materials
+
+**MIT covers our original code.** Third-party libraries and assets retain their own licenses.
+
+<details>
+<summary><strong>View components, versions, purposes and licenses</strong></summary>
 
 This table covers direct application dependencies and the main toolchain at this checkout. It is **not an exhaustive transitive or container-image SBOM**. npm's exact resolved versions are in [package-lock.json](frontend/package-lock.json); Python direct pins are in [requirements.txt](backend/requirements.txt). Floating container tags can resolve to newer builds.
 
@@ -264,7 +307,14 @@ This table covers direct application dependencies and the main toolchain at this
 
 Original AgentBoard code and the AgentBuild skill use the [MIT license](LICENSE); the standalone skill includes its [own license copy](skills/agentbuild/LICENSE.txt). Preserve bundled [Inter](frontend/public/fonts/OFL-Inter.txt) and [Phosphor](frontend/public/LICENSE-phosphor) notices and dependency license terms.
 
-## Troubleshooting
+</details>
+
+<a id="troubleshooting"></a>
+
+## 🩺 Troubleshooting
+
+<details>
+<summary><strong>Find a symptom and its next check</strong></summary>
 
 | Symptom | Check |
 | --- | --- |
@@ -277,8 +327,10 @@ Original AgentBoard code and the AgentBuild skill use the [MIT license](LICENSE)
 | Save outcome is uncertain | Read back saved state or use Retry sync before submitting the write again. |
 | API health check fails | Inspect `docker compose ps` and `docker compose logs --tail=50 api db`; redact private values before sharing logs. |
 
-## Support and contributions
+</details>
 
-For bugs or proposals, [open an issue](https://github.com/CJsGit-tech/AgentBoard/issues) with reproduction steps, expected behavior, environment and sanitized evidence. Before proposing code changes, run the relevant checks and explain the resulting behavior. Do not attach API keys, private conversations or database exports.
+## Questions or contributions?
 
-The supported deployment is a trusted local machine with loopback access. Public hosting, multi-user authentication and remote/cloud MCP transport are outside the supplied deployment. Local OS processes with Docker access are trusted.
+[Open an issue](https://github.com/CJsGit-tech/AgentBoard/issues) with reproduction steps and sanitized evidence. Run the relevant checks before proposing changes.
+
+**Local, single-machine deployment.** Public hosting, multi-user authentication and cloud MCP are outside the supplied setup. Local processes with Docker access are trusted. Keep keys, private conversations and database exports out of issues.

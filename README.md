@@ -165,6 +165,9 @@ Ordinary conversation does not start a new workflow. Review document/design draf
 
 ## Optional InApp Assistant
 
+> [!WARNING]
+> The InApp Assistant is experimental and has not been fully tested end to end. Use it with a disposable project or a backed-up source folder, and review file changes and saved results before relying on them.
+
 The external Codex/Claude MCP connection does not require an OpenAI API key. The **InApp Assistant** is a separate, model-backed feature.
 
 1. Open a project and select InApp Assistant.
@@ -279,4 +282,3 @@ Original AgentBoard code and the AgentBuild skill use the [MIT license](LICENSE)
 For bugs or proposals, [open an issue](https://github.com/CJsGit-tech/AgentBoard/issues) with reproduction steps, expected behavior, environment and sanitized evidence. Before proposing code changes, run the relevant checks and explain the resulting behavior. Do not attach API keys, private conversations or database exports.
 
 The supported deployment is a trusted local machine with loopback access. Public hosting, multi-user authentication and remote/cloud MCP transport are outside the supplied deployment. Local OS processes with Docker access are trusted.
-

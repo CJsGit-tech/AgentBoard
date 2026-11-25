@@ -1,9 +1,0 @@
-Upload kind select: {"padding":34,"arrowWidth":16,"position":"calc(100% - 10px) 50%","focused":true,"outline":"none","shadow":"rgb(49, 95, 211) 0px 0px 0px 2px inset"}
-Ticket status filter at 1600 select: {"padding":34,"arrowWidth":16,"position":"calc(100% - 10px) 50%","focused":true,"outline":"none","shadow":"rgb(49, 95, 211) 0px 0px 0px 2px inset"}
-Ticket status filter at 1280 select: {"padding":34,"arrowWidth":16,"position":"calc(100% - 10px) 50%","focused":true,"outline":"none","shadow":"rgb(49, 95, 211) 0px 0px 0px 2px inset"}
-Ticket status filter at 900 select: {"padding":34,"arrowWidth":16,"position":"calc(100% - 10px) 50%","focused":true,"outline":"none","shadow":"rgb(49, 95, 211) 0px 0px 0px 2px inset"}
-Activity time filter at 200% select: {"padding":34,"arrowWidth":16,"position":"calc(100% - 10px) 50%","focused":true,"outline":"none","shadow":"rgb(49, 95, 211) 0px 0px 0px 2px inset"}
-503 draft retained and retry succeeded; actual Chrome 200% settings: {"width":640,"dpr":2,"scrollWidth":640} Tab navigation and keyboard tag selection passed.
-Tag checkbox at browser 200%: {"width":16,"height":16,"focus":"rgb(49, 95, 211) 0px 0px 0px 2px inset"}
-Real 422 validation preserved a draft and retry saved it. Planned, In progress and Done each matched the API progress counts and browser summary.
-Browser smoke passed: pairing, project/role persistence, reviewed and tagged Markdown upload, edit/restore, reload, atomic ticket creation, document linking, live approval badge, and live activity at desktop widths.

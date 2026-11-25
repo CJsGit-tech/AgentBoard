@@ -1,0 +1,19 @@
+.folders, .folders.is-canvas { grid-template-columns: repeat(auto-fill, minmax(min(245px, 100%), 285px)); align-items: stretch; gap: 18px; padding-block-start: 0; }
+.folders .folder { filter: none; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 3px 12px rgb(36 39 36 / 2%); overflow: hidden; }
+.folders .folder:hover, .folders .folder:focus-within { filter: none; transform: translateY(-2px); border-color: var(--signal-line); box-shadow: 0 7px 24px rgb(36 39 36 / 4%); }
+.folders .folder-tab { position: static; clip-path: none; height: auto; max-width: none; padding: 14px 16px 0; background: transparent; border-radius: 0; font-size: 12px; white-space: normal; }
+.folders .folder-body { padding: 14px 16px 0; border-radius: 0; background: transparent; }
+.folders .folder h2 { font-size: 19px; }
+.folders .folder-description { margin-block: 8px 12px; font-size: 13px; }
+.folders .folder-metric { flex-wrap: wrap; padding-block-start: 0; margin-block: auto 10px; }
+.folders .folder-metric b { font-size: 22px; }
+.folders .folder-metric span { font-size: 12px; }
+.folders .folder-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 14px -16px 0; }
+.folders .folder-facts div { padding: 10px 16px 14px; border: 0; }
+.folders .folder-foot { margin-inline: -16px; padding-inline: 16px; gap: 6px 10px; }
+.folders .folder-foot a, .folders .folder-foot button { margin-inline-start: 0; font-size: 12px; }
+.folders .canvas-publication-meta { display: grid; gap: 8px; margin-block: 8px 12px; }
+.folders .canvas-publication-meta p { display: grid; grid-template-columns: 65px minmax(0, 1fr); gap: 8px; font-size: 12px; }
+.folders .canvas-publication-meta b { overflow-wrap: anywhere; }
+.folders .canvas-card-note { -webkit-line-clamp: 2; margin-block: 0 auto; padding-block-end: 14px; }
+@media (prefers-reduced-motion: reduce) { .folders .folder:hover { transform: none; } }

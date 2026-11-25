@@ -1,25 +1,26 @@
 {
-  "name": "agentboard-frontend",
-  "version": "0.1.0",
+  "name": "agentboard-ui",
   "private": true,
-  "type": "module",
+  "version": "1.0.0",
   "scripts": {
-    "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build",
+    "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "test:ui": "playwright test"
+    "build": "npm run typecheck && vite build",
+    "test:forms": "node --test tests/form-actions.test.mjs",
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "lucide-react": "^0.468.0"
+    "@mantine/core": "7.17.8",
+    "@mantine/hooks": "7.17.8",
+    "@oddbird/popover-polyfill": "^0.7.3",
+    "interestfor": "^1.0.14",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "typescript": "^5.7.2",
-    "vite": "^6.0.5",
-    "@playwright/test": "^1.49.1"
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "~5.8.3",
+    "vite": "^6.4.1"
   }
 }

@@ -1,9 +1,0 @@
-{
-  "id": "ui",
-  "command": "npm run test:ui",
-  "cwd": "frontend",
-  "exit_code": 1,
-  "status": "fail",
-  "finished_at": "2026-11-18T06:59:37.591149+00:00",
-  "log": "docs/designs/screens/evidence/run-001/ui.log"
-}

@@ -15,7 +15,4 @@
 **/test-results
 **/playwright-report
 backend/tests
-agentboard-skill
 docs/evidence
-docs/designs/screens/captures
-docs/designs/screens/evidence

@@ -1,0 +1,6 @@
+[
+  {"command":"Setup","contract":"references/planning.md","required_terms":["roles","project"]},
+  {"command":"Create Documents","contract":"references/planning.md","required_terms":["User Experiences","Design Profile"]},
+  {"command":"Create Visuals","contract":"references/visuals.md","required_terms":["publication","verify"]},
+  {"command":"Create Tickets","contract":"references/tickets.md","required_terms":["milestone","acceptance"]}
+]

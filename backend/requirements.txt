@@ -1,10 +1,5 @@
 fastapi==0.165.0
-uvicorn[standard]==0.54.0
-SQLAlchemy==2.0.40
-psycopg[binary]==3.2.6
-alembic==1.15.2
-pydantic-settings==2.8.1
-jsonschema==4.23.0
-mcp==2.3.0
 fastmcp==4.2.2
-httpx==0.28.1
+uvicorn==0.54.0
+psycopg[binary]==3.2.6
+openai-agents==0.25.0

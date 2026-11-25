@@ -1,9 +1,0 @@
-{
-  "id": "guidance-retrieve",
-  "command": "npx -y modern-web-guidance@latest retrieve dialog,responsive-table,forms,accessibility",
-  "cwd": "frontend",
-  "exit_code": 0,
-  "status": "pass",
-  "finished_at": "2026-11-18T06:51:14.014333+00:00",
-  "log": "docs/designs/screens/evidence/run-001/guidance-retrieve.log"
-}

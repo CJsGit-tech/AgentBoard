@@ -1,0 +1,16 @@
+.directory-layout { display: grid; gap: 32px; align-items: start; }
+.directory-layout.is-expanded { grid-template-columns: minmax(200px,.75fr) minmax(0,1.5fr); }
+.directory-cards { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(230px,100%),285px)); gap: 18px; }
+.directory-layout.is-expanded .directory-cards { grid-template-columns: minmax(0,1fr); }
+.directory-card { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 12px; }
+.directory-card h2 .plain { font-size: 17px; }
+.directory-card p, .directory-card > span { color: var(--muted); font-size: 12px; }
+.directory-card[data-selected=true] { border-color: var(--signal); background: var(--signal-soft); }
+.directory-detail { min-width: 0; }
+.directory-detail > header { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; }
+.directory-detail > header h2 { font-size: 18px; }
+.directory-detail > header .link { text-decoration: underline; }
+.inline-record { min-width: 0; }
+.inline-record .record-actionbar { inset-block-start: var(--top); }
+.inline-record .editor-tabs { margin-block-start: 20px; }
+@media(max-width:800px) { .directory-layout.is-expanded { grid-template-columns: minmax(0,1fr); } .directory-layout.is-expanded .directory-cards { display:flex; overflow:auto; padding-block:4px; } .directory-layout.is-expanded .directory-card { flex:0 0 220px; } }

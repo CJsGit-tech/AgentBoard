@@ -1,9 +1,0 @@
-{
-  "id": "approval-reviewer-legacy-scan",
-  "command": "npx -y modern-web-guidance@latest legacy-scan src --json",
-  "cwd": "frontend",
-  "exit_code": 0,
-  "status": "pass",
-  "finished_at": "2026-11-18T09:05:22.328463+00:00",
-  "log": "docs/designs/screens/evidence/run-003-create-screens/approval-reviewer-legacy-scan.log"
-}

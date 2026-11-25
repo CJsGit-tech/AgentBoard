@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+cd "$(dirname "$0")/.."
+case "${1-}" in Codex|Claude) ;; *) echo 'Usage: agentboard-mcp Codex|Claude' >&2; exit 2;; esac
+# Resolve the browser address from the same Compose project as this MCP session.
+address=$(docker compose port web 8080) || address=""
+case "$address" in
+    127.0.0.1:*) board_origin="http://$address" ;;
+    *) board_origin="" ;;
+esac
+exec docker compose exec -T -e "AGENTBOARD_UI_ORIGIN=$board_origin" api python -m app.mcp_server --client "$1"

@@ -1,9 +1,0 @@
-{
-  "project_id": "ba4c647a-788c-532f-924a-8a150af927d8",
-  "role_id": "95cb2926-ac21-5927-903b-5f1bcf2cc2bf",
-  "operation_key": "3ff2782b-ad32-51a3-9ab3-eab69a0dbdf8",
-  "expected_revision": 3,
-  "changes": {
-    "responsibilities": "Implement API stories and log activity."
-  }
-}

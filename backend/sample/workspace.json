@@ -1,0 +1,375 @@
+{
+  "projects": [
+    {
+      "id": "P1",
+      "name": "Sample · PocketMap",
+      "description": "A personal map for saved places."
+    },
+    {
+      "id": "P2",
+      "name": "Sample · PocketStocks",
+      "description": "An equity research workspace."
+    }
+  ],
+  "milestones": [
+    {
+      "id": "M1",
+      "name": "Saved places",
+      "project": "P1",
+      "description": "Capture and organize favorite places."
+    },
+    {
+      "id": "M2",
+      "name": "Map discovery",
+      "project": "P1",
+      "description": "Find places on the map."
+    },
+    {
+      "id": "M3",
+      "name": "Release review",
+      "project": "P1",
+      "description": "Prepare the first release."
+    },
+    {
+      "id": "M4",
+      "name": "Research library",
+      "project": "P2",
+      "description": "Collect research notes."
+    },
+    {
+      "id": "M5",
+      "name": "Watchlists",
+      "project": "P2",
+      "description": "Track companies of interest."
+    }
+  ],
+  "tickets": [
+    {
+      "id": "AB-101",
+      "project": "P1",
+      "milestone": "M1",
+      "role": "R1",
+      "name": "Save a place from search",
+      "description": "Keep the interaction consistent across the project.",
+      "status": "Done",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-102",
+      "project": "P1",
+      "milestone": "M1",
+      "role": "R2",
+      "name": "Add category labels",
+      "description": "Review the saved state and empty state.",
+      "status": "Done",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-103",
+      "project": "P1",
+      "milestone": "M1",
+      "role": "R3",
+      "name": "Design the saved place card",
+      "description": "Use the current project brief as the reference.",
+      "status": "Done",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-104",
+      "project": "P1",
+      "milestone": "M1",
+      "role": "R1",
+      "name": "Rename a collection",
+      "description": "Keep the interaction consistent across the project.",
+      "status": "Done",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-105",
+      "project": "P1",
+      "milestone": "M1",
+      "role": "R2",
+      "name": "Show recently saved places",
+      "description": "Review the saved state and empty state.",
+      "status": "In progress",
+      "documents": [
+        "D1"
+      ],
+      "dueOffset": 2
+    },
+    {
+      "id": "AB-106",
+      "project": "P1",
+      "milestone": "M1",
+      "role": "R3",
+      "name": "Import saved places",
+      "description": "Use the current project brief as the reference.",
+      "status": "Blocked",
+      "documents": [
+        "D1"
+      ],
+      "dueOffset": 0
+    },
+    {
+      "id": "AB-107",
+      "project": "P1",
+      "milestone": "M2",
+      "role": "R1",
+      "name": "Review map pin states",
+      "description": "Keep the interaction consistent across the project.",
+      "status": "In progress",
+      "documents": [
+        "D1"
+      ],
+      "dueOffset": 3
+    },
+    {
+      "id": "AB-108",
+      "project": "P1",
+      "milestone": "M2",
+      "role": "R2",
+      "name": "Add distance filters",
+      "description": "Review the saved state and empty state.",
+      "status": "In progress",
+      "documents": [
+        "D1"
+      ],
+      "dueOffset": -1
+    },
+    {
+      "id": "AB-109",
+      "project": "P1",
+      "milestone": "M2",
+      "role": "R3",
+      "name": "Open place details from a pin",
+      "description": "Use the current project brief as the reference.",
+      "status": "Done",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-110",
+      "project": "P1",
+      "milestone": "M2",
+      "role": "R1",
+      "name": "Handle an empty search",
+      "description": "Keep the interaction consistent across the project.",
+      "status": "Planned",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-111",
+      "project": "P1",
+      "milestone": "M3",
+      "role": "R2",
+      "name": "Review keyboard navigation",
+      "description": "Review the saved state and empty state.",
+      "status": "Planned",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-112",
+      "project": "P1",
+      "milestone": "M3",
+      "role": "R3",
+      "name": "Write release notes",
+      "description": "Use the current project brief as the reference.",
+      "status": "Planned",
+      "documents": [
+        "D1"
+      ]
+    },
+    {
+      "id": "AB-113",
+      "project": "P2",
+      "milestone": "M4",
+      "role": "R4",
+      "name": "Save a company note",
+      "description": "Keep the interaction consistent across the project.",
+      "status": "Done",
+      "documents": [
+        "D2"
+      ]
+    },
+    {
+      "id": "AB-114",
+      "project": "P2",
+      "milestone": "M4",
+      "role": "R5",
+      "name": "Organize research tags",
+      "description": "Review the saved state and empty state.",
+      "status": "Done",
+      "documents": [
+        "D2"
+      ]
+    },
+    {
+      "id": "AB-115",
+      "project": "P2",
+      "milestone": "M4",
+      "role": "R6",
+      "name": "Link earnings documents",
+      "description": "Use the current project brief as the reference.",
+      "status": "In progress",
+      "documents": [
+        "D2"
+      ],
+      "dueOffset": 1
+    },
+    {
+      "id": "AB-116",
+      "project": "P2",
+      "milestone": "M5",
+      "role": "R4",
+      "name": "Add a watchlist filter",
+      "description": "Keep the interaction consistent across the project.",
+      "status": "In progress",
+      "documents": [
+        "D2"
+      ],
+      "dueOffset": 6
+    },
+    {
+      "id": "AB-117",
+      "project": "P2",
+      "milestone": "M5",
+      "role": "R5",
+      "name": "Show latest research dates",
+      "description": "Review the saved state and empty state.",
+      "status": "Planned",
+      "documents": [
+        "D2"
+      ]
+    },
+    {
+      "id": "AB-118",
+      "project": "P2",
+      "milestone": "M5",
+      "role": "R6",
+      "name": "Review empty watchlists",
+      "description": "Use the current project brief as the reference.",
+      "status": "Planned",
+      "documents": [
+        "D2"
+      ]
+    }
+  ],
+  "roles": [
+    {
+      "id": "R1",
+      "project": "P1",
+      "name": "Frontend Engineer",
+      "description": "Builds the project interface.",
+      "instructions": "Reuse existing components. Report changes on the ticket."
+    },
+    {
+      "id": "R2",
+      "project": "P1",
+      "name": "Product Designer",
+      "description": "Defines interaction and layout.",
+      "instructions": "Document the primary flow and its empty state."
+    },
+    {
+      "id": "R3",
+      "project": "P1",
+      "name": "QA Reviewer",
+      "description": "Reviews behavior and release quality.",
+      "instructions": "Reproduce the issue and record the result."
+    },
+    {
+      "id": "R4",
+      "project": "P2",
+      "name": "Frontend Engineer",
+      "description": "Builds the project interface.",
+      "instructions": "Reuse existing components. Report changes on the ticket."
+    },
+    {
+      "id": "R5",
+      "project": "P2",
+      "name": "Product Designer",
+      "description": "Defines interaction and layout.",
+      "instructions": "Document the primary flow and its empty state."
+    },
+    {
+      "id": "R6",
+      "project": "P2",
+      "name": "QA Reviewer",
+      "description": "Reviews behavior and release quality.",
+      "instructions": "Reproduce the issue and record the result."
+    }
+  ],
+  "documents": [
+    {
+      "id": "D1",
+      "project": "P1",
+      "name": "PocketMap product brief",
+      "content": "Help people find their saved places quickly. Group places into collections and show each location on the map."
+    },
+    {
+      "id": "D2",
+      "project": "P2",
+      "name": "PocketStocks product brief",
+      "content": "Collect company notes and monitor watchlists."
+    }
+  ],
+  "runs": [
+    {
+      "id": "RUN-31",
+      "project": "P1",
+      "ticket": "AB-107",
+      "agent": "Claude",
+      "status": "Waiting for input",
+      "note": "Which map pin should mark a selected place?",
+      "name": "Ticket session"
+    },
+    {
+      "id": "RUN-32",
+      "project": "P1",
+      "ticket": "AB-108",
+      "agent": "Codex",
+      "status": "Failed",
+      "note": "Distance filter fixture is missing.",
+      "name": "Ticket session"
+    },
+    {
+      "id": "RUN-33",
+      "project": "P1",
+      "ticket": "AB-105",
+      "agent": "Codex",
+      "status": "Running",
+      "note": "Updating the recent places list.",
+      "name": "Ticket session"
+    },
+    {
+      "id": "RUN-34",
+      "project": "P2",
+      "ticket": "",
+      "agent": "Claude",
+      "status": "Running",
+      "note": "Reviewing the research brief.",
+      "name": "Project review"
+    },
+    {
+      "id": "RUN-35",
+      "project": "P2",
+      "ticket": "AB-113",
+      "agent": "Codex",
+      "status": "Completed",
+      "note": "Saved the company note flow.",
+      "name": "Ticket session"
+    }
+  ]
+}

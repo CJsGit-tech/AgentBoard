@@ -1,0 +1,10 @@
+.operation-feedback:empty { display:none; }
+.operation-feedback { display:grid; gap:8px; margin-block:0 16px; }
+.operation-notice { display:flex; align-items:center; gap:12px; padding:12px 16px; border-radius:10px; background:var(--signal-soft); color:var(--ink); overflow-wrap:anywhere; }
+.operation-notice > span:nth-child(2) { display:grid; gap:2px; flex:1; min-width:0; font-size:13px; }
+.operation-notice strong { font-size:13px; font-weight:600; }
+.operation-notice[data-phase="uncertain"], .operation-notice[data-phase="sync-failed"], .operation-notice[data-phase="failed"] { background:#fff4e5; }
+.operation-mark { color:var(--signal); font-size:24px; line-height:1; }
+.operation-notice button { flex-shrink:0; padding:8px 10px; min-height:36px; border:0; border-radius:6px; background:white; color:var(--signal); font:600 13px var(--ui); cursor:pointer; }
+.operation-notice button:hover { background:var(--hover); }
+@media(max-width:480px) { .operation-notice { flex-wrap:wrap; } .operation-notice button { margin-inline-start:30px; min-height:44px; } }

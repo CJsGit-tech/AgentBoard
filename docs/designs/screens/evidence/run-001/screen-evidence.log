@@ -1,7 +1,0 @@
-Command: ['/Users/cjhuang/.codex/venvs/agentbuild-contracts/bin/python', '/Users/cjhuang/.codex/skills/agentbuild/scripts/check_screen_evidence.py', '--project', '/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard']
-Working directory: /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard
-Started: 2026-11-18T07:27:39.812086+00:00
-Finished: 2026-11-18T07:27:39.931759+00:00
-Exit code: 0
-
-Screen evidence gate: PASS (structure/freshness only; independent review remains required)

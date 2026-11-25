@@ -1,5 +1,0 @@
-Connected setup wrote one project and six responsibilities drawn from the project role charters through stdio.
-Catalog-first writes preserved both planning records' structured tags, names, content and source metadata.
-Ticket create replay preserved one ID and the estimate; context link saved; default document edit stayed pending.
-A fresh stdio process reused the same project and roles and found only matching planning records by feature.
-Verified stdio callback applied an explicit update once, declined deletion, and preserved revisions and activity.

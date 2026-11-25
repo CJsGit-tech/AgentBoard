@@ -1,9 +1,0 @@
-{
-  "id": "reviewer-edge-ui",
-  "command": "npx playwright test --config ../docs/designs/screens/evidence/run-003-create-screens/reviewer-tests/playwright.config.cjs",
-  "cwd": "frontend",
-  "exit_code": 0,
-  "status": "pass",
-  "finished_at": "2026-11-18T08:08:58.537371+00:00",
-  "log": "docs/designs/screens/evidence/run-003-create-screens/reviewer-edge-ui.log"
-}

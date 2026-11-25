@@ -1,7 +1,0 @@
-{
-  "command": "npm run test:ui -- --config /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/docs/designs/screens/evidence/run-003-create-screens/builder-ui.config.cjs",
-  "cwd": "/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend",
-  "exit_code": 0,
-  "finished_at": "2026-11-18T08:08:26.294323+00:00",
-  "log": "docs/designs/screens/evidence/run-003-create-screens/builder-ui.log"
-}

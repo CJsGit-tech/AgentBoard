@@ -1,7 +1,0 @@
-{
-  "outcome": "approval_required",
-  "request_id": "ada38f6a-1fb6-5eab-a02a-409cf045d136",
-  "ticket_id": "1916befb-d67d-53cb-b509-9f8cdb6383b0",
-  "applied": false,
-  "message": "Awaiting a verified decision in the agent client; no mutation applied."
-}

@@ -1,2 +1,0 @@
-const { defineConfig } = require('/Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard/frontend/node_modules/@playwright/test');
-module.exports=defineConfig({testDir:__dirname,timeout:30000,workers:1,reporter:[['list'],['json',{outputFile:__dirname+'/results.json'}]],outputDir:__dirname+'/test-results',use:{channel:'chrome',baseURL:'http://127.0.0.1:4203',viewport:{width:1600,height:1100},screenshot:'only-on-failure'}});

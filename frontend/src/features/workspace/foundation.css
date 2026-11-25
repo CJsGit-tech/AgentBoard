@@ -1,0 +1,78 @@
+/* Canvas V4: the approved shared system. Legacy feature selectors inherit these tokens. */
+:root {
+  --bg: #fff;
+  --surface: #fff;
+  --subtle: #f6f6f4;
+  --sunken: #f1f1ee;
+  --hover: #f9f9f7;
+  --ink: #252724;
+  --ink-2: #252724;
+  --muted: #585b58;
+  --faint: #767973;
+  --line: #e8e9e5;
+  --line-2: #dbdcd8;
+  --input-edge: #858781;
+  --signal: #5148a4;
+  --signal-2: #423a8b;
+  --signal-soft: #f0eef9;
+  --signal-line: #d0cbea;
+  --focus: #6259b8;
+  --teal: #346552;
+  --amber: #80520f;
+  --amber-ink: #80520f;
+  --red: #a33935;
+  --slate: #585b58;
+  --r: 10px;
+  --r-lg: 12px;
+  --rail: 198px;
+  --pad: clamp(1rem, 3.8vw, 3.75rem);
+  --top: 60px;
+  --shadow-1: none;
+}
+.shell { min-height: 100dvh; }
+.shell > .sidebar { height: 100dvh; background: var(--subtle); border: 0; gap: 20px; }
+.sidebar .project-context { border: 0; border-radius: 0; padding: 8px 10px 12px; background: transparent; }
+.sidebar .project-context-bar, .sidebar .project-context:not([data-empty]) .project-context-line { display: none; }
+.sidebar nav button { font-size: 13px; min-height: 34px; border-radius: 6px; }
+.sidebar nav button.active { background: transparent; color: var(--signal); }
+.sidebar nav button.active::after { content: none; }
+.sidebar nav button .icon { width: 16px; height: 16px; color: currentColor; }
+.sidebar nav small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+.brand-fold i:nth-child(1) { background: #423a8b; }
+.brand-fold i:nth-child(2) { background: #6259b8; }
+.brand-fold i:nth-child(3) { background: #c2bbe7; }
+.topbar { border: 0; background: rgb(255 255 255 / 94%); }
+#page { max-width: 1360px; padding-top: 20px; }
+.heading h1 { font-size: 1.75rem; line-height: 1.2143; font-weight: 600; letter-spacing: -.035em; }
+.heading { margin-bottom: 28px; }
+.mantine-Input-input { border-color: var(--input-edge); border-radius: 4px; }
+.shell .record-search .mantine-Input-input,
+.mantine-Drawer-content .mantine-Input-input,
+.mantine-Modal-content .mantine-Input-input,
+.ia-option-field select,
+.project-resources select { border-color: var(--input-edge); }
+.shell .mantine-Button-root[data-variant="filled"] { background: var(--ink); }
+.shell .mantine-Button-root[data-variant="filled"]:hover:not(:disabled) { background: #41443f; }
+.mantine-Menu-dropdown, .mantine-Popover-dropdown { border-radius: 6px; }
+.mantine-Drawer-content { box-shadow: var(--shadow-2); }
+:is(button, a, input, textarea, select, summary, [tabindex]):focus-visible { outline-color: var(--focus); }
+.skip-content { position: fixed; inset-block-start: 8px; inset-inline-start: 8px; transform: translateY(-160%); padding: 10px 16px; background: var(--ink); color: white; z-index: 1000; border-radius: 6px; }
+.skip-content:focus { transform: none; }
+.work-modes { border-radius: 0; background: transparent; padding: 0; gap: 18px; }
+.work-mode[aria-pressed=true] { background: transparent; box-shadow: none; border-radius: 0; color: var(--signal); }
+.work-mode[aria-pressed=true]::after { content: ""; position: absolute; bottom: 0; inset-inline: 0; height: 2px; background: var(--signal); }
+.tag:is([data-state="Done"], [data-state="Completed"]) { --tone: #346552; }
+.tag:is([data-state="In progress"], [data-state="Running"]) { --tone: var(--signal); }
+.card, .work-margin, .library-spread { border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+@supports (corner-shape: squircle) { .tile, .mantine-Drawer-content { corner-shape: squircle; } }
+@media (max-width: 900px) {
+  :root { --rail: 198px; --top: 48px; }
+  .shell > .sidebar { height: 100dvh; }
+  .shell { display: block; }
+}
+@media (pointer: coarse) { .sidebar nav button, .utility, .work-mode { min-height: 44px; } }
+@media (prefers-reduced-motion: reduce) { .skip-content { transition: none; } }
+@media (forced-colors: active) { .tile, .mantine-Input-input { border: 1px solid CanvasText; } }
+/* Mantine omits data-variant on its default filled button. */
+.shell .mantine-Button-root:not([data-variant]):not(:disabled):not([data-disabled]) { background: var(--ink); }
+.shell .mantine-Button-root:not([data-variant]):hover:not(:disabled):not([data-disabled]) { background: #41443f; }

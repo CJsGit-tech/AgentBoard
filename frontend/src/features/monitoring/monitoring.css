@@ -1,0 +1,26 @@
+.record-table td { vertical-align: top; }
+.record-table th { white-space: normal; }
+.record-table td .ticket-summary { min-width: 170px; }
+.log details { margin-block-start: 8px; }
+.log summary { color: var(--muted); cursor: pointer; overflow-wrap: anywhere; }
+.log details p { white-space: pre-wrap; }
+@media (max-width: 900px) {
+  .record-table, .record-table tbody { display: block; width: 100%; }
+  .record-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .record-table tr { display: block; padding-block: 12px; border-block-end: 1px solid var(--line); }
+  .record-table td { display: grid; grid-template-columns: minmax(80px, 30%) minmax(0, 1fr); gap: 12px; padding: 7px 0; border: 0; width: auto; white-space: normal; }
+  .record-table td::before { content: attr(data-label); color: var(--muted); font-size: 12px; }
+  .record-table td:first-child { display: block; padding-block-end: 12px; }
+  .record-table td:first-child::before { content: none; }
+  .record-table td .ticket-summary { min-width: 0; }
+  .record-table .row-group { display: block; }
+}
+@media (max-width:900px) {
+  .tablebox .record-table, .tablebox .record-table tbody, .tablebox .record-table tr { min-width:0; width:100%; }
+  .tablebox .record-table td, .tablebox .record-table td:first-child { min-width:0; width:auto; padding-inline:12px; }
+  .tablebox .record-table td:first-child .entry-name { width:100%; }
+}
+@media (max-width:480px) {
+  .tablebox .record-table td { grid-template-columns:minmax(0,1fr); gap:4px; }
+}
+.run-prompt strong { display:block; overflow:visible; white-space:normal; text-overflow:clip; -webkit-line-clamp:unset; overflow-wrap:anywhere; }

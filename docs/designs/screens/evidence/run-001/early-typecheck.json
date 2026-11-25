@@ -1,9 +1,0 @@
-{
-  "id": "early-typecheck",
-  "command": "npm run typecheck",
-  "cwd": "frontend",
-  "exit_code": 0,
-  "status": "pass",
-  "finished_at": "2026-11-18T06:40:33.477953+00:00",
-  "log": "docs/designs/screens/evidence/run-001/early-typecheck.log"
-}

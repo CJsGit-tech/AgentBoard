@@ -1,9 +1,0 @@
-{
-  "id": "screen-evidence",
-  "command": "/Users/cjhuang/.codex/venvs/agentbuild-contracts/bin/python /Users/cjhuang/.codex/skills/agentbuild/scripts/check_screen_evidence.py --project /Users/cjhuang/Desktop/Projects/AgentBoard/projects/agentboard",
-  "cwd": ".",
-  "exit_code": 0,
-  "status": "pass",
-  "finished_at": "2026-11-18T07:27:39.931759+00:00",
-  "log": "docs/designs/screens/evidence/run-001/screen-evidence.log"
-}

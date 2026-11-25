@@ -196,32 +196,6 @@ Board records, chat and run history live in the `agentboard_mvp_workspace_v1` Do
 
 **Do not run `docker compose down --volumes` on a working installation.** It removes stored workspace data. Preserve the database volume and its matching `.local/db_password` when moving or backing up the installation. There is no automated backup/restore procedure documented here; verify a restorable backup before attempting a move or upgrade of important data.
 
-## Software bill of materials
-
-This table covers direct application dependencies and the main toolchain at this checkout. It is **not an exhaustive transitive or container-image SBOM**. npm's exact resolved versions are in [package-lock.json](frontend/package-lock.json); Python direct pins are in [requirements.txt](backend/requirements.txt). Floating container tags can resolve to newer builds.
-
-| Layer | Component | Version / declared image | Purpose | License |
-| --- | --- | --- | --- | --- |
-| UI | React / React DOM | 18.3.1 | Browser interface | MIT |
-| UI | Mantine Core / Hooks | 7.17.8 | Components and interactions | MIT |
-| UI | Interest invokers polyfill | 1.0.14 resolved | Hover/focus help compatibility | BSD-3-Clause |
-| UI | Popover polyfill | 0.7.3 resolved | Popover compatibility | BSD-3-Clause |
-| Build | Vite | 6.4.6 resolved | Frontend bundling | MIT |
-| Build | TypeScript | 5.8.3 resolved | Type checking | Apache-2.0 |
-| API | FastAPI | 0.165.0 | HTTP API | MIT |
-| MCP | FastMCP | 4.2.2 | Agent tool interface | Apache-2.0 |
-| API | Uvicorn | 0.54.0 | ASGI server | BSD-3-Clause |
-| Database adapter | Psycopg | 3.2.6 | PostgreSQL access | LGPL-3.0 |
-| Assistant | OpenAI Agents SDK | 0.25.0 | Optional model-backed agent runtime | MIT |
-| Database | PostgreSQL | `postgres:17` | Persistent project records | PostgreSQL License |
-| Runtime | Python | `python:3.12-slim` | API runtime | PSF; image includes separately licensed OS packages |
-| Build / executor | Node.js | `node:22-alpine` / `node:22-bookworm` | Frontend build / optional execution tools | MIT; bundled components have additional terms |
-| Web | Nginx | `nginx:stable-alpine` | Static UI and API proxy | BSD-2-Clause; image includes OS packages |
-| Check tooling | PyYAML | 6.0.3 | Skill metadata checks | MIT |
-| Assets | Inter / Phosphor icons | Bundled files | Typography and icons | SIL OFL-1.1 / MIT |
-
-Original AgentBoard code and the AgentBuild skill use the [MIT license](LICENSE); the standalone skill includes its [own license copy](skills/agentbuild/LICENSE.txt). Preserve bundled [Inter](frontend/public/fonts/OFL-Inter.txt) and [Phosphor](frontend/public/LICENSE-phosphor) notices and dependency license terms.
-
 ## Development and verification
 
 Python 3.12+ and Node.js 22 are needed for these host-side checks:
@@ -261,6 +235,32 @@ AgentBoard/
 
 Keep credentials, database dumps, dependencies, caches and generated host installations out of commits. The author's `.github/`, `docs/`, `demo/`, `walkthrough/`, `.gitignore`, design snapshots and V3-specific export/preview helpers are excluded from publication. A clone does not inherit the author's private ignore rules; review an explicit file list before committing. Design artifacts can be prepared locally through AgentBuild; a clone does not include the author's Canvas publications.
 
+## Software bill of materials
+
+This table covers direct application dependencies and the main toolchain at this checkout. It is **not an exhaustive transitive or container-image SBOM**. npm's exact resolved versions are in [package-lock.json](frontend/package-lock.json); Python direct pins are in [requirements.txt](backend/requirements.txt). Floating container tags can resolve to newer builds.
+
+| Layer | Component | Version / declared image | Purpose | License |
+| --- | --- | --- | --- | --- |
+| UI | React / React DOM | 18.3.1 | Browser interface | MIT |
+| UI | Mantine Core / Hooks | 7.17.8 | Components and interactions | MIT |
+| UI | Interest invokers polyfill | 1.0.14 resolved | Hover/focus help compatibility | BSD-3-Clause |
+| UI | Popover polyfill | 0.7.3 resolved | Popover compatibility | BSD-3-Clause |
+| Build | Vite | 6.4.6 resolved | Frontend bundling | MIT |
+| Build | TypeScript | 5.8.3 resolved | Type checking | Apache-2.0 |
+| API | FastAPI | 0.165.0 | HTTP API | MIT |
+| MCP | FastMCP | 4.2.2 | Agent tool interface | Apache-2.0 |
+| API | Uvicorn | 0.54.0 | ASGI server | BSD-3-Clause |
+| Database adapter | Psycopg | 3.2.6 | PostgreSQL access | LGPL-3.0 |
+| Assistant | OpenAI Agents SDK | 0.25.0 | Optional model-backed agent runtime | MIT |
+| Database | PostgreSQL | `postgres:17` | Persistent project records | PostgreSQL License |
+| Runtime | Python | `python:3.12-slim` | API runtime | PSF; image includes separately licensed OS packages |
+| Build / executor | Node.js | `node:22-alpine` / `node:22-bookworm` | Frontend build / optional execution tools | MIT; bundled components have additional terms |
+| Web | Nginx | `nginx:stable-alpine` | Static UI and API proxy | BSD-2-Clause; image includes OS packages |
+| Check tooling | PyYAML | 6.0.3 | Skill metadata checks | MIT |
+| Assets | Inter / Phosphor icons | Bundled files | Typography and icons | SIL OFL-1.1 / MIT |
+
+Original AgentBoard code and the AgentBuild skill use the [MIT license](LICENSE); the standalone skill includes its [own license copy](skills/agentbuild/LICENSE.txt). Preserve bundled [Inter](frontend/public/fonts/OFL-Inter.txt) and [Phosphor](frontend/public/LICENSE-phosphor) notices and dependency license terms.
+
 ## Troubleshooting
 
 | Symptom | Check |
@@ -279,3 +279,4 @@ Keep credentials, database dumps, dependencies, caches and generated host instal
 For bugs or proposals, [open an issue](https://github.com/CJsGit-tech/AgentBoard/issues) with reproduction steps, expected behavior, environment and sanitized evidence. Before proposing code changes, run the relevant checks and explain the resulting behavior. Do not attach API keys, private conversations or database exports.
 
 The supported deployment is a trusted local machine with loopback access. Public hosting, multi-user authentication and remote/cloud MCP transport are outside the supplied deployment. Local OS processes with Docker access are trusted.
+

@@ -1,49 +1,51 @@
-<p align="center">
-  <img src="assets/agentboard-cover.svg" alt="AgentBoard: keep the work, keep the context. A local workspace for you, Codex and Claude Code." width="100%">
-</p>
+<div align="center">
+
+# AgentBoard
+
+**一個專案, 共用脈絡, 每一步都有依據。**
+
+**繁體中文** ｜ [English](README.en.md)
+
+[![MIT 授權](https://img.shields.io/badge/license-MIT-5148a4)](LICENSE)
+![Docker 本機部署](https://img.shields.io/badge/deployment-local%20Docker-585b58)
+![Codex 與 Claude Code](https://img.shields.io/badge/agents-Codex%20%2B%20Claude%20Code-5148a4)
+
+[🚀 啟動](#install-the-service) · [🧩 技能](#install-the-skill) · [🗂️ 專案](#first-project) · [🛠️ 開發](#development-and-verification)
+
+</div>
+
+**AgentBoard** 集中管理需求、設計、任務與驗證證據。**AgentBuild** 讓 Codex 或 Claude Code 讀取這些紀錄, 接續專案工作。
+
+看板與外部代理連線不需要模型 API 金鑰。全新安裝會從空白工作區開始。
 
 <p align="center">
-  <strong>One project. Shared context. Work you can verify.</strong>
+  <img src="assets/agentboard-walkthrough.gif" alt="AgentBoard 操作導覽: 專案、文件、Canvas、任務、里程碑、角色與助理設定。" width="960">
 </p>
 
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-5148a4" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/deployment-local%20Docker-585b58" alt="Local Docker deployment">
-  <img src="https://img.shields.io/badge/agents-Codex%20%2B%20Claude%20Code-5148a4" alt="Codex and Claude Code">
-</p>
+*44 秒介面導覽 · 43 個畫面 · [查看原尺寸](assets/agentboard-walkthrough.gif)。含虛構示範專案, 非端對端測試報告。*
 
-<p align="center">
-  <a href="#why-agentboard">🎯 Why</a> ·
-  <a href="#install-the-service">🚀 Start service</a> ·
-  <a href="#install-the-skill">🧩 Add skill</a> ·
-  <a href="#first-project">🗂️ Workflows</a> ·
-  <a href="#software-bill-of-materials">📦 Software BOM</a>
-</p>
-
-**AgentBoard** stores project requirements, designs, tickets and evidence. **AgentBuild** connects Codex or Claude Code to those records.
-
-**No model key is needed** for the board or external agent connection. New installations start empty.
+---
 
 <a id="why-agentboard"></a>
 
-## 🎯 Why AgentBoard?
+## 🎯 解決什麼問題?
 
-| Problem | Solution |
+| 常見困擾 | AgentBoard 的做法 |
 | --- | --- |
-| Decisions get lost in chat. | Keep linked requirements and designs. |
-| Agents follow different instructions. | Share tickets, context and acceptance criteria. |
-| “Done” has no proof. | Save output evidence and change history. |
+| 決策散落在聊天紀錄。 | 串起需求與設計文件。 |
+| 不同代理掌握的資訊不一致。 | 共用任務、專案脈絡與驗收條件。 |
+| 任務標記完成, 卻沒有證據。 | 保留驗證結果與修改歷程。 |
 
 <picture>
   <source media="(max-width: 600px)" srcset="assets/agentboard-system-mobile.svg">
-  <img src="assets/agentboard-system.svg" alt="The browser and coding agents share the same project records through AgentBoard and AgentBuild." width="100%">
+  <img src="assets/agentboard-system.svg" alt="瀏覽器、Codex 與 Claude Code 透過 AgentBoard 和 AgentBuild 共用專案紀錄。" width="100%">
 </picture>
 
 <a id="install-the-service"></a>
 
-## 🚀 1. Start the service
+## 🚀 1. 啟動服務
 
-Install Git and Docker with Compose v2. Start Docker. Use a POSIX shell with OpenSSL; the first build needs internet access. Native Windows setup is unverified.
+準備 Git、Docker 與 Compose v2, 並先啟動 Docker。安裝腳本需要 POSIX shell 與 OpenSSL; 首次建置需要網路。原生 Windows 環境尚未驗證。
 
 ```sh
 git clone https://github.com/CJsGit-tech/AgentBoard.git
@@ -51,21 +53,21 @@ cd AgentBoard
 ./scripts/setup.sh
 ```
 
-Open **[localhost:8080](http://127.0.0.1:8080)**. Setup creates the database password at `.local/db_password` and preserves existing data.
+開啟 **[localhost:8080](http://127.0.0.1:8080)**。安裝會在 `.local/db_password` 建立資料庫密碼, 並保留既有資料。
 
-Check service health:
+檢查服務狀態:
 
 ```sh
 docker compose ps
 ```
 
-Expect `db`, `api` and `web` to be healthy. An empty Projects screen is normal.
+`db`、`api`、`web` 應顯示為 healthy。專案清單空白是正常的。
 
 <a id="install-the-skill"></a>
 
-## 🧩 2. Install AgentBuild
+## 🧩 2. 安裝 AgentBuild
 
-Install Python 3.12+ and your agent host. **Choose one block** and run it from the AgentBoard checkout.
+準備 Python 3.12+ 與你的代理工具。**選擇一組指令**, 在 AgentBoard 資料夾內執行。
 
 ### Codex
 
@@ -86,57 +88,57 @@ claude mcp add --scope local \
   "$PWD/scripts/agentboard-mcp" Claude
 ```
 
-Open a fresh host session if needed. Send this message:
+必要時開啟新的代理對話, 傳送:
 
 ```text
 Use the agentboard-mvp MCP server to list projects.
 ```
 
-An empty list means the connection works. The host needs local Docker access.
+收到空清單也代表連線成功。代理工具需要能存取本機 Docker。
 
-Project skill paths: `.agents/skills/agentbuild` for Codex; `.claude/skills/agentbuild` for Claude.
+技能安裝位置: Codex 使用 `.agents/skills/agentbuild`; Claude 使用 `.claude/skills/agentbuild`。
 
-For personal installs, another repository or connection repairs, use the [connection guide](skills/agentbuild/references/connection.md). Skill installation and MCP registration are separate steps.
+個人安裝、其他程式庫或連線修復, 請看[連線指南](skills/agentbuild/references/connection.md)。安裝技能與註冊 MCP 是兩個步驟。
 
 <a id="first-project"></a>
 
-## 🗂️ 3. Create your project
+## 🗂️ 3. 建立專案
 
-Send this in **Codex**:
+在 **Codex** 傳送:
 
 ```text
 $agentbuild Setup My Project
 ```
 
-Or in **Claude Code**:
+或在 **Claude Code** 傳送:
 
 ```text
 /agentbuild Setup My Project
 ```
 
-Then name the workflow you need:
+接著指定需要的工作流程:
 
-| Workflow | Result |
+| 工作流程 | 產出 |
 | --- | --- |
-| Setup | Project, default roles and document check. |
-| Create Documents | Requirements and design drafts for review. |
-| Create Visuals | Local Canvas; publish when requested. |
-| Create Tickets | Planned milestone tickets with acceptance criteria. |
+| Setup | 專案、預設角色與文件檢查。 |
+| Create Documents | 供你審閱的需求與設計草稿。 |
+| Create Visuals | 本機 Canvas, 依要求發布。 |
+| Create Tickets | 含驗收條件的里程碑任務。 |
 
-Approve document/design drafts before saving. Confirm changes to agreed scope. See [workflow examples](skills/agentbuild/references/commands.md).
+文件與設計草稿經你確認後再儲存; 變更已同意的範圍也需確認。更多用法見[工作流程範例](skills/agentbuild/references/commands.md)。
 
 <a id="optional-inapp-assistant"></a>
 
-## 🧪 Optional InApp Assistant
+## 🧪 選用: InApp Assistant
 
 > [!WARNING]
-> **Experimental and not fully tested end to end.** Use a disposable project or backed-up source folder. Review changes before relying on them.
+> **實驗功能, 尚未完成完整端對端測試。** 請使用可拋棄的測試專案或已備份的原始碼資料夾, 並檢查每次修改。
 
-1. Open a project → **InApp Assistant → Settings**.
-2. Enter your key, select a model and test the connection. **Provider charges may apply.**
-3. Session keys clear when the API restarts. Environment-key configuration is shown in [.env.example](.env.example).
+1. 開啟專案 → **InApp Assistant → Settings**。
+2. 輸入金鑰、選擇模型並測試連線。**模型供應商可能收費。**
+3. API 重啟後需重新輸入對話期間設定的金鑰。環境變數設定見 [.env.example](.env.example)。
 
-To enable file access, preview your folder selection, then apply it:
+啟用檔案存取前, 先預覽選取的資料夾, 再套用:
 
 ```sh
 python3 scripts/setup-execution.py \
@@ -145,52 +147,52 @@ python3 scripts/setup-execution.py \
   --folder "/absolute/path/to/source" --apply
 ```
 
-Commands can access the **entire selected folder**. Choose a dedicated source folder. Editing requires a reviewed ticket, Git and execution status **Ready**. The executor has no network, model key, database password or Docker socket.
+指令可存取**整個選定資料夾**, 請使用專用的原始碼資料夾。編輯需要已審閱的任務、Git 與 **Ready** 執行狀態。執行環境無網路、模型金鑰、資料庫密碼或 Docker socket。
 
 <a id="updates-shutdown-and-data"></a>
 
-## 🔄 Maintain your installation
+## 🔄 日常維護
 
-**Start or rebuild:**
+**啟動或重新建置:**
 
 ```sh
 ./scripts/setup.sh
 ```
 
-**Stop:**
+**停止服務:**
 
 ```sh
 docker compose stop
 ```
 
-With file execution configured, stop using both Compose files:
+已啟用檔案執行功能時, 使用兩份 Compose 設定停止服務:
 
 ```sh
 docker compose -f compose.yaml -f .local/execution.compose.yaml stop
 ```
 
-**Update or remove the skill:** reuse its original host, scope and project options. Replace `codex` with `claude` when applicable.
+**更新或移除技能:** 沿用原本的 host、scope 與 project 選項。Claude 使用者請將 `codex` 換成 `claude`。
 
 ```sh
 python3 scripts/install-skill.py update --host codex --scope project
 ```
 
-To uninstall instead:
+若要解除安裝:
 
 ```sh
 python3 scripts/install-skill.py uninstall --host codex --scope project
 ```
 
-Updates back up managed copies. Modified copies are preserved. Uninstall does not remove the service or MCP registration.
+更新會備份受管理的技能副本, 保留你修改過的副本。解除安裝不會移除服務或 MCP 註冊。
 
 > [!IMPORTANT]
-> Keep the `agentboard_mvp_workspace_v1` database volume and matching `.local/db_password` together. **Do not run `docker compose down --volumes` on a working installation:** it deletes workspace data. Verify backups before moving important data.
+> 請一併保留 `agentboard_mvp_workspace_v1` 資料庫磁碟區與對應的 `.local/db_password`。**不要對使用中的安裝執行 `docker compose down --volumes`: 這會刪除工作區資料。** 搬移重要資料前, 請確認備份可還原。
 
 <a id="development-and-verification"></a>
 
-## 🛠️ Development and verification
+## 🛠️ 開發與驗證
 
-Use Python 3.12+ and Node.js 22:
+使用 Python 3.12+ 與 Node.js 22:
 
 ```sh
 python3 -m pip install -r scripts/requirements-checks.txt
@@ -201,75 +203,77 @@ npm run build --prefix frontend
 npm test --prefix frontend
 ```
 
-With the service running, test the backend:
+服務啟動後, 執行後端測試:
 
 ```sh
 docker compose exec -T api python -m unittest discover -s tests -v
 ```
 
-Tests use temporary databases/directories. Clean up test resources; preserve user data. Workflow contract tests do not prove live-model behavior.
+測試使用暫存資料庫與資料夾。測試後清理資源, 保留使用者資料。工作流程合約測試不代表真實模型行為已通過驗證。
 
 ```text
-backend/app/         API, MCP and application logic
-backend/migrations/  Database migrations
-frontend/src/        React application
-frontend/public/     Icons, fonts and license notices
-skills/agentbuild/   Skill instructions and helpers
-scripts/             Setup, installation and checks
-assets/              README illustrations
-compose.yaml         Local service configuration
+backend/app/         API、MCP 與應用邏輯
+backend/migrations/  資料庫遷移
+frontend/src/        React 應用程式
+frontend/public/     圖示、字型與授權聲明
+skills/agentbuild/   技能指引與輔助工具
+scripts/             安裝、設定與檢查
+assets/              README 圖解與 GIF
+README.md            繁體中文指南
+README.en.md         英文指南
+compose.yaml         本機服務設定
 ```
 
-Author records, design snapshots and local-only folders are not bundled. Keep credentials, caches and generated files out of commits. GitHub automation is excluded; run checks manually.
+作者的專案紀錄、設計快照與本機專用資料夾不隨程式碼提供。金鑰、快取與產生的檔案不要提交。此版本不含 GitHub 自動化, 請手動執行檢查。
 
 <a id="software-bill-of-materials"></a>
 
-## 📦 Software bill of materials
+## 📦 軟體物料清單
 
-**MIT covers our original code.** Dependencies keep their own licenses. This lists direct components and tooling, not every package inside dependencies or images. Container tags can change.
+**原創程式碼採 MIT 授權。** 相依元件保留各自授權。下表列出直接元件與工具, 不涵蓋所有間接套件或容器內容; 容器標籤可能指向新版本。
 
-| Layer | Component | Version / declared image | Purpose | License |
+| 層級 | 元件 | 版本 / 映像 | 用途 | 授權 |
 | --- | --- | --- | --- | --- |
-| UI | React / React DOM | 18.3.1 | Browser interface | MIT |
-| UI | Mantine Core / Hooks | 7.17.8 | Components and interactions | MIT |
-| UI | Interest invokers polyfill | 1.0.14 resolved | Hover/focus help compatibility | BSD-3-Clause |
-| UI | Popover polyfill | 0.7.3 resolved | Popover compatibility | BSD-3-Clause |
-| Build | Vite | 6.4.6 resolved | Frontend bundling | MIT |
-| Build | TypeScript | 5.8.3 resolved | Type checking | Apache-2.0 |
+| UI | React / React DOM | 18.3.1 | 瀏覽器介面 | MIT |
+| UI | Mantine Core / Hooks | 7.17.8 | 元件與互動 | MIT |
+| UI | Interest invokers polyfill | 1.0.14 resolved | 懸停與焦點提示相容性 | BSD-3-Clause |
+| UI | Popover polyfill | 0.7.3 resolved | Popover 相容性 | BSD-3-Clause |
+| Build | Vite | 6.4.6 resolved | 前端打包 | MIT |
+| Build | TypeScript | 5.8.3 resolved | 型別檢查 | Apache-2.0 |
 | API | FastAPI | 0.165.0 | HTTP API | MIT |
-| MCP | FastMCP | 4.2.2 | Agent tool interface | Apache-2.0 |
-| API | Uvicorn | 0.54.0 | ASGI server | BSD-3-Clause |
-| Database adapter | Psycopg | 3.2.6 | PostgreSQL access | LGPL-3.0 |
-| Assistant | OpenAI Agents SDK | 0.25.0 | Optional model-backed agent runtime | MIT |
-| Database | PostgreSQL | `postgres:17` | Persistent project records | PostgreSQL License |
-| Runtime | Python | `python:3.12-slim` | API runtime | PSF; image includes separately licensed OS packages |
-| Build / executor | Node.js | `node:22-alpine` / `node:22-bookworm` | Frontend build / optional execution tools | MIT; bundled components have additional terms |
-| Web | Nginx | `nginx:stable-alpine` | Static UI and API proxy | BSD-2-Clause; image includes OS packages |
-| Check tooling | PyYAML | 6.0.3 | Skill metadata checks | MIT |
-| Assets | Inter / Phosphor icons | Bundled files | Typography and icons | SIL OFL-1.1 / MIT |
+| MCP | FastMCP | 4.2.2 | 代理工具介面 | Apache-2.0 |
+| API | Uvicorn | 0.54.0 | ASGI 伺服器 | BSD-3-Clause |
+| Database adapter | Psycopg | 3.2.6 | PostgreSQL 存取 | LGPL-3.0 |
+| Assistant | OpenAI Agents SDK | 0.25.0 | 選用的模型助理執行環境 | MIT |
+| Database | PostgreSQL | `postgres:17` | 專案資料儲存 | PostgreSQL License |
+| Runtime | Python | `python:3.12-slim` | API 執行環境 | PSF; 映像內作業系統套件另有授權 |
+| Build / executor | Node.js | `node:22-alpine` / `node:22-bookworm` | 前端建置 / 選用的執行工具 | MIT; 隨附元件另有條款 |
+| Web | Nginx | `nginx:stable-alpine` | 靜態介面與 API 代理 | BSD-2-Clause; 映像含作業系統套件 |
+| Check tooling | PyYAML | 6.0.3 | 技能中繼資料檢查 | MIT |
+| Assets | Inter / Phosphor icons | 隨附檔案 | 字型與圖示 | SIL OFL-1.1 / MIT |
 
-Versions: [npm lockfile](frontend/package-lock.json) · [Python dependencies](backend/requirements.txt). Notices: [MIT](LICENSE) · [Inter](frontend/public/fonts/OFL-Inter.txt) · [Phosphor](frontend/public/LICENSE-phosphor).
+版本來源: [npm 鎖定檔](frontend/package-lock.json) · [Python 相依套件](backend/requirements.txt)。授權聲明: [MIT](LICENSE) · [Inter](frontend/public/fonts/OFL-Inter.txt) · [Phosphor](frontend/public/LICENSE-phosphor)。
 
 <a id="troubleshooting"></a>
 
-## 🩺 Troubleshooting
+## 🩺 常見問題
 
-| Problem | Next step |
+| 狀況 | 下一步 |
 | --- | --- |
-| Docker unavailable | Start Docker, then rerun setup. |
-| Port 8080 occupied | Stop the conflicting process you own. |
-| Agent tools missing | Check MCP registration and local Docker access; restart the host session. |
-| Skill missing | Check host, installation scope and duplicate legacy copies. |
-| Empty project list | Run Setup with your project name. |
-| Assistant Not configured | Check model settings and file access separately. |
-| Save outcome uncertain | Read saved state or use Retry sync before resubmitting. |
+| Docker 無法使用 | 啟動 Docker, 再執行安裝腳本。 |
+| 8080 連接埠被占用 | 停止你擁有的衝突程序。 |
+| 代理找不到工具 | 檢查 MCP 註冊與本機 Docker 存取, 再開啟新的代理對話。 |
+| 找不到技能 | 檢查 host、安裝範圍與重複的舊版副本。 |
+| 專案清單空白 | 使用你的專案名稱執行 Setup。 |
+| 助理顯示 Not configured | 分別檢查模型設定與檔案存取。 |
+| 不確定是否已儲存 | 先讀取已存狀態或使用 Retry sync, 再決定是否重送。 |
 
-Inspect service errors:
+查看服務錯誤:
 
 ```sh
 docker compose logs --tail=50 api db
 ```
 
-[Report a problem](https://github.com/CJsGit-tech/AgentBoard/issues) with reproduction steps and sanitized evidence. Never share keys, private conversations or database exports.
+[回報問題](https://github.com/CJsGit-tech/AgentBoard/issues)時, 請提供重現步驟與已去除敏感資訊的證據。不要分享金鑰、私人對話或資料庫匯出檔。
 
-**Deployment:** one trusted local machine. Public hosting, multi-user authentication and cloud MCP are outside this setup. Processes with Docker access are trusted. AgentBoard records reported work; it does not supervise unrelated agent processes.
+**部署範圍:** 單一可信任的本機。此設定不涵蓋公開主機、多人驗證或雲端 MCP。具有 Docker 存取權的程序視為可信任。AgentBoard 記錄代理回報的工作, 不監管其他代理程序。

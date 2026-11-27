@@ -48,7 +48,7 @@ Document edits save in place with history and a pending impact review. Their las
 
 ## Before implementation or publication
 
-The server requires a current Ready/Confirmed ticket scope check and current document impact checks for the ticket's requirements before moving it to In progress or Done, or starting/completing an editing run. Supply a linked ticket for `mode: Edit`; `mode: Read only` permits inspection and questions without changing project files. Never label editing as read-only to bypass checks. Output documents describe produced evidence; they do not replace Context requirements.
+The server requires a current Ready/Confirmed ticket scope check and current document impact checks for the ticket's requirements before moving it to In progress or Done, or starting/completing an editing run. Supply a linked ticket for `mode: Edit`; `mode: Read only` permits inspection and questions without changing project files. Never label editing as read-only to bypass checks. Output documents describe produced evidence; they do not replace Context requirements. Before marking a ticket Done or an implementation run Completed, also perform the [evidence completion gate](tickets.md#evidence-completion-gate). Scope checks alone do not verify the evidence handoff.
 
 Read the current checks before editing, after scope/source changes, and when resuming a session. Requirement changes mark affected editing runs Waiting for input. AgentBoard records this hold but cannot stop an external Codex/Claude process; the agent must pause edits itself. Resume only after the checks clear. Unrelated work and read-only inspection can continue.
 

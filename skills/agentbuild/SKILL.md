@@ -37,6 +37,10 @@ After the user approves the reviewed design package for upload, save its approve
 
 Follow the [Create Visuals contract](references/visuals.md) for the local files, publication helper, retry rules, and verification.
 
+## Ticket evidence completion gate
+
+Before marking a ticket **Done** or its implementation run **Completed**, save the factual verification report and relevant screenshots in AgentBoard, link them through the affected ticket's `output_documents`, and verify that the report and previews open from the ticket. Local files alone do not complete the handoff. Publishing implementation evidence is part of authorized ticket execution; proposed requirements and design changes retain their review-before-publication boundary. Honor explicit local-only or chat-only instructions. Follow the [evidence completion procedure](references/tickets.md#evidence-completion-gate) for storage, verification, partial uploads and failure handling.
+
 ## Browser testing and visual evidence
 
 Prefer an in-app or headless browser when running tests or capturing visual evidence. If you need an external Chrome window, close the task-created window or session immediately after taking the screenshots. Apply the same cleanup if a test or capture fails, and leave the user's pre-existing browser windows and tabs untouched.

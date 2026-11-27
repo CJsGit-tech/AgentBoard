@@ -43,7 +43,7 @@ class WorkspaceIntegration(unittest.TestCase):
         return result.json()
 
     def finish_reviews(self, project):
-        reviews = self.http.get('/api/workspace').json()['reviews']
+        reviews = self.http.get('/api/workspace?view=export').json()['reviews']
         for review in reviews:
             if review['project'] != project or review['superseded'] or review['status'] != 'Pending':
                 continue
@@ -79,7 +79,7 @@ class WorkspaceIntegration(unittest.TestCase):
                 self.finish_reviews(p['id'])
                 change=await client.call_tool("update_record",dict(kind="tickets",id=t["id"],revision=1,changes={"status":"Done"}))
                 self.assertFalse(change.is_error)
-                state=self.http.get("/api/workspace").json()
+                state=self.http.get("/api/workspace?view=export").json()
                 self.assertEqual(state["tickets"][0]["status"],"Done")
                 self.assertEqual(state["activity"][0]["actor"],"Codex")
                 self.assertIn(["status","Planned","Done"],state["activity"][0]["changes"])
@@ -88,7 +88,7 @@ class WorkspaceIntegration(unittest.TestCase):
                 failed=self.http.delete("/api/milestones/"+m["id"],params={"revision":1})
                 self.assertEqual(failed.status_code,409)
                 await client.call_tool("delete_record",dict(kind="tickets",id=t["id"],revision=2))
-                self.assertEqual(len(self.http.get("/api/workspace").json()["trash"]),1)
+                self.assertEqual(len(self.http.get("/api/workspace?view=export").json()["trash"]),1)
                 restored=self.http.post("/api/tickets/"+t["id"]+"/restore",json={"revision":3})
                 self.assertEqual(restored.json()["revision"],4)
                 fetched=await client.call_tool("get_record",dict(kind="tickets",id=t["id"]))
@@ -98,14 +98,103 @@ class WorkspaceIntegration(unittest.TestCase):
                 self.assertEqual(invalid.status_code,422)
         asyncio.run(run())
 
-    def test_conditional_refresh(self):
-        response = self.http.get("/api/workspace")
+    def test_retired_unscoped_read_always_returns_a_reload_instruction(self):
+        with patch("app.api.state") as full_export, patch("app.api.browser_workspace.browser_state") as scoped:
+            for headers in ({}, {"if-none-match": '"workspace-v6-1-0"'}):
+                response = self.http.get("/api/workspace", headers=headers)
+                self.assertEqual(response.status_code, 410)
+                self.assertIn("Reload this tab", response.json()["detail"])
+                self.assertLess(len(response.content), 200)
+                self.assertEqual(response.headers["cache-control"], "no-store")
+            full_export.assert_not_called()
+            scoped.assert_not_called()
+        self.assertEqual(self.http.get("/api/workspace?view=export&project=P-test").status_code, 422)
+
+    def test_explicit_full_export_supports_conditional_reads(self):
+        response = self.http.get("/api/workspace?view=export")
         headers = {"if-none-match": response.headers["etag"]}
-        self.assertEqual(self.http.get("/api/workspace", headers=headers).status_code, 304)
+        self.assertEqual(self.http.get("/api/workspace?view=export", headers=headers).status_code, 304)
         self.create("projects", name="Fresh workspace")
-        changed = self.http.get("/api/workspace", headers=headers)
+        changed = self.http.get("/api/workspace?view=export", headers=headers)
         self.assertEqual(changed.status_code, 200)
         self.assertNotEqual(changed.headers["etag"], response.headers["etag"])
+
+    def test_scoped_browser_reads_keep_review_snapshots_on_demand(self):
+        project = self.create("projects", name="Optimization")["id"]
+        other = self.create("projects", name="Other")["id"]
+        milestone = self.create("milestones", name="First", project=project)["id"]
+        doc = self.create("documents", name="Requirements", project=project, content="Original requirement")
+        ticket = self.create("tickets", name="Scoped", project=project, milestone=milestone, documents=[doc["id"]])
+        first = self.http.get("/api/workspace", params={"project": project})
+        path = f"/api/projects/{project}/reviews/"
+        compact = next(r for r in first.json()["reviews"] if r["subject"] == ticket["id"])
+        self.assertNotIn("fields", compact["snapshot"]["documents"][0])
+        self.assertNotIn("baseline", compact["snapshot"]["documents"][0])
+        self.assertEqual([p["id"] for p in first.json()["projects"]], [project])
+        self.assertEqual(self.http.get(f'/api/records/tickets/{ticket["id"]}/project').json(), {"project": project})
+        self.assertEqual(self.http.get(f'/api/projects/{other}/reviews/{compact["id"]}').status_code, 404)
+
+        changed = self.http.patch("/api/documents/" + doc["id"], json={
+            "revision": doc["revision"], "changes": {"content": "Updated requirement"}})
+        self.assertEqual(changed.status_code, 200)
+        updated = self.http.get("/api/workspace", params={"project": project}, headers={"if-none-match": first.headers["etag"]})
+        current = next(r for r in updated.json()["reviews"] if r["subject"] == ticket["id"])
+        self.assertNotEqual(current["id"], compact["id"])
+        review_pages = path.rstrip("/")
+        history = self.http.get(review_pages, params={"subject": ticket["id"], "limit": 1}).json()
+        self.assertEqual(history["items"][0]["id"], current["id"])
+        self.assertNotIn("snapshot", history["items"][0])
+        archive = self.http.get(review_pages, params={"subject": ticket["id"], "offset": history["next_offset"]}).json()
+        self.assertEqual(archive["items"][0]["id"], compact["id"])
+        self.assertIsNone(archive["next_offset"])
+        self.assertEqual(self.http.get(f"/api/projects/{other}/reviews", params={"subject": ticket["id"]}).json()["items"], [])
+        old = self.http.get(path + compact["id"]).json()
+        self.assertTrue(old["superseded"])
+        self.assertEqual(old["snapshot"]["documents"][0]["fields"]["content"], "Original requirement")
+        self.assertFalse(any(row["superseded"] for row in updated.json()["reviews"]))
+        headers = {"if-none-match": updated.headers["etag"]}
+        self.create("milestones", name="Other project change", project=other)
+        stable = self.http.get("/api/workspace", params={"project": project}, headers=headers)
+        self.assertEqual((stable.status_code, stable.content), (304, b""))
+
+        directory = self.http.get("/api/workspace?view=projects", headers=headers)
+        summary = next(p["summary"] for p in directory.json()["projects"] if p["id"] == project)
+        self.assertEqual((summary["statuses"]["Planned"], summary["milestones"], summary["documents"]), (1, 1, 1))
+        for key in ("tickets", "documents", "activity", "reviews"):
+            self.assertEqual(directory.json()[key], [])
+        self.assertNotIn(b"Original requirement", directory.content)
+        self.assertEqual(self.http.get("/api/workspace?view=projects",
+                         headers={"if-none-match": directory.headers["etag"]}).status_code, 304)
+        self.assertEqual(self.http.get("/api/workspace?view=projects&project=" + project).status_code, 422)
+
+    def test_scoped_activity_keeps_filtered_history_across_pages_and_dashboard_events(self):
+        project = self.create("projects", name="Timeline")["id"]
+        other = self.create("projects", name="Other")["id"]
+        milestone = self.create("milestones", name="Ship", project=project)["id"]
+        ticket = self.create("tickets", name="Review evidence", project=project, milestone=milestone)
+        for title in ("Review updated", "Review finalized"):
+            reply = self.http.patch("/api/tickets/" + ticket["id"], json={
+                "revision": ticket["revision"], "changes": {"name": title}})
+            self.assertEqual(reply.status_code, 200)
+            ticket = reply.json()
+        path = f"/api/projects/{project}/activity"
+        filters = {"record": ticket["id"], "kind": "tickets", "actor": "Human", "action": "Updated",
+                   "search": "NAME", "limit": 1}
+        page1 = self.http.get(path, params=filters).json()
+        self.assertEqual(page1["items"][0]["name"], "Review finalized")
+        self.assertEqual(page1["total"], 2)
+        self.assertIn("Created", page1["facets"]["actions"])
+        page2 = self.http.get(path, params={**filters, "before": page1["next_before"]}).json()
+        self.assertEqual(page2["items"][0]["name"], "Review updated")
+        self.assertNotEqual(page1["items"][0]["id"], page2["items"][0]["id"])
+        self.assertEqual(page2["total"], 2)
+        self.assertIsNone(page2["next_before"])
+        self.assertEqual(self.http.get(f"/api/projects/{other}/activity", params=filters).json()["items"], [])
+        self.assertEqual(self.http.get(path, params={**filters, "start":"2100-01-01T00:00:00Z"}).json()["total"], 0)
+        self.assertEqual(self.http.get(path, params={"limit": 0}).status_code, 422)
+        project_read = self.http.get("/api/workspace", params={"project": project}).json()
+        self.assertEqual(project_read["activity_count"], self.http.get(path).json()["total"])
+        self.assertEqual([e["changes"] for e in project_read["activity"]], [[["status", None, "Planned"]]])
 
     def test_browser_boundary(self):
         self.assertEqual(self.http.get("/api/workspace",headers={"origin":"http://unrelated.invalid"}).status_code,403)
@@ -142,7 +231,7 @@ class WorkspaceIntegration(unittest.TestCase):
         # Add a newer event in another project so deleting the target cannot change MAX(seq).
         other = self.create("projects", name="Keep me")["id"]
         other_milestone = self.create("milestones", name="Keep this too", project=other)["id"]
-        before = self.http.get("/api/workspace")
+        before = self.http.get("/api/workspace?view=export")
         latest = self.http.get(path + "/deletion-preview").json()
         confirmation["activity_version"] = latest["activity_version"]
         self.assertEqual(self.http.post(path + "/purge", json=confirmation,
@@ -158,7 +247,7 @@ class WorkspaceIntegration(unittest.TestCase):
                 ("SELECT COUNT(*) AS total FROM visual_assets WHERE document_id=%s", inventory),
             ):
                 self.assertEqual(conn.execute(query, (key,)).fetchone()["total"], 0)
-        after = self.http.get("/api/workspace", headers={"if-none-match":before.headers["etag"]})
+        after = self.http.get("/api/workspace?view=export", headers={"if-none-match":before.headers["etag"]})
         self.assertEqual(after.status_code, 200)
         state = after.json()
         self.assertEqual([row["id"] for row in state["projects"]], [other])
@@ -213,9 +302,20 @@ class WorkspaceIntegration(unittest.TestCase):
         asyncio.run(handoff())
         url = "/api/visuals/" + inventory["id"] + "/checkout.png"
         self.assertEqual(self.http.get(url).content, png)
+        self.assertEqual(self.http.get(url, params={"v": sha256(png).hexdigest()}).content, png)
+        self.assertEqual(self.http.get(url, params={"v": "f" * 64}).status_code, 404)
         self.assertEqual(self.http.get(url, headers={"X-AgentBoard-UI":""}).status_code, 403)
-        state = self.http.get("/api/workspace").json()
+        state = self.http.get("/api/workspace?view=export").json()
         self.assertEqual(state["tickets"][0]["documents"], [brief["id"], inventory["id"]])
+        screenshot = dict(kind="screenshot", document_id=inventory["id"], filename="checkout.png",
+                          digest=sha256(png).hexdigest(), status="verified")
+        proof = self.http.patch("/api/tickets/" + bug["id"], json={"revision": 2, "changes": {
+            "output_documents": [inventory["id"]],
+            "criteria": [{"id": "checkout-preview", "text": "Checkout matches the approved screen.",
+                          "evidence_required": True, "evidence": [screenshot]}],
+        }})
+        self.assertEqual(proof.status_code, 200, proof.text)
+        self.assertEqual(proof.json()["criteria"][0]["evidence"], [screenshot])
         backend_bug = self.create("tickets", name="Order endpoint", project=project, milestone=milestone,
                                   execution_role="BE", work_type="BUG", tags=["checkout"])
         self.assertEqual(backend_bug["execution_role"], "BE")
@@ -250,13 +350,24 @@ class WorkspaceIntegration(unittest.TestCase):
                 publish("Codex", doc["id"], revision, rejected, **metadata)
             self.assertEqual(failure.exception.status, code)
         second = publish("Claude", doc["id"], first["revision"], {**files, "gallery.html": "djI="},
-                         **{**metadata, "change_note":"Added a screen"})
+                         **{**metadata, "change_note":"Added a screen", "screen_count": 2})
         self.assertEqual([v["version"] for v in second["canvas_versions"]], [2, 1])
+        self.assertEqual([v["screen_count"] for v in second["canvas_versions"]], [2, None])
+        retry = publish("Claude", doc["id"], second["revision"], {**files, "gallery.html": "djI="},
+                        **{**metadata, "change_note":"Added a screen", "screen_count": 2})
+        self.assertEqual(retry["revision"], second["revision"])
+        for invalid_count in (0, -1, "2", True):
+            with self.assertRaises(Problem) as invalid:
+                publish("Codex", doc["id"], second["revision"], files, **metadata, screen_count=invalid_count)
+            self.assertEqual(invalid.exception.status, 422)
+        second = publish("Claude", doc["id"], second["revision"], {**files, "gallery.html": "djI="},
+                         **{**metadata, "change_note":"Added a screen", "screen_count": 3})
+        self.assertEqual([v["screen_count"] for v in second["canvas_versions"]], [3, 2, None])
         self.assertEqual(initial["publisher"], "Codex")
         self.assertEqual(initial["change_note"], "Initial canvas")
         self.assertEqual(initial["sources"], [{"document_id": source["id"], "revision": 1, "name": "UserScreens"}])
         self.http.patch("/api/documents/" + source["id"], json={"revision": 1, "changes":{"name":"Updated screens"}})
-        unchanged = self.http.get("/api/workspace").json()["documents"]
+        unchanged = self.http.get("/api/workspace?view=export").json()["documents"]
         historical = next(record for record in unchanged if record["id"] == doc["id"])["canvas_versions"][-1]
         self.assertEqual(historical["sources"][0]["name"], "UserScreens")
         with self.assertRaises(Problem) as stale:
@@ -273,10 +384,76 @@ class WorkspaceIntegration(unittest.TestCase):
         self.assertEqual(original.content, b"<main>First version</main>")
         self.assertIn("sandbox allow-scripts", original.headers["content-security-policy"])
         self.assertNotIn("allow-same-origin", original.headers["content-security-policy"])
+        self.assertEqual(original.headers["cache-control"], "private, no-cache")
+        tag = original.headers["etag"]
+        self.assertFalse(tag.startswith("W/"))
+        from app.canvas import read_asset
+        with patch("app.api.read_asset", wraps=read_asset) as read:
+            head = self.http.head(path)
+            self.assertEqual(head.status_code, 200)
+            self.assertEqual(head.content, b"")
+            for name in ("content-type", "content-length", "etag", "cache-control", "content-security-policy"):
+                self.assertEqual(head.headers[name], original.headers[name])
+            for validator in (tag, "*", f'"old", W/{tag}'):
+                for method in ("HEAD", "GET"):
+                    validated = self.http.request(method, path, headers={"If-None-Match": validator})
+                    self.assertEqual(validated.status_code, 304)
+                    self.assertEqual(validated.content, b"")
+                    self.assertEqual(validated.headers["etag"], tag)
+                    self.assertEqual(validated.headers["content-security-policy"], original.headers["content-security-policy"])
+            self.assertTrue(all(not call.kwargs["include_content"] for call in read.call_args_list))
+        script = self.http.get(path.replace("gallery.html", "assets/board.js"), headers={"If-None-Match": tag})
+        newer = self.http.get(path.replace(initial["asset_key"], second["canvas_versions"][0]["asset_key"]),
+                              headers={"If-None-Match": tag})
+        for response in (script, newer):
+            self.assertEqual(response.status_code, 200)
+            self.assertTrue(response.content)
+            self.assertNotEqual(response.headers["etag"], tag)
+        self.assertEqual(self.http.head(path.replace("gallery.html", "absent.js"),
+                                        headers={"If-None-Match": "*"}).status_code, 404)
         self.approve_removal({**doc, 'revision':second['revision']})
         self.assertEqual(self.http.delete("/api/documents/" + doc["id"],
                          params={"revision":second["revision"]}).status_code, 200)
         self.assertEqual(self.http.get(path).status_code, 404)
+        for method in ("GET", "HEAD"):
+            unavailable = self.http.request(method, path, headers={"If-None-Match": tag})
+            self.assertEqual(unavailable.status_code, 404)
+            self.assertEqual(unavailable.headers["cache-control"], "no-store")
+
+    def test_ticket_design_pin_preserves_exact_version_and_project(self):
+        from app.canvas import publish
+
+        project = self.create("projects", name="Design criteria")["id"]
+        milestone = self.create("milestones", name="Release", project=project)["id"]
+        profile = self.create("documents", project=project, name="Design Profile", document_type="design-topic",
+                              content="Design under review")
+        self.finish_reviews(project)
+        sources = [{"document_id": profile["id"], "revision": 1}]
+        published = publish("Codex", profile["id"], 1, {"gallery.html": "djE="}, "Approved first design", sources)
+        latest = publish("Codex", profile["id"], published["revision"], {"gallery.html": "djI="},
+                         "Approved second design", [{**sources[0], "revision": published["revision"]}])
+        design = dict(document_id=profile["id"], version=1)
+        criterion = dict(id="read-layout", text="Current ticket uses the approved first version.", design=design)
+        ticket = self.create("tickets", project=project, milestone=milestone, name="Ticket layout", criteria=[criterion])
+        self.assertEqual(ticket["criteria"][0]["design"], design)
+        review = self.current_review(ticket["id"])
+        self.assertIn(profile["id"], [doc["id"] for doc in review["snapshot"]["documents"]])
+        self.assertFalse(review["snapshot"]["missing_context"])
+        unknown = self.http.post("/api/tickets", json={
+            "project": project, "milestone": milestone, "name": "Invalid version",
+            "criteria": [{**criterion, "design": {**design, "version": 42}}],
+        })
+        self.assertEqual(unknown.status_code, 422)
+        other = self.create("projects", name="Other design criteria")["id"]
+        other_milestone = self.create("milestones", name="Release", project=other)["id"]
+        mismatch = self.http.post("/api/tickets", json={
+            "project": other, "milestone": other_milestone, "name": "Invalid project", "criteria": [criterion],
+        })
+        self.assertEqual(mismatch.status_code, 422)
+        self.approve_removal(latest)
+        blocked = self.http.delete("/api/documents/" + profile["id"], params={"revision": latest["revision"]})
+        self.assertEqual(blocked.status_code, 409, blocked.text)
+        self.assertIn(ticket["id"], blocked.json()["detail"])
 
     def review_fixture(self):
         p = self.create('projects', name='Review rules')['id']
@@ -286,8 +463,95 @@ class WorkspaceIntegration(unittest.TestCase):
                         project=p, milestone=m, documents=[d['id']])
         return p, m, d, t
 
+    def test_criterion_proof_validates_pins_without_reopening_requirements(self):
+        project, milestone, requirements, legacy = self.review_fixture()
+        self.assertEqual(legacy["criteria"], [])
+        report = self.create("documents", project=project, document_type="review-evidence", name="Save tests",
+                             content="# Verification\n\n```text\n# Not a heading\n```\n\n## Failed-save result\nPassed")
+        other = self.create("projects", name="Other proof project")["id"]
+        external = self.create("documents", project=other, name="Unrelated", content="# Results")
+        criterion = dict(id="save-failure", text="A failed save preserves user input.", evidence_required=True)
+        target = dict(kind="report", document_id=report["id"], revision=report["revision"], section_line=6,
+                      status="unverified")
+        fields = dict(name="Verify failed saves", project=project, milestone=milestone,
+                      documents=[requirements["id"]], output_documents=[report["id"]])
+        for proof, outputs in (
+            ({**target, "section_line": 3}, [report["id"]]),
+            ({**target, "revision": 2}, [report["id"]]),
+            ({**target, "document_id": external["id"], "section_line": 0}, [external["id"]]),
+            (target, []),
+        ):
+            rejected = self.http.post("/api/tickets", json={
+                **fields, "output_documents": outputs, "criteria": [{**criterion, "evidence": [proof]}],
+            })
+            self.assertEqual(rejected.status_code, 422, rejected.text)
+        duplicate = self.http.post("/api/tickets", json={**fields, "criteria": [criterion, criterion]})
+        self.assertEqual(duplicate.status_code, 422)
+
+        ticket = self.create("tickets", **fields, criteria=[{**criterion, "evidence": [target]}])
+        self.finish_reviews(project)
+        review = self.current_review(ticket["id"])
+        path = "/api/tickets/" + ticket["id"]
+        updated = self.http.patch(path, json={"revision": 1, "changes": {
+            "criteria": [{**criterion, "evidence": [{**target, "status": "verified"}]}],
+        }})
+        self.assertEqual(updated.status_code, 200, updated.text)
+        self.assertEqual(self.current_review(ticket["id"])["id"], review["id"])
+        changed_criterion = self.http.patch(path, json={"revision": 2, "changes": {
+            "criteria": [{**criterion, "text": "Keep the draft on network errors.", "evidence": [target]}],
+        }})
+        self.assertEqual(changed_criterion.status_code, 200, changed_criterion.text)
+        self.assertEqual(self.current_review(ticket["id"])["status"], "Pending")
+
+    def test_explicit_criteria_gate_completion_and_preserve_superseded_proof(self):
+        project, milestone, requirements, legacy = self.review_fixture()
+        report = self.create("documents", project=project, document_type="review-evidence", name="Initial result",
+                             content="## Failed save\nPassed")
+        exact = dict(kind="report", document_id=report["id"], revision=1, section_line=0, status="verified")
+        required = dict(id="proof-required", text="Verify the failed save.", evidence_required=True)
+        ticket = self.create("tickets", name="Verify the save", project=project, milestone=milestone,
+                             documents=[requirements["id"]], output_documents=[report["id"]], criteria=[required])
+        self.finish_reviews(project)
+        run = self.create("runs", name="Save check", project=project, agent="Codex", mode="Edit",
+                          ticket=ticket["id"], status="Running")
+        ticket_path, run_path = "/api/tickets/" + ticket["id"], "/api/runs/" + run["id"]
+
+        def assert_incomplete(ticket_revision):
+            for path, revision, status in ((ticket_path, ticket_revision, "Done"), (run_path, 1, "Completed")):
+                result = self.http.patch(path, json={"revision": revision, "changes": {"status": status}})
+                self.assertEqual(result.status_code, 409, result.text)
+                self.assertIn("proof-required", result.json()["detail"])
+
+        assert_incomplete(1)
+        first = self.http.patch(ticket_path, json={"revision": 1, "changes": {
+            "criteria": [{**required, "evidence": [exact]}],
+        }})
+        self.assertEqual(first.status_code, 200, first.text)
+        changed = self.http.patch("/api/documents/" + report["id"], json={"revision": 1, "changes": {
+            "content": "# Results moved\n\n## Failed save\nPassed on the new build",
+        }})
+        self.assertEqual(changed.status_code, 200, changed.text)
+        assert_incomplete(2)  # The old revision is no longer a current proof.
+
+        retired = {**exact, "status": "superseded"}
+        next_proof = {**exact, "revision": 2, "section_line": 2}
+        superseded_only = self.http.patch(ticket_path, json={"revision": 2, "changes": {
+            "criteria": [{**required, "evidence": [retired]}],
+        }})
+        self.assertEqual(superseded_only.status_code, 200, superseded_only.text)
+        assert_incomplete(3)
+        resolved = self.http.patch(ticket_path, json={"revision": 3, "changes": {
+            "criteria": [{**required, "evidence": [retired, next_proof]}],
+        }})
+        self.assertEqual(resolved.status_code, 200, resolved.text)
+        self.assertEqual(resolved.json()["criteria"][0]["evidence"], [retired, next_proof])
+        self.assertEqual(self.http.patch(run_path, json={"revision": 1, "changes": {"status": "Completed"}}).status_code, 200)
+        self.assertEqual(self.http.patch(ticket_path, json={"revision": 4, "changes": {"status": "Done"}}).status_code, 200)
+        legacy_path = "/api/tickets/" + legacy["id"]
+        self.assertEqual(self.http.patch(legacy_path, json={"revision": 1, "changes": {"status": "Done"}}).status_code, 200)
+
     def current_review(self, key):
-        return next(r for r in self.http.get('/api/workspace').json()['reviews'] if r['subject'] == key and not r['superseded'])
+        return next(r for r in self.http.get('/api/workspace?view=export').json()['reviews'] if r['subject'] == key and not r['superseded'])
 
     def assess(self, review, conclusion='Within scope', update=None, **extra):
         return self.http.post('/api/reviews/'+review['id']+'/assess', json={
@@ -328,7 +592,7 @@ class WorkspaceIntegration(unittest.TestCase):
         self.assertEqual(self.http.patch('/api/tickets/'+ticket['id'],json={'revision':1,'changes':{'status':'In progress'}}).status_code,200)
         change = self.http.patch('/api/documents/'+doc['id'],json={'revision':1,'changes':{'content':'Users can save tickets and add comments.'}})
         self.assertEqual(change.status_code,200)
-        self.assertTrue(next(r for r in self.http.get('/api/workspace').json()['reviews'] if r['id'] == review['id'])['superseded'])
+        self.assertTrue(next(r for r in self.http.get('/api/workspace?view=export').json()['reviews'] if r['id'] == review['id'])['superseded'])
         self.assertEqual(self.http.post('/api/reviews/'+review['id']+'/confirm',json={
             'revision':confirmed.json()['revision'],'accept':True,'note':'Stale approval'}).status_code,409)
         self.assertEqual(self.current_review(ticket['id'])['status'],'Pending')
@@ -369,7 +633,7 @@ class WorkspaceIntegration(unittest.TestCase):
         changed_doc = self.current_review(doc['id'])
         own_snapshot = next(d for d in changed_doc['snapshot']['documents'] if d['id'] == doc['id'])
         self.assertEqual(own_snapshot['baseline']['fields']['content'],'Users can save a ticket.')
-        runs = self.http.get('/api/workspace').json()['runs']
+        runs = self.http.get('/api/workspace?view=export').json()['runs']
         self.assertEqual(next(r for r in runs if r['id'] == run['id'])['status'],'Waiting for input')
         # Cycles and cross-project source links cannot bypass relationship validation.
         self.assertEqual(self.http.patch('/api/documents/'+doc['id'],json={'revision':3,
@@ -409,6 +673,15 @@ class WorkspaceIntegration(unittest.TestCase):
                 self.assertIn('assess_change_review',tool_names)
                 self.assertFalse(any('confirm' in name for name in tool_names))
                 started = (await client.call_tool('start_change_review',{'kind':'tickets','id':ticket['id'],'revision':1,'request':'Add comments.'})).data
+                scope = {'project': p, 'subject': ticket['id'], 'limit': 1}
+                latest = (await client.call_tool('list_change_reviews', scope)).data
+                self.assertEqual(latest, [started])
+                previous = (await client.call_tool('list_change_reviews', {**scope, 'offset': 1})).data
+                self.assertEqual(len(previous), 1)
+                self.assertTrue(previous[0]['superseded'])
+                self.assertEqual(previous[0]['subject'], ticket['id'])
+                self.assertEqual((await client.call_tool('list_change_reviews', {**scope, 'offset': 2})).data, [])
+                self.assertEqual((await client.call_tool('list_change_reviews', {**scope, 'project': 'other'})).data, [])
                 assessment = {'conclusion':'Scope change','rationale':'Comments extend the saved Save-only story.',
                     'findings':[{'document_id':d['id'],'outcome':'No update needed','reason':'Reviewed comment impact.'} for d in started['snapshot']['documents']]}
                 assessed = (await client.call_tool('assess_change_review',{'id':started['id'],'revision':started['revision'],'assessment':assessment})).data
@@ -450,7 +723,7 @@ class WorkspaceIntegration(unittest.TestCase):
     def test_packaged_history_import_keeps_reviews_pending_without_exposing_a_bypass(self):
         from app.sample import install
         self.assertEqual(install(),'Installed the two sample projects.')
-        data = self.http.get('/api/workspace').json()
+        data = self.http.get('/api/workspace?view=export').json()
         self.assertEqual(len(data['projects']),2)
         self.assertTrue(any(t['status'] == 'Done' for t in data['tickets']))
         self.assertTrue(data['reviews'])

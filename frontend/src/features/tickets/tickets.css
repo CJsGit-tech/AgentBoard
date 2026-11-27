@@ -19,3 +19,18 @@ button.ticket-name:hover { color: var(--signal); }
 @media (max-width:1220px) { .board { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width:600px) { .board { grid-template-columns: minmax(0,1fr); } }
 .ticket-summary > .tag { justify-self:start; }
+.ticket-evidence { display: flex; flex-wrap: wrap; align-items: baseline; gap: 3px 8px; color: var(--muted); font-size: 12px; margin-block-start: 4px; overflow-wrap: anywhere; }
+.ticket-evidence details { min-width: 0; }
+.ticket-evidence summary { cursor: pointer; color: var(--signal); }
+.ticket-evidence ul { padding-inline-start: 18px; margin-block: 4px 0; }
+.milestone-board[data-lanes="1"] { grid-template-columns: minmax(0,1fr); }
+.milestone-board[data-lanes="1"] .lane-tickets { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap: 12px; }
+.milestone-board[data-lanes="1"] .tile { margin: 0; }
+.milestone-board[data-lanes="2"] { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.milestone-board[data-lanes="3"] { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.board.milestone-empty-lanes { gap: 8px; margin-block-start: 16px; grid-template-columns: repeat(auto-fit,minmax(min(100%,10rem),1fr)); }
+.board.milestone-empty-lanes .lane { background: var(--subtle); border: 1px dashed var(--line-2); border-radius: 6px; min-width: 0; min-height: 44px; padding: 8px 10px; }
+.empty-lane-title { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 3px 8px; color: var(--muted); font-size: 12px; }
+.empty-lane-title small { font-size: inherit; }
+@media (max-width: 1070px) { .milestone-board[data-lanes="3"] { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 600px) { .milestone-board:is([data-lanes="2"], [data-lanes="3"]) { grid-template-columns: minmax(0,1fr); } }

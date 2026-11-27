@@ -1,47 +1,55 @@
 export type TicketState = {id:string;status?:string};
-export type StatusEvent = {id:string;time:string;kind:string;record:string;changes:[string,unknown,unknown][]};
+export type StatusEvent = {id:string;time:string;kind:string;record:string;action?:string;changes:[string,unknown,unknown][]};
 export type DeliveryPoint = {time:number;done:number;total:number};
+export type DeliveryChange = {id:string;ticketId:string;from:string|null;to:string|null;created:boolean};
+type DeliveryCheckpoint = DeliveryPoint & {changes:DeliveryChange[]};
 const states=new Set(['Planned','In progress','Blocked','Done']);
+const knownStatus = (value:unknown): value is string => typeof value==='string'&&states.has(value);
 
 /** Replay the current ticket cohort, counting states rather than completion events. */
 export function deliveryHistory(tickets:TicketState[],activity:StatusEvent[]) {
   const ids=new Set(tickets.map(t=>t.id));
-  const events=activity.filter(a=>a.kind==='tickets'&&ids.has(a.record)&&a.changes.some(c=>c[0]==='status'))
-    .map(a=>({...a,at:Date.parse(a.time)})).sort((a,b)=>a.at-b.at||Number(a.id)-Number(b.id));
-  if(events.some(e=>!Number.isFinite(e.at)))throw new Error('Ticket history has an invalid timestamp.');
+  const events=activity.flatMap(event=>{
+    if(event.kind!=='tickets'||!ids.has(event.record))return [];
+    const status=event.changes.find(change=>change[0]==='status');
+    return status?[{...event,at:Date.parse(event.time),from:status[1],to:status[2]}]:[];
+  });
+  const usable=events.filter(event=>Number.isFinite(event.at)&&(event.to===null||knownStatus(event.to)))
+    .sort((a,b)=>a.at-b.at||Number(a.id)-Number(b.id));
   const current=new Map<string,string>();
   const points:DeliveryPoint[]=[];
-  for(const event of events) {
-    const status=event.changes.find(c=>c[0]==='status')![2];
-    if(status===null)current.delete(event.record);
-    else if(typeof status==='string'&&states.has(status))current.set(event.record,status);
-    else throw new Error('Ticket history has an unsupported status.');
+  const changesAt=new Map<number,DeliveryChange[]>();
+  for(const event of usable) {
+    const from=knownStatus(event.from)?event.from:current.get(event.record)??null;
+    const to=knownStatus(event.to)?event.to:null;
+    if(from!==to) {
+      if(!changesAt.has(event.at))changesAt.set(event.at,[]);
+      changesAt.get(event.at)!.push({id:event.id,ticketId:event.record,from,to,created:event.action==='Created'});
+    }
+    if(to===null)current.delete(event.record);
+    else current.set(event.record,to);
     const point={time:event.at,done:[...current.values()].filter(s=>s==='Done').length,total:current.size};
     if(points.at(-1)?.time===point.time)points[points.length-1]=point;else points.push(point);
   }
   const covered=tickets.filter(t=>current.has(t.id)).length;
-  const checkpoints:DeliveryPoint[]=[];
-  if(points.length) {
-    const first=points[0].time,last=points.at(-1)!.time;
-    const times=[first];
-    for(let time=Math.ceil((first+1)/3600000)*3600000;time<last;time+=3600000)times.push(time);
-    if(last!==first)times.push(last);
-    let index=0;
-    for(const time of times){while(index+1<points.length&&points[index+1].time<=time)index++;checkpoints.push({...points[index],time});}
-  }
+  const checkpoints:DeliveryCheckpoint[]=points.map(point=>({...point,changes:changesAt.get(point.time)??[]}));
   return {points,checkpoints,covered,complete:covered===tickets.length&&tickets.length>0,
-    matchesCurrent:tickets.every(t=>current.get(t.id)===t.status)};
+    matchesCurrent:tickets.every(t=>current.get(t.id)===t.status),unavailable:events.length-usable.length};
 }
 
 export function statusCounts(tickets:TicketState[]) {
   return ['Planned','In progress','Blocked','Done'].map(status=>({status,count:tickets.filter(t=>t.status===status).length}));
 }
 
+export function deliveryChartX(time:number,start:number,end:number,width=640) {
+  return 38+(time-start)/Math.max(1,end-start)*(width-54);
+}
+
 export function stepPath(points:DeliveryPoint[],field:'done'|'total',width=640,height=204) {
   if(!points.length)return '';
-  const start=points[0].time,span=Math.max(1,points.at(-1)!.time-start);
+  const start=points[0].time,end=points.at(-1)!.time;
   const max=Math.max(1,...points.map(p=>p.total));
-  const x=(p:DeliveryPoint)=>38+(p.time-start)/span*(width-54);
+  const x=(p:DeliveryPoint)=>deliveryChartX(p.time,start,end,width);
   const y=(p:DeliveryPoint)=>height-30-p[field]/max*(height-48);
   return points.map((p,i)=>i?`H${x(p).toFixed(2)}V${y(p).toFixed(2)}`:`M${x(p).toFixed(2)},${y(p).toFixed(2)}`).join('');
 }

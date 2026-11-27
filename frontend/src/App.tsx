@@ -1,4 +1,5 @@
 import { flushSync } from "react-dom";
+import { conditionalRead, type Snapshot } from "./features/workspace/conditional-read";
 import { mutateRecord } from "./features/operations/record-mutation";
 import { useOperations } from "./features/operations/Operations";
 import { OperationFeedback } from "./features/operations/Operations";
@@ -18,6 +19,7 @@ import { Assistant } from "./Assistant";
 import { Empty, History, Icon } from "./Common";
 import { Guide } from "./Guide";
 import { Listing } from "./Listing";
+import { milestoneFromTicketRoute, withMilestoneTicketFilter } from "./features/tickets/milestone";
 import { Projects } from "./Projects";
 import { InfoHelp } from "./features/help/InfoHelp";
 import { RecordEditor } from "./RecordEditor";
@@ -35,14 +37,16 @@ import {
   nameOf,
   percent,
   request,
+  workspacePath,
   errorText,
   scoped,
 } from "./model";
 
 const navigation = [
   { label: "Workspace", pages: ["projects"] },
-  { label: "Project", pages: ["dashboard", "documents", "canvas", "tickets", "milestones"] },
-  { label: "Operations", pages: ["roles", "runs"] },
+  { label: "Project work", pages: ["dashboard", "documents", "canvas", "tickets", "milestones"] },
+  { label: "Operations", pages: ["runs", "assistant"] },
+  { label: "Project settings", pages: ["roles"] },
 ] as const;
 
 function routeParts(route = location.hash): string[] {
@@ -87,12 +91,11 @@ function ticketViewFromURL(route = location.hash): TicketView {
   return "";
 }
 export default function App() {
-  const [db, setDB] = useState<Workspace | null>(null),
+  const [view, setView] = useState<{ key: string; snapshot: Snapshot<Workspace> } | null>(null),
     [error, setError] = useState(""),
     [page, setPage] = useState(pageFromURL),
     [ticketView, setTicketView] = useState(ticketViewFromURL),
-    [scope, setScope] = useState(() => projectFromURL()),
-    [mil, setMil] = useState("");
+    [scope, setScope] = useState(() => projectFromURL());
   const scopeRef = useRef(scope);
   useEffect(() => { scopeRef.current = scope; }, [scope]);
   const [editor, setEditor] = useState<Editor | null>(null),
@@ -141,8 +144,15 @@ export default function App() {
   const id = recordIdFromURL(route, page);
   useEffect(() => { document.title = names[page] + ' · AgentBoard'; }, [page]);
   const recordRoute = id && id !== "attention" && id !== "overdue" && kinds.includes(page as Kind);
-  const target = db && recordRoute ? db[page as Kind].find(row => row.id === id) : undefined;
   const requestedProject = projectFromURL(route);
+  const canvasViewer = page === "canvas" && !!id;
+  const bareKind = !requestedProject && page !== "projects" && recordRoute ? page as Kind : null;
+  const readKey = canvasViewer ? `canvases/${encodeURIComponent(id)}/viewer`
+    : page === "projects" ? workspacePath("")
+    : requestedProject ? workspacePath(requestedProject)
+    : bareKind ? `records/${bareKind}/${encodeURIComponent(id)}/project` : workspacePath(scope);
+  const db = view?.key === readKey ? view.snapshot.data : null;
+  const target = db && recordRoute ? db[page as Kind].find(row => row.id === id) : undefined;
   const targetMismatch = !!requestedProject && !!target?.project && target.project !== requestedProject;
   const routeTarget = targetMismatch ? undefined : target;
   const routeScope = page === "projects"
@@ -150,8 +160,9 @@ export default function App() {
     : requestedProject || (recordRoute ? routeTarget?.project || "" : "") || scope;
   const activeProject = db?.projects.find(project => project.id === routeScope);
   const selectedProjectId = activeProject?.id || routeScope;
-  const viewerProfile = page === "canvas" && id
-    ? db?.documents.find(document => document.id === id && document.canvas_versions?.length)
+  const viewerProfile = canvasViewer
+    ? db?.documents.find(document => document.id === id && document.canvas_versions?.length
+      && (!requestedProject || document.project === requestedProject))
     : undefined;
   useEffect(() => {
     if (!routeTarget || openedRoute.current === route) return;
@@ -168,36 +179,86 @@ export default function App() {
   }, [operationList]);
   const seq = useRef(0),
     activeURL = useRef(location.href);
-  const backgroundRead = useRef(false);
-  const loadWorkspace = useCallback(async (strict: boolean, verify?: (data: Workspace) => boolean) => {
-    if (!strict && (operations.getSnapshot().some(inFlight) || backgroundRead.current)) return;
-    if (!strict) backgroundRead.current=true;
+  const backgroundRead = useRef<{key: string; token: number} | null>(null);
+  const appliedKey = useRef("");
+  const snapshotRef = useRef<Snapshot<Workspace>>();
+  const activeReadKey = useRef(readKey);
+  activeReadKey.current = readKey;
+  const resolution = useRef<{ key: string; path: string }>();
+  const loadWorkspace = useCallback(async (strict: boolean, verify?: (data: Workspace) => boolean, verificationProject?: string) => {
+    const key = activeReadKey.current;
+    if (!strict && (operations.getSnapshot().some(inFlight) || backgroundRead.current?.key === key)) return;
     const token = ++seq.current, epoch = operations.epoch;
+    if (!strict) backgroundRead.current = { key, token };
+    const current = () => epoch === operations.epoch && token === seq.current && key === activeReadKey.current;
     try {
-      const data = await request<Workspace>("workspace");
-      if (epoch !== operations.epoch || token !== seq.current) {
+      let path = key;
+      if (key.startsWith("records/")) {
+        if (resolution.current?.key === key) path = resolution.current.path;
+        else {
+          try {
+            const result = await request<{ project: string }>(key);
+            path = workspacePath(result.project);
+            if (current()) resolution.current = { key, path };
+          } catch (error) {
+            if ((error as {status?: number}).status !== 404) throw error;
+            path = workspacePath("");
+          }
+        }
+      }
+      let snapshot: Snapshot<Workspace>;
+      try { snapshot = await conditionalRead(path, snapshotRef.current); }
+      catch (error) {
+        if ((error as {status?: number}).status !== 404 || path === workspacePath("") || path.startsWith("canvases/")) throw error;
+        // Load the directory so the existing missing-project and record recovery can run.
+        snapshot = await conditionalRead(workspacePath(""), snapshotRef.current);
+      }
+      if (verify) {
+        const verifyPath = verificationProject === undefined ? snapshot.path : workspacePath(verificationProject);
+        const proof = verifyPath === snapshot.path ? snapshot : await conditionalRead<Workspace>(verifyPath);
+        if (!verify(proof.data)) throw new Error("The latest response does not confirm this change yet. Retry sync.");
+      }
+      if (!current()) {
         if (strict) throw new Error("A newer operation changed the workspace. Retry sync.");
         return;
       }
-      if (verify && !verify(data)) throw new Error("The latest response does not confirm this change yet. Retry sync.");
-      // A protected action releases its lock only after React has committed this snapshot.
-      if(strict)flushSync(()=>{setDB(data);setError("");});
-      else {setDB(data);setError("");}
+      const commit = () => {
+        if (appliedKey.current !== key || snapshotRef.current !== snapshot) {
+          appliedKey.current = key;
+          snapshotRef.current = snapshot;
+          setView({ key, snapshot });
+        }
+        setError("");
+      };
+      if (strict) flushSync(commit); else commit();
     } catch (e) {
       if (strict) throw e;
-      if (token === seq.current && epoch === operations.epoch) setError(errorText(e));
+      if (current()) {
+        if (key.startsWith("canvases/") && (e as { status?: number }).status === 404) setView(null);
+        setError(errorText(e));
+      }
     } finally {
-      if (!strict) backgroundRead.current=false;
+      if (!strict && backgroundRead.current?.token === token) backgroundRead.current = null;
     }
   }, []);
   const refresh = useCallback(() => loadWorkspace(false), [loadWorkspace]);
-  const syncWorkspace = useCallback((verify?: (data: Workspace) => boolean) => loadWorkspace(true, verify), [loadWorkspace]);
+  const syncWorkspace = useCallback((verify?: (data: Workspace) => boolean, project?: string) =>
+    loadWorkspace(true, verify, project), [loadWorkspace]);
+  useEffect(() => { setError(""); void refresh(); }, [readKey, refresh]);
   useEffect(() => {
-    void refresh();
-    const timer = window.setInterval(() => {
+    const timer = canvasViewer ? undefined : window.setInterval(() => {
       if (document.visibilityState === "visible") void refresh();
     }, 5000);
+    const whenVisible = () => { if (document.visibilityState === "visible") void refresh(); };
     window.addEventListener("focus", refresh);
+    if (canvasViewer) document.addEventListener("visibilitychange", whenVisible);
+    return () => {
+      document.removeEventListener("visibilitychange", whenVisible);
+      window.clearInterval(timer);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [canvasViewer, refresh]);
+  useEffect(() => {
     const back = () => {
       if (activeURL.current === location.href) return;
       if (
@@ -220,7 +281,6 @@ export default function App() {
       scopeRef.current = destinationScope;
       setMobileOpen(false);
       setRouteMessage("");
-      setMil("");
       setEditor(null);
       setTrash(false);
       setEntry(null);
@@ -229,14 +289,12 @@ export default function App() {
     window.addEventListener("hashchange", back);
     return () => {
       ++seq.current;
-      window.clearInterval(timer);
-      window.removeEventListener("focus", refresh);
       window.removeEventListener("popstate", back);
       window.removeEventListener("hashchange", back);
     };
-  }, [refresh]);
+  }, []);
   useEffect(() => {
-    if (!db) return;
+    if (!db || canvasViewer) return;
     const resolvedProject = requestedProject || routeTarget?.project || (routeTarget?.id && page === "projects" ? routeTarget.id : "") || activeProject?.id || (page === "projects" ? "" : scope);
     const invalidProject = !!resolvedProject && !db.projects.some(project => project.id === resolvedProject);
     const missingContext = page !== "projects" && !resolvedProject && !viewerProfile;
@@ -256,12 +314,11 @@ export default function App() {
     setEditor(null);
     setScope("");
     setTicketView("");
-    setMil("");
     setPage("projects");
     setRoute("#projects");
     activeURL.current = location.origin + location.pathname + location.search + "#projects";
     history.replaceState({}, "", "#projects");
-  }, [db, page, recordRoute, requestedProject, scope, routeTarget, viewerProfile, route, activeProject]);
+  }, [db, canvasViewer, page, recordRoute, requestedProject, scope, routeTarget, viewerProfile, route, activeProject]);
   function go(p: Page, nextView: TicketView = "", milestoneId = "", skipGuard = false) {
     const nextScope = p === "projects" ? "" : selectedProjectId;
     if (p !== "projects" && !nextScope) {
@@ -274,10 +331,10 @@ export default function App() {
     setTicketView(nextView);
     setScope(nextScope);
     scopeRef.current = nextScope;
-    setMil(milestoneId);
-    const hash = p === "projects"
+    const path = p === "projects"
       ? "#projects"
       : `#project/${encodeURIComponent(nextScope)}/${p}` + (p === "tickets" && nextView ? "/" + nextView : "");
+    const hash = p === "tickets" ? withMilestoneTicketFilter(path, milestoneId) : path;
     openedRoute.current = "";
     handledInvalidRoute.current = "";
     setRoute(hash);
@@ -297,7 +354,6 @@ export default function App() {
     setTicketView("");
     setScope(projectId);
     scopeRef.current = projectId;
-    setMil("");
     openedRoute.current = "";
     handledInvalidRoute.current = "";
     setRoute(hash);
@@ -331,7 +387,6 @@ export default function App() {
     setEditor(null);
     setEntry(null);
     setTrash(false);
-    setMil("");
   }
   function openAssistantTicket(ticketId: string) {
     const ticket = db?.tickets.find((item) => item.id === ticketId);
@@ -356,9 +411,14 @@ export default function App() {
     setEditor(null);
     setEntry(null);
     setTrash(false);
-    setMil("");
   }
   const milestone = (id: string) => go("tickets", "", id);
+  function filterTicketsByMilestone(id: string) {
+    const hash = withMilestoneTicketFilter(`#project/${encodeURIComponent(selectedProjectId)}/tickets${ticketView ? "/" + ticketView : ""}`, id);
+    setRoute(hash);
+    history.replaceState(history.state, "", hash);
+    activeURL.current = location.href;
+  }
   const createKind: Kind =
     page === "dashboard"
       ? db && !db.projects.length
@@ -402,11 +462,12 @@ export default function App() {
     db?.trash.filter(
       ({ k, r }) => !selectedProjectId || (k === "projects" ? r.id : r.project) === selectedProjectId,
     ) || [];
-  if (page === "canvas" && id) {
-    if (!db) return <div className="canvas-viewer-message">{error || "Loading canvas…"}</div>;
-    const profile = viewerProfile;
-    return profile ? <DesignCanvas key={profile.id + "/" + (route.split("/")[2] || "")} document={profile} viewer /> :
-      <div className="canvas-viewer-message"><p>This canvas is unavailable.</p><a href="#canvas">Back to canvases</a></div>;
+  if (canvasViewer) {
+    if (!db && !error) return <div className="canvas-viewer-message">Loading canvas…</div>;
+    const version = routeParts(route)[requestedProject ? 4 : 2] || "";
+    return db && viewerProfile ? <DesignCanvas key={id + "/" + version} db={db} document={viewerProfile} viewer version={version} /> :
+      <div className="canvas-viewer-message"><p>{error || "This canvas is unavailable."}</p>
+        <a href={requestedProject ? `#project/${encodeURIComponent(requestedProject)}/canvas` : "#projects"}>Back to {requestedProject ? "canvases" : "projects"}</a></div>;
   }
   return (
     <div className="shell">
@@ -476,18 +537,13 @@ export default function App() {
                   disabled={k !== "projects" && !selectedProjectId}
                   onClick={() => go(k)}
                 >
-                  <Icon page={k === "canvas" ? "Design" : k} />
-                  {k === "runs" ? "Runs & activity" : names[k]}
+                  <Icon page={k === "canvas" ? "Design" : k === "assistant" ? "runs" : k} />
+                  {k === "runs" ? "Runs & activity" : k === "assistant" ? "Project assistant" : names[k]}
                 </button>
               ))}
             </Fragment>
           ))}
-          <button
-            className={page === "assistant" ? "active" : ""}
-            aria-current={page === "assistant" ? "page" : undefined}
-            disabled={!selectedProjectId}
-            onClick={() => go("assistant")}
-          ><Icon page="runs" />InApp Assistant</button>
+          <small>Help</small>
           <button ref={guideButton} className={guide ? "active" : ""} aria-current={guide ? "page" : undefined} onClick={() => { setMobileOpen(false); showGuide(true); }}><Icon page="file" />AgentBuild guide</button>
         </nav>
       </aside>
@@ -500,13 +556,13 @@ export default function App() {
           </ol>
         </header>
         <div id="page">
-          {page !== "canvas" && page !== "projects" && page !== "assistant" && page !== "dashboard" && <div className="heading">
+          {page !== "canvas" && page !== "projects" && page !== "assistant" && page !== "dashboard" && page !== "tickets" && <div className="heading">
             <div>
               <h1>{monitoring ? <>Runs <em>&amp;</em> activity</> : section}</h1>
               <p>
                 {db
                     ? page === "activity"
-                      ? db.activity.filter((l) => !selectedProjectId || l.project === selectedProjectId).length + " changes"
+                      ? (db.activity_count ?? db.activity.length) + " changes"
                       : page === "runs"
                         ? scoped(db.runs, selectedProjectId, "runs").length + " runs / " + scoped(db.runs, selectedProjectId, "runs").filter((run) => run.status === "Running").length + " running"
                         : scoped(db[page as Kind], selectedProjectId, page as Kind).length + " " + names[page].toLowerCase() + " · " + (selectedProjectId ? nameOf(db, "projects", selectedProjectId) : "All projects")
@@ -582,13 +638,15 @@ export default function App() {
               <Listing
                 refresh={syncWorkspace}
                 documentId={page === "documents" ? routeTarget?.id : undefined}
-                key={[page, selectedProjectId, mil, ticketView, routeTarget?.id].join(":")}
+                key={[page, selectedProjectId, ticketView, routeTarget?.id].join(":")}
                 db={db}
                 page={page}
                 scope={selectedProjectId}
                 edit={setEditor}
                 inspect={setEntry}
-                initialMil={mil}
+                milestoneFilter={milestoneFromTicketRoute(route)}
+                onMilestoneFilter={filterTicketsByMilestone}
+                onNewTicket={newRecord}
                 initialTicketView={ticketView}
                 showMonitoring={go}
                 milestone={milestone}

@@ -6,8 +6,7 @@ import { InfoHelp } from "./features/help/InfoHelp";
 import {
   type Row,
   type Workspace,
-  done,
-  percent,
+  type ProjectSummary,
 } from "./model";
 
 type Props = {
@@ -26,10 +25,9 @@ export function Projects({ db, openProject, editProject }: Props) {
       !term || `${project.name}\n${project.description || ""}`.toLocaleLowerCase().includes(term),
     );
   }, [db.projects, query]);
-  const allTickets = db.tickets.filter((ticket) => matches.some((project) => project.id === ticket.project));
-  const blockerProjects = matches.filter((project) =>
-    db.tickets.some((ticket) => ticket.project === project.id && ticket.status === "Blocked"),
-  ).length;
+  const completed = matches.reduce((n, project) => n + (project.summary?.statuses.Done || 0), 0);
+  const total = matches.reduce((n, project) => n + totalTickets(project.summary), 0);
+  const blockerProjects = matches.filter(project => project.summary?.statuses.Blocked).length;
 
   return (
     <>
@@ -54,7 +52,7 @@ export function Projects({ db, openProject, editProject }: Props) {
         <p className="folder-summary" aria-live="polite">
           <b>{matches.length}</b> {matches.length === 1 ? "project" : "projects"}
           <span aria-hidden="true">·</span>
-          <b>{done(allTickets)}</b> of {allTickets.length} tickets done
+          <b>{completed}</b> of {total} tickets done
           <span aria-hidden="true">·</span>
           <b className="warn">{blockerProjects}</b> with blockers
         </p>
@@ -66,9 +64,6 @@ export function Projects({ db, openProject, editProject }: Props) {
             <ProjectFolder
               key={project.id}
               project={project}
-              tickets={db.tickets.filter((ticket) => ticket.project === project.id)}
-              documents={db.documents.filter(doc => doc.project === project.id).length}
-              milestones={db.milestones.filter((milestone) => milestone.project === project.id)}
               open={() => openProject(project.id)}
               edit={() => editProject(project)}
             />
@@ -88,37 +83,26 @@ export function Projects({ db, openProject, editProject }: Props) {
   );
 }
 
-function ProjectFolder({ project, tickets, milestones, documents, open, edit }: {
+function totalTickets(summary?: ProjectSummary) {
+  return Object.values(summary?.statuses || {}).reduce((n, count) => n + count, 0);
+}
+
+function ProjectFolder({ project, open, edit }: {
   project: Row;
-  tickets: Row[];
-  milestones: Row[];
-  documents: number;
   open: () => void;
   edit: () => void;
 }) {
-  const blocked = tickets.filter((ticket) => ticket.status === "Blocked").length;
-  const inProgress = tickets.filter((ticket) => ticket.status === "In progress").length;
-  const completedMilestones = milestones.filter((milestone) => {
-    const work = tickets.filter((ticket) => ticket.milestone === milestone.id);
-    return work.length > 0 && done(work) === work.length;
-  }).length;
-  const health = !tickets.length ? "pending" : blocked ? "blocked" : "clear";
-  const statusCounts = new Map(meterStatuses.map((status) => [
-    status,
-    tickets.filter((ticket) => ticket.status === status).length,
-  ]));
-  const accessibleBreakdown = meterStatuses
-    .map((status) => `${status}: ${statusCounts.get(status) || 0}`)
-    .join(", ");
-  const meterSegments = tickets.length <= 40
-    ? meterStatuses.flatMap((status) =>
-        tickets.filter((ticket) => ticket.status === status).map((ticket) => ({ status, key: ticket.id, weight: undefined })),
-      )
-    : meterStatuses.flatMap((status) => {
-        const count = statusCounts.get(status) || 0;
-        return count ? [{ status, key: status, weight: count }] : [];
-      });
-
+  const counts = project.summary?.statuses || {};
+  const total = totalTickets(project.summary);
+  const blocked = counts.Blocked || 0;
+  const completed = counts.Done || 0;
+  const health = !total ? "pending" : blocked ? "blocked" : "clear";
+  const accessibleBreakdown = meterStatuses.map(status => `${status}: ${counts[status] || 0}`).join(", ");
+  const meterSegments = meterStatuses.flatMap(status => {
+    const count = counts[status] || 0;
+    if (total > 40) return count ? [{ status, key: status, weight: count }] : [];
+    return Array.from({ length: count }, (_, i) => ({ status, key: status + i, weight: 1 }));
+  });
   return (
     <article className="folder" data-health={health}>
       <div className="folder-tab" data-status={health}>
@@ -144,15 +128,15 @@ function ProjectFolder({ project, tickets, milestones, documents, open, edit }: 
         </div>
         <p className="folder-description">{project.description || "No description"}</p>
         <div className="folder-metric">
-          <b>{tickets.length ? `${percent(tickets)}%` : "—"}</b>
-          <span>{tickets.length ? `${done(tickets)} of ${tickets.length} tickets complete` : "Progress pending"}</span>
+          <b>{total ? `${Math.round(100 * completed / total)}%` : "—"}</b>
+          <span>{total ? `${completed} of ${total} tickets complete` : "Progress pending"}</span>
         </div>
         <div
-          className={`folder-meter${tickets.length ? "" : " is-empty"}`}
+          className={`folder-meter${total ? "" : " is-empty"}`}
           role="img"
-          aria-label={tickets.length ? `Ticket status. ${accessibleBreakdown}` : "Progress pending. No tickets yet."}
+          aria-label={total ? `Ticket status. ${accessibleBreakdown}` : "Progress pending. No tickets yet."}
         >
-          {tickets.length ? meterSegments.map((segment) => (
+          {total ? meterSegments.map((segment) => (
             <span
               key={segment.key}
               data-status={segment.status}
@@ -163,9 +147,9 @@ function ProjectFolder({ project, tickets, milestones, documents, open, edit }: 
         <dl className="folder-facts">
           <div>
             <dt>Milestones</dt>
-            <dd>{milestones.length ? `${completedMilestones}/${milestones.length} done` : "—"}</dd>
+            <dd>{project.summary?.milestones ? `${project.summary.completed_milestones}/${project.summary.milestones} done` : "—"}</dd>
           </div>
-          <div><dt>Documents</dt><dd>{documents}</dd></div>
+          <div><dt>Documents</dt><dd>{project.summary?.documents || 0}</dd></div>
         </dl>
       </div>
     </article>

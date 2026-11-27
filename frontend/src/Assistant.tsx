@@ -1,3 +1,5 @@
+import { ReviewSnapshot } from "./features/monitoring/ReviewHistory";
+import { workspacePath } from "./model";
 import { OperationFeedback, useOperationLock } from "./features/operations/Operations";
 import { operations, projectResource, type Mutation } from "./features/operations/operation-store";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
@@ -598,7 +600,7 @@ export function Assistant({
       try {
         await assistantMutation({label:"Saving scope decision",completed:"Scope decision saved",
           write:()=>request(`reviews/${encodeURIComponent(review.id)}/confirm`,"POST",{revision:review.revision,accept,note:accept?"User confirmed this scope change in InApp Assistant.":"User kept the existing scope in InApp Assistant."}),
-          reconcile:async()=>{const data=await request<Workspace>("workspace");if(!verified(data))throw Error("Scope decision not confirmed.");},
+          reconcile:async()=>{const data=await request<Workspace>(workspacePath(projectId));if(!verified(data))throw Error("Scope decision not confirmed.");},
           confirmed:()=>setReviewDecisions(current=>({...current,[review.id]:accept?"Scope change confirmed.":"Existing scope kept."})),
           sync:()=>onRefreshWorkspace(verified),
         });
@@ -631,7 +633,7 @@ export function Assistant({
             const current=tabs.indexOf(document.activeElement as HTMLButtonElement);
             const next=event.key==="Home"?0:event.key==="End"?tabs.length-1:(current+(event.key==="ArrowRight"?1:-1)+tabs.length)%tabs.length;
             event.preventDefault();event.stopPropagation();setRailTab(next===0?"history":"runs");tabs[next]?.focus();
-          }}><Tabs.Tab value="history">Chat History</Tabs.Tab><Tabs.Tab value="runs">Runs</Tabs.Tab></Tabs.List>
+          }}><Tabs.Tab value="history">Chat History</Tabs.Tab><Tabs.Tab value="runs">Assistant runs</Tabs.Tab></Tabs.List>
           <Tabs.Panel value="history"><div className="ia-nav-list">
             {conversationsLoading&&!conversations.length&&<p>Loading conversations…</p>}
             {conversationsError&&<p role="alert">{conversationsError}<button onClick={()=>void loadConversations()}>Retry</button></p>}
@@ -640,12 +642,15 @@ export function Assistant({
           </div><button className="ia-text-link" onClick={()=>setHistoryOpen(true)}>View all chats</button></Tabs.Panel>
           <Tabs.Panel value="runs">        <section className="ia-card ia-recent" aria-labelledby="ia-recent-title">
           <div className="ia-card-head">
-            <h2 id="ia-recent-title">Recent runs</h2>
-            <button className="ia-text-link" type="button" onClick={onShowRuns}>Runs &amp; activity <Icon page="arrow" /></button>
+            <h2 id="ia-recent-title">Runs started here</h2>
+            <button className="ia-text-link" type="button" onClick={onShowRuns}>All project runs <Icon page="arrow" /></button>
           </div>
           {recentRunsError && <div className="ia-inline-error" role="alert">{recentRunsError}<button type="button" onClick={() => void loadRecentRuns()}>Retry</button></div>}
           {recentRunsLoading && !recentRuns.length && <p className="ia-loading">Loading recent runs…</p>}
-          {!recentRunsLoading && !recentRunsError && !recentRuns.length && <Empty>No assistant runs for this project.</Empty>}
+          {!recentRunsLoading && !recentRunsError && !recentRuns.length && <>
+            <Empty>No runs have been started in this project’s Assistant. Find Codex and Claude Code reports in all project runs.</Empty>
+            <button className="ia-text-link" type="button" onClick={onShowRuns}>All project runs <Icon page="arrow" /></button>
+          </>}
           {!!recentRuns.length && <div className="ia-recent-scroll" role="region" aria-label="Recent assistant runs" tabIndex={0}>
             <table className="ia-run-table">
               <thead><tr><th scope="col">Task</th><th scope="col">Agent / model</th><th scope="col">Status</th></tr></thead>
@@ -665,7 +670,7 @@ export function Assistant({
       </aside>
 
       <section className="ia-chat-card" aria-label="Project conversation">
-        <header className="ia-chat-head"><h1>{initialRunId?"Run details":conversationTitle}</h1><button className="ia-text-link" onClick={onShowRuns}>Runs &amp; activity</button></header>
+        <header className="ia-chat-head"><h1>{initialRunId?"Run details":conversationTitle}</h1><button className="ia-text-link" type="button" onClick={onShowRuns}>All project runs</button></header>
 
 
 
@@ -708,7 +713,8 @@ export function Assistant({
                 <div className="ia-scope-title"><strong>{review.snapshot.subject.name}</strong><Tag value={review.status} /></div>
                 <p><span>Requested change</span>{review.request}</p>
                 <p><span>Why this changes scope</span>{review.rationale}</p>
-                <details><summary>Affected sources ({review.snapshot.documents.length})</summary><ul>{review.snapshot.documents.map(document=><li key={document.id}><a href={"#documents/"+document.id}>{document.name}</a> · Revision {document.revision}</li>)}</ul></details>
+                <ReviewSnapshot key={review.id + ':' + review.revision} project={projectId} id={review.id}
+                  label={`Affected sources (${review.snapshot.documents.length})`}/>
                 {reviewErrors[review.id] && <p className="ia-inline-error" role="alert">{reviewErrors[review.id]}</p>}
                 {reviewDecisions[review.id] ? <p className="ia-success-note" role="status">{reviewDecisions[review.id]} The updated review is saved in Runs &amp; activity.</p> : <div className="ia-scope-actions">
                   <Button type="button" size="sm" loading={reviewBusy === review.id} disabled={actionLocked || !!reviewBusy} onClick={() => void decideScope(review, true)}>Confirm this scope change</Button>

@@ -44,6 +44,13 @@ def fields(kind, data):
     for key in ('documents', 'source_documents', 'tags'):
         if key in result:
             result[key] = sorted(result[key])
+    if kind == 'tickets' and data.get('criteria'):
+        # Verification results are outputs, not changes to agreed criteria.
+        result['criteria'] = sorted(
+            [{key: criterion[key] for key in ('id', 'text', 'evidence_required', 'design')}
+             for criterion in data['criteria']],
+            key=lambda criterion: criterion['id'],
+        )
     return result
 
 
@@ -56,15 +63,23 @@ def tracked(doc, baselines):
         and doc['data']['name'].strip().lower() != 'tag catalog')
 
 
-def snapshot(conn, subject):
+def document_context(conn, project):
     rows = conn.execute("SELECT * FROM records WHERE project=%s AND kind='documents' AND NOT deleted ORDER BY id",
-                        (subject['project'],)).fetchall()
+                        (project,)).fetchall()
     baselines = {r['document_id']: r['snapshot'] for r in conn.execute(
-        'SELECT b.* FROM scope_baselines b JOIN records r ON r.id=b.document_id WHERE r.project=%s', (subject['project'],))}
-    docs = {r['id']: r for r in rows if tracked(r, baselines)}
+        'SELECT b.* FROM scope_baselines b JOIN records r ON r.id=b.document_id WHERE r.project=%s', (project,))}
+    return {r['id']: r for r in rows if tracked(r, baselines)}, baselines
+
+
+def related_documents(subject, docs):
     data = subject['data']
     chosen = set(data.get('documents' if subject['kind'] == 'tickets' else 'source_documents', [])) & docs.keys()
-    chosen.update(r['id'] for r in rows if r['id'] in docs and set(data.get('tags', [])) & set(r['data'].get('tags', [])))
+    if subject['kind'] == 'tickets':
+        chosen.update({criterion['design']['document_id'] for criterion in data.get('criteria', [])
+                       if criterion.get('design')} & docs.keys())
+    tags = set(data.get('tags', []))
+    if tags:
+        chosen.update(key for key, r in docs.items() if tags.intersection(r['data'].get('tags', [])))
     has_context = bool(chosen)
     if subject['kind'] == 'documents':
         chosen.add(subject['id'])
@@ -78,6 +93,13 @@ def snapshot(conn, subject):
         chosen = expanded
     if not has_context and len(chosen) <= (1 if subject['kind'] == 'documents' else 0):
         chosen.update(key for key, r in docs.items() if r['data'].get('document_type') in CORE_TYPES)
+
+    return chosen, has_context
+
+
+def snapshot(conn, subject, context=None):
+    docs, baselines = context if context is not None else document_context(conn, subject['project'])
+    chosen, has_context = related_documents(subject, docs)
 
     def item(row):
         content = fields(row['kind'], row['data'])
@@ -110,21 +132,61 @@ def new_review(conn, subject, value, signature, actor, request, operation='Edit'
     return row
 
 
-def sync_project(conn, project, actor='AgentBoard'):
-    baselines = {r['document_id'] for r in conn.execute('SELECT b.document_id FROM scope_baselines b JOIN records r ON r.id=b.document_id WHERE r.project=%s', (project,))}
-    subjects = conn.execute("SELECT * FROM records WHERE project=%s AND kind IN ('documents','tickets') AND NOT deleted ORDER BY id", (project,)).fetchall()
-    for subject in subjects:
-        if subject['kind'] == 'documents' and not tracked(subject, baselines):
-            continue
-        old = current(conn, subject['id'])
+def sync_subjects(conn, subjects, context, actor):
+    candidates = [r for r in subjects if r['kind'] == 'tickets' or r['id'] in context[0]]
+    if not candidates:
+        return
+    existing = {row['subject']: row for row in conn.execute(
+        'SELECT subject, signature, request, operation FROM change_reviews WHERE subject=ANY(%s) AND NOT superseded',
+        ([r['id'] for r in candidates],))}
+    for subject in candidates:
+        old = existing.get(subject['id'])
         if not old and subject['kind'] == 'tickets' and subject['data'].get('status') == 'Done':
             continue  # Preserve historical completion; reopening it requires a check.
-        value, signature = snapshot(conn, subject)
+        value, signature = snapshot(conn, subject, context)
         if not old or old['signature'] != signature:
-            reason = old['request'] if old else 'Check the saved requirements and related documents.'
-            if old:
-                reason = 'Requirements or related documents changed. ' + old['request'][-2000:]
+            reason = 'Requirements or related documents changed. ' + old['request'][-2000:] if old else (
+                'Check the saved requirements and related documents.')
             new_review(conn, subject, value, signature, actor, reason, old['operation'] if old else 'Edit')
+
+
+def sync_project(conn, project, actor='AgentBoard'):
+    context = document_context(conn, project)
+    tickets = conn.execute("SELECT * FROM records WHERE project=%s AND kind='tickets' AND NOT deleted", (project,))
+    sync_subjects(conn, [*context[0].values(), *tickets], context, actor)
+    hold_runs(conn, project)
+
+
+def sync_record_change(conn, saved, old, action, actor):
+    kind, key, project = saved['kind'], saved['id'], saved['project']
+    if kind == 'tickets':
+        if action == 'Deleted':
+            return
+        reopened = old.get('status') == 'Done' and saved['data']['status'] != 'Done'
+        if action == 'Updated' and not reopened and fields(kind, old) == fields(kind, saved['data']):
+            return
+        sync_subjects(conn, [saved], document_context(conn, project), actor)
+        hold_runs(conn, project, ticket=key)
+        return
+
+    old_row = {**saved, 'data': old} if action in ('Updated', 'Deleted') else None
+    if action == 'Updated' and fields(kind, old) == fields(kind, saved['data']) and tracked(old_row, ()) == tracked(saved, ()):
+        return
+    context = document_context(conn, project)
+    docs, baselines = context
+    previous_docs = docs.copy()
+    previous_docs.pop(key, None)
+    if old_row and tracked(old_row, baselines):
+        previous_docs[key] = old_row
+    if key not in docs and key not in previous_docs:
+        return
+
+    # Links, tags and implicit core-document fallback can add or remove a dependency.
+    # Evaluate both graphs, so removing the last edge still invalidates the old dependents.
+    tickets = conn.execute("SELECT * FROM records WHERE project=%s AND kind='tickets' AND NOT deleted", (project,))
+    affected = [row for row in [*docs.values(), *tickets] if row['id'] == key
+                or key in related_documents(row, docs)[0] or key in related_documents(row, previous_docs)[0]]
+    sync_subjects(conn, affected, context, actor)
     hold_runs(conn, project)
 
 
@@ -135,8 +197,9 @@ def execution_ready(conn, row):
                for doc in row['snapshot']['documents'])
 
 
-def hold_runs(conn, project):
-    for run in conn.execute("SELECT * FROM records WHERE project=%s AND kind='runs' AND NOT deleted AND data->>'status'='Running'", (project,)).fetchall():
+def hold_runs(conn, project, ticket=None):
+    for run in conn.execute("""SELECT * FROM records WHERE project=%s AND kind='runs' AND NOT deleted AND data->>'status'='Running'
+                            AND (%s::text IS NULL OR data->>'ticket'=%s)""", (project, ticket, ticket)).fetchall():
         if run['data'].get('mode', 'Edit') != 'Edit' or execution_ready(conn, current(conn, run['data'].get('ticket', ''))):
             continue
         data = {**run['data'], 'status': 'Waiting for input'}
@@ -157,9 +220,11 @@ def public(row):
     return {key: value.isoformat() if key in ('created_at', 'updated_at') else value for key, value in row.items()}
 
 
-def list_reviews(conn, project=None):
+def list_reviews(conn, project=None, subject=None, limit=None, offset=0):
     return [public(row) for row in conn.execute("""SELECT c.* FROM change_reviews c JOIN records r ON r.id=c.subject
-        WHERE NOT r.deleted AND (%s::text IS NULL OR c.project=%s) ORDER BY c.created_at DESC,c.id""", (project, project))]
+        WHERE NOT r.deleted AND (%s::text IS NULL OR c.project=%s)
+          AND (%s::text IS NULL OR c.subject=%s)
+        ORDER BY c.created_at DESC,c.id LIMIT %s OFFSET %s""", (project, project, subject, subject, limit, offset))]
 
 
 def start(actor, kind, key, revision, request, operation='Edit'):
@@ -196,9 +261,16 @@ def load_current(conn, key, revision):
 
 def baseline(conn, row):
     if row['review_type'] == 'Document impact' and row['operation'] != 'Delete':
+        subject = row['snapshot']['subject']
+        normally_excluded = not tracked({'id': subject['id'], 'data': {**subject['fields'], 'name': subject['name']}}, ())
+        newly_tracked = normally_excluded and not conn.execute(
+            'SELECT 1 FROM scope_baselines WHERE document_id=%s', (subject['id'],)).fetchone()
         conn.execute('''INSERT INTO scope_baselines(document_id,snapshot,review_id) VALUES (%s,%s,%s)
             ON CONFLICT(document_id) DO UPDATE SET snapshot=excluded.snapshot,review_id=excluded.review_id''',
-            (row['subject'], Jsonb(row['snapshot']['subject']), row['id']))
+            (row['subject'], Jsonb(subject), row['id']))
+        if newly_tracked:
+            document = conn.execute("SELECT * FROM records WHERE id=%s", (subject['id'],)).fetchone()
+            sync_record_change(conn, document, {}, 'Restored', row['reviewer'] or 'AgentBoard')
 
 
 def submit(actor, key, revision, assessment):

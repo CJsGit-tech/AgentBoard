@@ -80,7 +80,7 @@ class ExecutorRuntimeSmoke(unittest.TestCase):
         self.assertEqual(saved['role_name'],'Backend Programmer')
         self.assertTrue({('npm','run','build'),('npm','test')}.issubset({tuple(c['command']) for c in saved['checks']}))
         self.assertTrue(all(c['passed'] for c in saved['checks']))
-        state=self.http.get('/api/workspace').json()
+        state=self.http.get('/api/workspace?view=export').json()
         completed=next(t for t in state['tickets'] if t['id']==ticket['id'])
         self.assertEqual(completed['status'],'Done')
         self.assertTrue(completed['output_documents'])

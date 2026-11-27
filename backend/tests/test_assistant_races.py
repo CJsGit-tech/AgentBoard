@@ -15,7 +15,7 @@ from app import assistant, assistant_store as store
 from app.assistant_provider import CredentialStore
 from app.assistant_workspace import WorkspaceHandle
 from app.db import connect
-from app.store import get_row
+from app.store import Problem, get_row
 
 
 class AssistantRaceTests(unittest.TestCase):
@@ -42,7 +42,7 @@ class AssistantRaceTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201, response.text)
         return response.json()
 
-    def approved_ticket(self):
+    def approved_ticket(self, **fields):
         milestone = self.create(
             "milestones", name="First milestone", project=self.project["id"]
         )
@@ -58,6 +58,7 @@ class AssistantRaceTests(unittest.TestCase):
             project=self.project["id"],
             milestone=milestone["id"],
             documents=[document["id"]],
+            **fields,
         )
         self.finish_reviews(self.project["id"])
         return ticket
@@ -109,6 +110,36 @@ class AssistantRaceTests(unittest.TestCase):
         self.assertTrue(final["cancelled"])
         self.assertEqual(saved_ticket["data"]["status"], "Planned")
         self.assertEqual(store.events(run["id"], 0)["events"][-1]["type"], "run.cancelled")
+
+    def test_managed_finish_rechecks_explicit_criterion_proof_before_completion(self):
+        criterion = dict(id="verified-load", text="Confirm that saved data loads.", evidence_required=True)
+        result = self.create("documents", name="Load result", project=self.project["id"],
+                             document_type="review-evidence", content="## Load check\nPassed.")
+        ticket = self.approved_ticket(criteria=[criterion], output_documents=[result["id"]])
+        handle = WorkspaceHandle(
+            Path("/workspaces/race-project"), "/host/race-project", "fixture-config"
+        )
+        with patch.object(assistant.workspace, "require_workspace", return_value=handle), patch.object(
+            assistant.workspace, "execution_status", return_value={"config_id": "fixture-config"}
+        ):
+            run = self.create_run(self.chat["id"], mode="Edit", ticket_id=ticket["id"])
+        self.assertEqual(str(store.claim("race-test-worker")["id"]), run["id"])
+        with self.assertRaisesRegex(Problem, "verified-load"):
+            store.require_completion_evidence(run["id"])
+        with self.assertRaisesRegex(Problem, "verified-load"):
+            store.finish(run["id"], "The result still needs an exact proof.", [])
+        self.assertEqual(store.get_run(run["id"])["status"], "Running")
+
+        proof = dict(kind="report", document_id=result["id"], revision=result["revision"],
+                     section_line=0, status="verified")
+        attached = self.http.patch("/api/tickets/" + ticket["id"], json={"revision": ticket["revision"],
+                                   "changes": {"criteria": [{**criterion, "evidence": [proof]}]}})
+        self.assertEqual(attached.status_code, 200, attached.text)
+        store.require_completion_evidence(run["id"])
+        final = store.finish(run["id"], "The matching test result is recorded.", [], ticket_done=True)
+        self.assertEqual(final["status"], "Completed")
+        with connect() as conn:
+            self.assertEqual(get_row(conn, "tickets", ticket["id"])["data"]["status"], "Done")
 
     def test_cancelled_uncertain_edit_keeps_same_folder_queue_locked(self):
         ticket = self.approved_ticket()

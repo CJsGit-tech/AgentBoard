@@ -38,6 +38,7 @@
 .sidebar nav button.active::after { content: none; }
 .sidebar nav button .icon { width: 16px; height: 16px; color: currentColor; }
 .sidebar nav small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+.sidebar nav small:not(:first-child) { margin-block-start: 5px; }
 .brand-fold i:nth-child(1) { background: #423a8b; }
 .brand-fold i:nth-child(2) { background: #6259b8; }
 .brand-fold i:nth-child(3) { background: #c2bbe7; }

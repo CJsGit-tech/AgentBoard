@@ -9,7 +9,26 @@ export const kinds = [
 export type Kind = (typeof kinds)[number];
 export type Page = Kind | "activity" | "dashboard" | "canvas" | "assistant";
 export type TicketView = "" | "attention" | "overdue";
+export type DesignReference = { document_id: string; version: number };
+export type ProofReference = { document_id: string; status: "verified" | "unverified" | "superseded" } & (
+  { kind: "report"; revision: number; section_line?: number | null } |
+  { kind: "screenshot"; filename: string; digest: string }
+);
+export type TicketCriterion = {
+  id: string;
+  text: string;
+  evidence_required: boolean;
+  design?: DesignReference | null;
+  evidence?: ProofReference[];
+};
+export type ProjectSummary = {
+  statuses: Record<string, number>;
+  milestones: number;
+  completed_milestones: number;
+  documents: number;
+};
 export type Row = {
+  summary?: ProjectSummary;
   id: string;
   revision: number;
   name: string;
@@ -22,10 +41,12 @@ export type Row = {
   due?: string;
   documents?: string[];
   output_documents?: string[];
+  criteria?: TicketCriterion[];
   source_documents?: string[];
   mode?: "Edit" | "Read only";
   document_type?: string;
   canvas_versions?: { screen_count?: number | null; version: number; digest: string; asset_key: string; published_at: string; publisher: string | null; change_note: string | null; sources: { document_id: string; name: string; revision: number }[] }[];
+  report_heading_lines?: number[];
   previews?: { filename: string; digest: string }[];
   tags?: string[];
   work_type?: string;
@@ -57,9 +78,10 @@ export type Change = {
 export type Workspace = Record<Kind, Row[]> & {
   reviews: ChangeReview[];
   activity: Change[];
+  activity_count?: number;
   trash: { k: Kind; r: Row }[];
 };
-export type WorkspaceRefresh = (verify?: (data: Workspace) => boolean) => Promise<void>;
+export type WorkspaceRefresh = (verify?: (data: Workspace) => boolean, verificationProject?: string) => Promise<void>;
 export type Editor = { kind: Kind; row?: Row; project?: string; panel?: "Links" | "History" };
 export const names: Record<Page, string> = {
   projects: "Projects",
@@ -308,6 +330,9 @@ export class ApiError extends Error {
     super(message);
   }
 }
+export function workspacePath(project: string) {
+  return project ? "workspace?project=" + encodeURIComponent(project) : "workspace?view=projects";
+}
 export async function request<T>(
   path: string,
   method = "GET",
@@ -316,7 +341,7 @@ export async function request<T>(
   const resp = await fetch("/api/" + path, {
     method,
     signal: AbortSignal.timeout(30000),
-    cache: method === "GET" && path === "workspace" ? "no-cache" : "no-store",
+    cache: "no-store",
     headers: {
       "X-AgentBoard-UI": "1",
       ...(body === undefined ? {} : { "Content-Type": "application/json" }),

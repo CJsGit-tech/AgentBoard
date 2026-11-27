@@ -192,6 +192,8 @@ python3 scripts/install-skill.py uninstall --host codex --scope project
 
 ## 🛠️ 開發與驗證
 
+瀏覽器透過 `GET /api/workspace?view=projects` 讀取專案清單, 透過 `GET /api/workspace?project=<id>` 讀取單一專案. 舊版分頁查詢 `GET /api/workspace` 時會收到 HTTP 410 與重新載入提示. 需要所有紀錄與審查快照的本機整合可使用 `GET /api/workspace?view=export`, 並傳入 `X-AgentBoard-UI: 1` 標頭. 完整 JSON 匯出支援 ETag 重新驗證.
+
 使用 Python 3.12+ 與 Node.js 22:
 
 ```sh

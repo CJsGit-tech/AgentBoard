@@ -2,10 +2,13 @@
 import base64
 import binascii
 from hashlib import sha256
+from io import BytesIO
+from threading import BoundedSemaphore
 import re
 import struct
 import zlib
 
+from PIL import Image
 from psycopg.types.json import Jsonb
 
 from .db import connect
@@ -42,6 +45,43 @@ def decode_png(encoded):
     raise Problem(422, "The PNG is incomplete or damaged.")
 
 
+# Limit peak decoded-image memory when several galleries open together.
+_thumbnail_slots = BoundedSemaphore(2)
+
+
+def _thumbnail(image):
+    try:
+        with _thumbnail_slots, Image.open(BytesIO(image), formats=("PNG",)) as source:
+            if source.width * source.height > 24_000_000:
+                raise ValueError("Screenshot exceeds preview size limit.")
+            source.thumbnail((384, 384), Image.Resampling.LANCZOS)
+            output = BytesIO()
+            source.save(output, format="WEBP", quality=80, method=3)
+            return output.getvalue()
+    except (OSError, ValueError, Image.DecompressionBombError) as err:
+        raise Problem(422, "Thumbnail unavailable. Open the original screenshot.") from err
+
+
+def read_thumbnail(document_id, filename, digest):
+    with connect() as conn:
+        row = conn.execute("""
+            SELECT a.thumbnail_webp,
+                   CASE WHEN a.thumbnail_webp IS NULL THEN a.image END AS original
+              FROM visual_assets a JOIN records r ON r.id=a.document_id
+             WHERE r.id=%s AND NOT r.deleted AND a.filename=%s AND a.digest=%s
+        """, (document_id, filename, digest)).fetchone()
+        if not row:
+            raise Problem(404, "This screenshot version is unavailable.")
+        if row["thumbnail_webp"] is not None:
+            return bytes(row["thumbnail_webp"])
+        preview = _thumbnail(row["original"])
+        conn.execute("""
+            UPDATE visual_assets SET thumbnail_webp=%s
+             WHERE document_id=%s AND filename=%s AND digest=%s AND thumbnail_webp IS NULL
+        """, (preview, document_id, filename, digest))
+        return preview
+
+
 def attach(actor, document_id, revision, filename, png_base64):
     if not re.fullmatch(r"[\w .-]{1,120}\.png", filename, flags=re.ASCII | re.IGNORECASE):
         raise Problem(422, "Use a simple PNG filename.")
@@ -58,11 +98,10 @@ def attach(actor, document_id, revision, filename, png_base64):
                            (document_id, filename)).fetchone()
         if old and old["digest"] == digest:
             return public(row)
-        reviews.sync_project(conn, row['project'], actor)
         reviews.require_ready(conn, document_id)
-        conn.execute("""INSERT INTO visual_assets VALUES (%s,%s,%s,%s)
+        conn.execute("""INSERT INTO visual_assets (document_id,filename,digest,image) VALUES (%s,%s,%s,%s)
                         ON CONFLICT (document_id,filename) DO UPDATE
-                        SET digest=excluded.digest,image=excluded.image""",
+                        SET digest=excluded.digest,image=excluded.image,thumbnail_webp=NULL""",
                      (document_id, filename, digest, image))
         conn.execute("UPDATE records SET revision=revision+1 WHERE id=%s", (document_id,))
         changes = [[filename, old["digest"] if old else None, digest]]

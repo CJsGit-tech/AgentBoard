@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from "react";
 import { type Page, type Row, type Change, type Kind, type Workspace, single, stamp, tone } from "./model";
+import { reviewDecision } from "./features/monitoring/report-view";
 
 type IconName = Page | "arrow" | "plus" | "trash" | "list" | "board" | "browse" | "search" | "filters" | "columns" | "build" | "bug" | "folder" | "file" | "link" | "edit" | "warning" | "calendar" | "Product" | "Architecture" | "Design" | "Review" | "Unclassified";
 export function Icon({ page }: { page: IconName }) {
@@ -62,9 +63,15 @@ function format(v: unknown, field: string, db?: Workspace): string {
         : String(v);
 }
 export function History({ entry: l, db }: { entry: Change; db?: Workspace }) {
+  const decision = reviewDecision(l);
   return (
     <div className="log">
       <strong>{l.actor}</strong>{l.editor_role && <> ({l.editor_role})</>} · {l.action} <small>{stamp(l.time)}</small>
+      {decision && <dl className="review-decision">
+        <div><dt>Review result</dt><dd><Tag value={decision.result} /></dd></div>
+        {decision.decidedBy && <div><dt>Decision by</dt><dd>{decision.decidedBy}</dd></div>}
+        {decision.rationale && <div><dt>{decision.decidedBy ? "Scope decision" : "Rationale"}</dt><dd>{decision.rationale}</dd></div>}
+      </dl>}
       <details><summary>{l.changes.length} changed {l.changes.length===1 ? "field" : "fields"}: {l.changes.map(([field])=>field).join(", ")}</summary>
       {l.changes.map(([f, a, b]) => (
         <p key={f}>

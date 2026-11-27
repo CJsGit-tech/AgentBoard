@@ -107,3 +107,10 @@ Send this to `create_record` after verifying all fixture IDs in the real project
 ```
 
 Use live milestone, role, and Context document IDs for saved tickets. Use the example tag only when the project catalog contains that active ID and it applies to the ticket. See [managed tags](tags.md).
+
+For a criterion-level handoff, save `criteria` after reading the ticket schema. Each criterion has a stable `id` and observable `text`. Set `evidence_required` when completion depends on proof. Pin `design` with the reviewed publication's `document_id` and `version`. After saving each relevant evidence document as a ticket Output, record verified targets within the matching criterion:
+
+- Report proof uses `kind: report`, `document_id`, the current `revision`, and an optional zero-based `section_line` for the relevant Markdown heading.
+- Screenshot proof uses `kind: screenshot`, `document_id`, and the exact `filename` and `digest` returned by readback.
+
+Record `status` per proof. Leave it `unverified` until reviewed and openable. Preserve replaced proof with `superseded` on that criterion when applicable.

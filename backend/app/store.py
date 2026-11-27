@@ -7,7 +7,7 @@ from pydantic import ValidationError
 from .catalog import check_catalog, core_name
 from .db import connect
 from .models import MODELS, PREFIX, timestamp
-from . import reviews
+from . import reviews, ticket_evidence
 
 
 class Problem(ValueError):
@@ -21,7 +21,7 @@ def record_data(row):
     if row["kind"] == "documents":
         defaults = {"document_type": "unclassified", "description": "", "source_documents": []}
     elif row["kind"] == "tickets":
-        defaults = {"work_type": "UNCLASSIFIED", "execution_role": "", "output_documents": []}
+        defaults = {"work_type": "UNCLASSIFIED", "execution_role": "", "output_documents": [], "criteria": []}
     if row["kind"] in ("tickets", "documents"):
         defaults["tags"] = []
     if row["kind"] == "runs":
@@ -34,7 +34,8 @@ RECORDS_WITH_EDIT = """
                             ORDER BY a.filename) FROM visual_assets a WHERE a.document_id=records.id) AS previews,
            (SELECT jsonb_agg(jsonb_build_object('version', v.version, 'digest', v.digest,
                      'asset_key', v.asset_key, 'published_at', v.published_at,
-                     'change_note', v.change_note, 'sources', v.sources, 'publisher', v.publisher) ORDER BY v.version DESC)
+                     'change_note', v.change_note, 'sources', v.sources, 'publisher', v.publisher,
+                     'screen_count', v.screen_count) ORDER BY v.version DESC)
             FROM canvas_versions v WHERE v.document_id=records.id) AS canvas_versions,
            edit.at AS updated_at, edit.actor AS latest_editor,
            edit.editor_role AS latest_edit_role
@@ -183,8 +184,12 @@ def check_unused(conn, row):
       SELECT kind, id FROM records WHERE NOT deleted AND id <> %s
       AND (project=%s OR data->>'milestone'=%s OR data->>'role'=%s
            OR data->>'ticket'=%s OR (data->'documents') ? %s
-           OR (data->'output_documents') ? %s OR (data->'source_documents') ? %s) LIMIT 1
-    """, (key,)*8).fetchone()
+           OR (data->'output_documents') ? %s OR (data->'source_documents') ? %s
+           OR EXISTS (
+               SELECT 1 FROM jsonb_array_elements(COALESCE(data->'criteria', '[]'::jsonb)) criterion
+               WHERE criterion->'design'->>'document_id'=%s
+           )) LIMIT 1
+    """, (key,)*9).fetchone()
     if dependent:
         raise Problem(409, f"Remove the link from {dependent['kind']} {dependent['id']} first.")
 
@@ -215,7 +220,6 @@ def mutate(conn, kind, action, actor, data=None, key=None, revision=None, editor
         if action == "Deleted":
             check_unused(conn, row)
             if kind == "documents" and (reviews.current(conn, key) or reviews.tracked(row, set())):
-                reviews.sync_project(conn, row['project'], actor)
                 reviews.require_ready(conn, key, deletion=True)
         else:
             check_links(conn, kind, old)
@@ -235,6 +239,8 @@ def mutate(conn, kind, action, actor, data=None, key=None, revision=None, editor
         if kind == "documents" and old and core_name(old) == "Tag Catalog" and core_name(clean) != "Tag Catalog":
             check_catalog_in_use(conn, clean["project"])
         check_links(conn, kind, {**clean, '_id': key})
+        if kind == "tickets":
+            ticket_evidence.validate_references(conn, clean, old)
         validate_catalog(conn, kind, clean, old, key)
         if kind == "runs":
             clean["updated"] = timestamp()
@@ -259,22 +265,24 @@ def mutate(conn, kind, action, actor, data=None, key=None, revision=None, editor
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s)""",
                  (saved["project"], actor, action, kind, key, saved["data"]["name"], Jsonb(changes), editor_role))
     if not historical_import and kind in ('documents', 'tickets'):
-        previous_review = reviews.current(conn, key)
-        if kind == 'documents' and action == 'Restored' and previous_review and previous_review['operation'] == 'Delete':
+        if kind == 'documents' and action == 'Restored' and (reviews.current(conn, key) or {}).get('operation') == 'Delete':
             value, signature = reviews.snapshot(conn, saved)
             reviews.new_review(conn, saved, value, signature, actor, 'Review the restored requirements and their document impact.')
-        reviews.sync_project(conn, saved['project'], actor)
+        reviews.sync_record_change(conn, saved, old, action, actor)
     if not historical_import and action in ('Created', 'Updated', 'Restored'):
         if kind == 'tickets' and saved['data']['status'] in ('In progress', 'Done') and (
                 old.get('status') != saved['data']['status'] or reviews.fields(kind, old) != reviews.fields(kind, saved['data'])):
             reviews.require_ready(conn, key)
+            if saved['data']['status'] == 'Done':
+                ticket_evidence.require_for_completion(conn, saved['data'])
         if kind == 'runs' and saved['data'].get('mode', 'Edit') == 'Edit' and saved['data']['status'] in ('Running', 'Completed') and (
                 action != 'Updated' or any(old.get(field) != saved['data'].get(field) for field in ('status', 'ticket', 'mode'))):
             ticket = saved['data'].get('ticket')
             if not ticket:
                 raise Problem(422, 'Editing runs need a linked ticket. Use Read only for questions and inspection.')
-            reviews.sync_project(conn, saved['project'], actor)
             reviews.require_ready(conn, ticket)
+            if saved['data']['status'] == 'Completed':
+                ticket_evidence.require_for_completion(conn, get_row(conn, 'tickets', ticket)['data'])
     return public(get_row(conn, kind, key, action == "Deleted"))
 
 

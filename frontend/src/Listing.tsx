@@ -1,15 +1,19 @@
+import { workspacePath } from "./model";
 import { useOperations } from "./features/operations/Operations";
 import { operations, projectResource } from "./features/operations/operation-store";
 import { mutateRecord } from "./features/operations/record-mutation";
 import type { WorkspaceRefresh } from "./model";
 import { useRef, useState, type ReactNode } from "react";
-import { Alert, Menu, NativeSelect, Popover, TextInput } from "@mantine/core";
+import { Alert, Button, Menu, NativeSelect, Popover, TextInput } from "@mantine/core";
 import { useLocalStorage } from "@mantine/hooks";
 import { Empty, Icon, Tag } from "./Common";
 import { Directory } from "./features/directory/Directory";
 import { TicketSummary } from "./features/tickets/TicketSummary";
+import { ticketsForMilestone } from "./features/tickets/milestone";
+import { proofHref, resolveProof } from "./features/tickets/proof-links";
 import { CompletionDial } from "./Dashboard";
 import { DocumentLibrary } from "./DocumentLibrary";
+import { useActivityPage, ActivityPageContents } from "./features/monitoring/activity-page";
 import { ActivityTimeline, RunList, type RunGrouping } from "./Monitoring";
 import {
   type Workspace, type Page, type Row, type Change, type Editor, type TicketView,
@@ -21,8 +25,9 @@ import {
 type TicketGrouping = "Milestone" | "Status" | "Type" | "None";
 type ListPage = Exclude<Page, "dashboard" | "canvas" | "assistant">;
 type Props = {
-  documentId?: string; db: Workspace; page: ListPage; scope: string; initialMil: string; initialTicketView: TicketView;
+  documentId?: string; db: Workspace; page: ListPage; scope: string; milestoneFilter: string; initialTicketView: TicketView;
   edit: (editor: Editor) => void; inspect: (entry: Change) => void; milestone: (id: string) => void;
+  onMilestoneFilter: (id: string) => void; onNewTicket: () => void;
   showMonitoring: (page: Page) => void; refresh?: WorkspaceRefresh;
 };
 type Choice = { value: string; label: string };
@@ -30,6 +35,42 @@ type Filter = { label: string; value: string; change: (value: string) => void; d
 const all = (label: string) => ({ value: "", label });
 const workType = (row: Row) => row.work_type === "BUILD" ? "Build" : row.work_type === "BUG" ? "Bug" : "Unclassified";
 const dateLabel = (row: Row) => isOverdue(row) ? "Overdue" : row.due === localDate() ? "Due today" : "Due " + shortDate(row.due);
+const evidenceStates = ["Verified proof", "Missing required proof", "Linked outputs", "No evidence linked"] as const;
+
+function evidenceForTicket(db: Workspace, ticket: Row) {
+  const links = new Map<string, string>();
+  let missingRequired = false;
+  for (const criterion of ticket.criteria || []) {
+    let hasProof = false;
+    for (const proof of criterion.evidence || []) {
+      if (proof.status !== "verified") continue;
+      const document = resolveProof(db, ticket, proof);
+      if (!document) continue;
+      hasProof = true;
+      links.set(proofHref(proof), proof.kind === "screenshot" ? proof.filename : document.name);
+    }
+    if (criterion.evidence_required && !hasProof) missingRequired = true;
+  }
+  const verified = links.size > 0;
+  for (const document of db.documents) {
+    if (!verified && document.project === ticket.project && ticket.output_documents?.includes(document.id)) {
+      links.set(`#documents/${encodeURIComponent(document.id)}`, document.name);
+    }
+  }
+  return { state: evidenceStates[missingRequired ? 1 : verified ? 0 : links.size ? 2 : 3], links };
+}
+
+function TicketEvidence({ evidence }: { evidence?: ReturnType<typeof evidenceForTicket> }) {
+  if (!evidence || evidence.state === "No evidence linked") return null;
+  const links = [...evidence.links];
+  return <div className="ticket-evidence" onClick={event => event.stopPropagation()}>
+    <span>{evidence.state}</span>
+    {links.length === 1 && <a href={links[0][0]}>{links[0][1]}</a>}
+    {links.length > 1 && <details><summary>View {links.length} links</summary><ul>
+      {links.map(([href, name]) => <li key={href}><a href={href}>{name}</a></li>)}
+    </ul></details>}
+  </div>;
+}
 
 function RecordTable({ headers, groups, makeCells, onOpen, collapse, toggle }: {
   headers: string[]; groups: { key: string; label?: string; rows: Row[]; summary?: ReactNode }[];
@@ -51,12 +92,12 @@ function RecordTable({ headers, groups, makeCells, onOpen, collapse, toggle }: {
   </table></div>;
 }
 
-export function Listing({ documentId, db, page: k, scope, initialMil, initialTicketView, edit, inspect, milestone, showMonitoring, refresh }: Props) {
+export function Listing({ documentId, db, page: k, scope, milestoneFilter: mil, initialTicketView, edit, inspect, milestone, onMilestoneFilter, onNewTicket, showMonitoring, refresh }: Props) {
   const [query, search] = useState("");
   const [status, setStatus] = useState(initialTicketView === "attention" ? "Needs attention" : "");
   const [due, setDue] = useState(initialTicketView === "overdue" ? "Overdue" : "");
   const [role, setRole] = useState("");
-  const [mil, setMil] = useState(initialMil);
+  const [evidenceState, setEvidenceState] = useState("");
   const [tag, setTag] = useState("");
   const [type, setType] = useState("");
   const [actor, setActor] = useState("");
@@ -76,7 +117,7 @@ export function Listing({ documentId, db, page: k, scope, initialMil, initialTic
     if (movementPending.current || operations.locked([projectResource(row.project || scope)]) || row.status===nextStatus) return;
     movementPending.current=true; setMoving(row.id); failMove(null);
     try {
-      if (retry) { const workspace=await request<Workspace>("workspace"); const latest=workspace.tickets.find(t=>t.id===row.id); if(!latest || latest.revision!==row.revision) { await refresh?.(); throw new Error("This ticket changed. Review its latest status before moving it again."); } }
+      if (retry) { const workspace=await request<Workspace>(workspacePath(row.project || scope)); const latest=workspace.tickets.find(t=>t.id===row.id); if(!latest || latest.revision!==row.revision) { await refresh?.(); throw new Error("This ticket changed. Review its latest status before moving it again."); } }
       await mutateRecord({kind:"tickets",project:row.project||scope,row,fields:{status:nextStatus},action:"save",refresh:refresh||(async()=>{}),
         write:async()=>{
           const saved=await request<Row>("tickets/"+encodeURIComponent(row.id),"PATCH",{revision:row.revision,changes:{status:nextStatus}});
@@ -102,29 +143,29 @@ export function Listing({ documentId, db, page: k, scope, initialMil, initialTic
   const tickets = scoped(ticketRows, scope, "tickets");
   const runs = scoped(db.runs, scope, "runs");
   const milestones = scoped(db.milestones, scope, "milestones");
+  const selectedMilestone = mil ? milestones.find(record => record.id === mil) : undefined;
+  const milestoneTickets = selectedMilestone ? ticketsForMilestone(tickets, selectedMilestone) : [];
+  const ticketCohort = selectedMilestone ? milestoneTickets : mil ? [] : tickets;
+  const evidenceByTicket = new Map(k === "tickets" ? tickets.map(ticket => [ticket.id, evidenceForTicket(db, ticket)]) : []);
   const attention = k === "tickets" ? attentionReasons(tickets, runs) : new Map<string, string>();
   const term = query.trim().toLowerCase();
   const matches = (values: (string | undefined)[]) => !term || values.some((value) => value?.toLowerCase().includes(term));
   const needsAttention = k === "tickets" && status === "Needs attention";
-  const rows = k === "activity" ? [] : scoped(k === "tickets" ? ticketRows : db[k], scope, k).filter((row) =>
+  const rows = k === "activity" ? [] : (k === "tickets" ? ticketCohort : scoped(db[k], scope, k)).filter((row) =>
     matches([row.name, row.id, row.description, row.agent, row.note, row.content, row.work_type, row.document_type,
       nameOf(db, "projects", row.project), k === "runs" ? runSubject(db, row) : undefined]) &&
     (!type || (k === "documents" ? row.document_type || "unclassified" : row.work_type || "UNCLASSIFIED") === type) &&
     (!tag || row.tags?.includes(tag)) &&
     (!status || (needsAttention ? attention.has(row.id) : row.status === status)) &&
-    (!role || row.role === role) && (!mil || row.milestone === mil) &&
+    (!role || row.role === role) && (!evidenceState || evidenceByTicket.get(row.id)?.state === evidenceState) &&
     (!due || (due === "No date" ? !row.due : due === "Overdue" ? isOverdue(row) : dueSoon(row) && !isOverdue(row))),
   );
-  const scopedActivity = k === "activity" ? db.activity.filter((entry) => !scope || entry.project === scope) : [];
-  const start = period ? new Date(localDate(Number(period)) + "T00:00:00").getTime() : null;
-  const end = period ? new Date(localDate(1) + "T00:00:00").getTime() : null;
-  const changes = scopedActivity.filter((entry) => {
-    const time = Date.parse(entry.time);
-    return (!actor || entry.actor === actor) && (!action || entry.action === action) &&
-      (!type || entry.kind === type) && (start === null || (time >= start && end !== null && time < end)) &&
-      matches([entry.name, entry.actor, entry.action, entry.record, entry.kind, ...entry.changes.map(([field]) => field)]);
-  });
-  const alerts = needsAttention && !tag && !mil && !role && !type && !due ? projectRunAlerts(runs).filter((run) =>
+  const activity = useActivityPage(k === "activity" ? scope : undefined, {
+    actor, action, kind: type, search: query.trim(),
+    start: period ? new Date(localDate(Number(period)) + "T00:00:00").toISOString() : "",
+    end: period ? new Date(localDate(1) + "T00:00:00").toISOString() : "",
+  }, db.activity_count);
+  const alerts = needsAttention && !tag && !mil && !role && !type && !due && !evidenceState ? projectRunAlerts(runs).filter((run) =>
     matches([run.name, run.agent, run.note, runSubject(db, run)])) : [];
 
   const filters: Filter[] = [];
@@ -137,14 +178,15 @@ export function Listing({ documentId, db, page: k, scope, initialMil, initialTic
     if (tags.length || tag) filters.push({ label: "Tag", value: tag, change: setTag, data: [all("All tags"), ...tags] });
   }
   if (k === "tickets") filters.push(
-    { label: "Milestone", value: mil, change: setMil, data: [all("All milestones"), ...options(milestones)] },
+    { label: "Milestone", value: mil, change: onMilestoneFilter, data: [all("All milestones"), ...options(milestones)] },
     { label: "Role", value: role, change: setRole, data: [all("All roles"), ...options(scoped(db.roles, scope, "roles"))] },
     { label: "Due date", value: due, change: setDue, data: [all("Any due date"), "Upcoming", "Overdue", "No date"] },
   );
+  if (k === "tickets" && (evidenceState || [...evidenceByTicket.values()].some(evidence => evidence.state !== "No evidence linked"))) {
+    filters.push({ label: "Evidence", value: evidenceState, change: setEvidenceState, data: [all("Any evidence"), ...evidenceStates] });
+  }
   if (k === "activity") {
-    const actors = [...new Set(scopedActivity.map((entry) => entry.actor))].sort();
-    const actions = [...new Set(scopedActivity.map((entry) => entry.action))].sort();
-    const kinds = [...new Set(scopedActivity.map((entry) => entry.kind))].sort();
+    const { actors, actions, kinds } = activity.facets;
     filters.push(
       { label: "Actor", value: actor, change: setActor, data: [all("All actors"), ...actors] },
       { label: "Action", value: action, change: setAction, data: [all("All actions"), ...actions] },
@@ -183,7 +225,7 @@ export function Listing({ documentId, db, page: k, scope, initialMil, initialTic
   }
 
   function list() {
-    if (k === "activity") return <ActivityTimeline changes={changes} inspect={inspect} />;
+    if (k === "activity") return <ActivityPageContents page={activity}><ActivityTimeline changes={activity.items} inspect={inspect} /></ActivityPageContents>;
     if (k === "runs") return <RunList db={db} rows={rows} grouping={runGroup} edit={edit} />;
     if (k === "documents")
       return <DocumentLibrary refresh={refresh} initialId={documentId} db={db} rows={rows} grouping={documentGroup} audit={audit} edit={edit} />;
@@ -191,26 +233,37 @@ export function Listing({ documentId, db, page: k, scope, initialMil, initialTic
     if (!rows.length && !board) return <Empty>No matching records.</Empty>;
     if (k === "tickets") {
       const groups = [...ticketGroups.values()].map((group) => ({ ...group, key: layout + ":" + grouping + ":" + group.key }));
-      if (board) return <div className="board">{groups.map((group) =>
-        <section className="lane" key={group.key} data-drop={dropTarget===group.label || undefined}
+      if (board) {
+        const occupied = groups.filter(group => group.rows.length);
+        const empty = groups.filter(group => !group.rows.length);
+        const renderLane = (group: typeof groups[number]) => <section className="lane" key={group.key} data-drop={dropTarget===group.label || undefined}
           onDragOver={event=>{if(grouping!=="Status"||!dragging.current)return;event.preventDefault();event.dataTransfer.dropEffect="move";setDropTarget(group.label||"");}}
           onDragLeave={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))setDropTarget("");}}
           onDrop={event=>{event.preventDefault();const ticket=tickets.find(t=>t.id===dragging.current);if(ticket&&grouping==="Status"&&group.label)void moveTicket(ticket,group.label);dragging.current="";setDropTarget("");}}>
+          {mil && !group.rows.length ? <h2 className="empty-lane-title">{group.label}<small>0 tickets</small></h2> : <>
           <h2><button className="row-group-label" aria-expanded={!collapsed.has(group.key)} onClick={()=>toggleGroup(group.key)}>{group.label}<small>{group.rows.length}</small></button></h2>
-          {!collapsed.has(group.key)&&group.rows.map(row=><article className="tile" data-ticket={row.id} key={row.id} draggable={!moving && !operations.locked([projectResource(row.project || scope)])}
+          {!collapsed.has(group.key)&&group.rows.length>0&&<div className="lane-tickets">{group.rows.map(row=><article className="tile" data-ticket={row.id} key={row.id} draggable={!moving && !operations.locked([projectResource(row.project || scope)])}
             onDragStart={event=>{const target=event.target as HTMLElement;if(target.closest("select,input,a,button:not([data-drag-title])")){event.preventDefault();return;}dragging.current=row.id;event.dataTransfer.setData("text/plain",row.id);event.dataTransfer.effectAllowed="move";}}
-            onDragEnd={()=>{dragging.current="";setDropTarget("");}} onClick={event=>{if(!(event.target as HTMLElement).closest("button,select,input,a,label"))open(row);}}>
-            <TicketSummary db={db} ticket={row} open={open}/>{row.due&&<small>{dateLabel(row)}</small>}{needsAttention&&<Tag value={attention.get(row.id)||row.status||"Unspecified"}/>}
+            onDragEnd={()=>{dragging.current="";setDropTarget("");}} onClick={event=>{if(!(event.target as HTMLElement).closest("button,select,input,a,label,summary"))open(row);}}>
+            <TicketSummary db={db} ticket={row} open={open} metadata="role"/>{row.due&&<small>{dateLabel(row)}</small>}{needsAttention&&<Tag value={attention.get(row.id)||row.status||"Unspecified"}/>}
+            <TicketEvidence evidence={evidenceByTicket.get(row.id)} />
             <label className="ticket-move"><span>{moving===row.id?"Moving…":"Move to"}</span><select aria-label={"Move "+row.name+" to"} disabled={!!moving || operations.locked([projectResource(row.project || scope)])} value={row.status} onChange={event=>void moveTicket(row,event.currentTarget.value)}>{statuses.map(status=><option key={status}>{status}</option>)}</select></label>
-          </article>)}
+          </article>)}</div>}
           {!collapsed.has(group.key)&&!group.rows.length&&<Empty>No tickets.</Empty>}
-        </section>)}</div>;
+          </>}
+        </section>;
+        if (!mil) return <div className="board">{groups.map(renderLane)}</div>;
+        return <>
+          {occupied.length ? <div className="board milestone-board" data-lanes={occupied.length}>{occupied.map(renderLane)}</div> : <Empty>No matching tickets.</Empty>}
+          {!!empty.length && <div className="board milestone-empty-lanes" aria-label="Empty status lanes">{empty.map(renderLane)}</div>}
+        </>;
+      }
       return <RecordTable headers={["Ticket", "Status", ...(grouping === "Milestone" ? [] : ["Milestone"]), "Role", "Due date", ...(audit ? ["Created", "Last edit"] : [])]}
         groups={groups.map((group) => ({ ...group, summary: group.label && <small className="group-progress">
           <span className="group-meter" aria-hidden="true"><i style={{width: percent(group.rows) + "%"}} /></span>{done(group.rows)}/{group.rows.length} done
         </small> }))}
         collapse={collapsed} toggle={toggleGroup} onOpen={open} makeCells={(row) => [
-          <TicketSummary db={db} ticket={row} open={open}/>,
+          <><TicketSummary db={db} ticket={row} open={open} metadata="none"/><TicketEvidence evidence={evidenceByTicket.get(row.id)} /></>,
           <><Tag value={row.status || "Unspecified"} />{needsAttention && attention.get(row.id) !== row.status && <small><Tag value={attention.get(row.id) || "Unspecified"} /></small>}</>,
           ...(grouping === "Milestone" ? [] : [nameOf(db, "milestones", row.milestone)]),
           nameOf(db, "roles", row.role), dueSoon(row) ? <Tag value={dateLabel(row)} /> : shortDate(row.due),
@@ -220,8 +273,20 @@ export function Listing({ documentId, db, page: k, scope, initialMil, initialTic
     return <RecordTable headers={["Project","Milestones","Tickets","Completion"]} groups={[{key:"",rows}]} onOpen={open} makeCells={row=>{const related=db.tickets.filter(t=>t.project===row.id);return [name(row),db.milestones.filter(m=>m.project===row.id).length,related.length,related.length?percent(related)+"%":"Progress pending"];}}/>;
   }
   const activeFilters = filters.filter(({value}) => value);
-  const showMargin = k === "tickets" && !board && !needsAttention && due !== "Overdue";
+  const showMargin = k === "tickets" && (!mil || !!selectedMilestone) && !board && !needsAttention && due !== "Overdue";
+  const scopedAttention = ticketCohort.filter(row => attention.has(row.id));
   return <>
+    {k === "tickets" && <header className="heading">
+      <div>
+        <h1>{selectedMilestone?.name || "Tickets"}</h1>
+        <p role="status">
+          {rows.length === ticketCohort.length ? `${rows.length} ${rows.length === 1 ? "ticket" : "tickets"}` : `${rows.length} of ${ticketCohort.length} tickets shown`}
+          {selectedMilestone ? ` · ${done(ticketCohort)} done in this milestone` : ` · ${scope ? nameOf(db, "projects", scope) : "All projects"}`}
+        </p>
+      </div>
+      <Button size="sm" className="mast-action" leftSection={<Icon page="plus" />} onClick={onNewTicket}>New ticket</Button>
+    </header>}
+    {k === "tickets" && mil && !selectedMilestone && <Alert color="yellow" role="status" mb="md">This milestone is not available in the selected project. <button className="link" onClick={() => onMilestoneFilter("")}>View all project tickets</button></Alert>}
     <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
     {moveFailure && <Alert color="red" role="alert" mb="md">Move failed: {moveFailure.message} <button className="link" onClick={()=>void moveTicket(moveFailure.row,moveFailure.status,true)}>Retry move</button> <button className="link" onClick={()=>void refresh?.()}>Reload records</button></Alert>}
     <div className="work-tools">
@@ -259,13 +324,13 @@ export function Listing({ documentId, db, page: k, scope, initialMil, initialTic
       <div className="work-list">{list()}
         {alerts.length > 0 && <section className="attention-project-runs"><h2>Project runs needing attention</h2><RunList db={db} rows={alerts} grouping="None" edit={edit} /></section>}
       </div>
-      {showMargin && <section className="work-margin" aria-label="Project summary">
-        <h2>Completion</h2><CompletionDial tickets={tickets} compact />
+      {showMargin && <section className="work-margin" aria-label={selectedMilestone ? "Milestone summary" : "Project summary"}>
+        <h2>{selectedMilestone ? "Milestone completion" : "Project completion"}</h2><CompletionDial tickets={ticketCohort} compact />
         <h2>Needs attention</h2>
-        {tickets.filter((row) => attention.has(row.id)).map((row) => <button className="margin-note" key={row.id} onClick={() => open(row)}>
+        {scopedAttention.map((row) => <button className="margin-note" key={row.id} onClick={() => open(row)}>
           <Tag value={attention.get(row.id)!} /><strong>{row.name}</strong><Icon page="arrow" />
         </button>)}
-        {!attention.size && <Empty>Nothing needs attention.</Empty>}
+        {!scopedAttention.length && <Empty>Nothing needs attention.</Empty>}
       </section>}
     </div>
   </>;

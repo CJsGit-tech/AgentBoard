@@ -36,3 +36,13 @@ Follow-up after review: “Upload this version and link it to the empty-state ti
 - **Output** — Planned AgentBoard tickets with the work type, execution route, acceptance criteria or bug details, and applicable Context links and tags. A request for a ticket-plan draft instead produces local `ticket-plan.md` and its chat preview without filing records. [Ticket contract](tickets.md) · [Local workspace](local-workspace.md)
 
 Example: “AgentBuild Create Tickets for PocketMap, First Release. FE-Bug: tapping Save leaves the form open and shows no confirmation.”
+
+## Continue an existing ticket
+
+In Codex or Claude Code, ask to execute the existing ticket by name or link. Use the same follow-up after creating a ticket in either IDE. In AgentBoard’s InApp Assistant, select the reviewed ticket and use Edit mode once its checks and execution setup are ready.
+
+PocketReminder example: “Continue PocketReminder’s existing Forms and details ticket. Read the approved requirements and pinned Canvas before editing. Verify that older item types remain editable without appearing in the add menu. Link the exact capture or test result to that criterion and open it from the ticket before reporting completion.”
+
+1. Read the current ticket and Context. For this example, the Context includes the approved Design Profile and exact Canvas version. Keep legacy item editing and the add menu behavior within that reviewed scope.
+2. Run the relevant checks on the implementation. Upload the report and any captures as Outputs. On the criterion, link the exact verified report section and revision or screenshot filename and digest. If proof is missing, stale, or incomplete, leave the criterion unverified and tell the user what remains.
+3. In AgentBoard, open PocketReminder → Tickets → Forms and details. Read the criterion, open its proof, and confirm it shows the result for that check. Follow the [evidence completion procedure](tickets.md#evidence-completion-gate), including partial uploads. Changes to requirements or design still go through local review and explicit approval before upload.

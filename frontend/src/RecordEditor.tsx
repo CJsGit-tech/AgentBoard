@@ -1,3 +1,5 @@
+import { workspacePath } from "./model";
+import { useEditorWorkspace } from "./features/workspace/editor-workspace";
 import { OperationFeedback, useOperationLock } from "./features/operations/Operations";
 import { operations, conflicts, inFlight } from "./features/operations/operation-store";
 import { mutateRecord, recordResources, type RecordAction } from "./features/operations/record-mutation";
@@ -17,12 +19,18 @@ import {
   TextInput,
   Textarea,
 } from "@mantine/core";
+import { ReviewHistory } from "./features/monitoring/ReviewHistory";
+import { useActivityPage, ActivityPageContents } from "./features/monitoring/activity-page";
 import { Empty, History, Item, Tag } from "./Common";
 import RichTextEditor from "./features/documents/RichTextEditor";
 import { Markdown } from "./features/documents/Markdown";
 import { TicketSummary } from "./features/tickets/TicketSummary";
+import { TicketReader } from "./features/tickets/TicketReader";
+import { CriteriaEditor } from "./features/tickets/CriteriaEditor";
+import { ticketsForMilestone } from "./features/tickets/milestone";
 import { ProjectResources } from "./ProjectResources";
 import { ProjectDeletion } from "./ProjectDeletion";
+import { RunReport } from "./features/monitoring/RunReport";
 import { describeWithHelp, InfoHelp } from "./features/help/InfoHelp";
 import "./features/forms/actions.css";
 import { SubmissionGate } from "./formActions";
@@ -31,6 +39,7 @@ import {
   type Row,
   type Kind,
   type Editor,
+  type TicketCriterion,
   ApiError,
   errorText,
   single,
@@ -47,7 +56,7 @@ import {
   currentReview,
 } from "./model";
 
-type Draft = Record<string, string | string[]>;
+type Draft = Record<string, string | string[] | TicketCriterion[]>;
 const pendingDrafts = new Map<string, {initial:Draft;draft:Draft}>();
 function fields(
   kind: Kind,
@@ -89,6 +98,7 @@ function fields(
         due: r.due || "",
         documents: r.documents || [],
         output_documents: r.output_documents || [],
+        criteria: r.criteria || [],
         work_type: r.work_type || "UNCLASSIFIED",
         execution_role: r.execution_role || "",
       };
@@ -114,7 +124,7 @@ type Props = {
   inline?: boolean;
 };
 export function RecordEditor({
-  db,
+  db: parentDB,
   editor,
   scope,
   close: closeParent,
@@ -135,12 +145,25 @@ export function RecordEditor({
       }
     });
   }
-  const project =
-    row?.project || editor.project || scope || db.projects[0]?.id || "";
-  const draftKey=k+":"+(row?.id||project);
+  const initialProject = row?.project || editor.project || scope || parentDB.projects[0]?.id || "";
+  const draftKey=k+":"+(row?.id||initialProject);
   const retained=pendingDrafts.get(draftKey);
-  const [initial] = useState(() => retained?.initial || fields(k, row || {}, project, db)),
+  const [initial] = useState(() => retained?.initial || fields(k, row || {}, initialProject, parentDB)),
     [draft, setDraft] = useState<Draft>(retained?.draft || initial);
+  const p = String(draft.project || "");
+  const project = k === "projects" ? row?.id || "" : p || initialProject;
+  const needsProject = !!project && !parentDB.projects.some(item => item.id === project && !item.summary);
+  const related = useEditorWorkspace(needsProject ? workspacePath(project) : undefined);
+  const directory = useEditorWorkspace(!row && k !== "projects" ? workspacePath("") : undefined);
+  const db = related.data || parentDB;
+  const projectOptions = directory.data?.projects || parentDB.projects;
+  const waitingForProject = needsProject && !related.data;
+  useEffect(() => {
+    if (!row && k === "tickets" && !draft.milestone && related.data) {
+      const milestone = related.data.milestones.find(item => item.project === p);
+      if (milestone) setDraft(current => current.project === p && !current.milestone ? { ...current, milestone: milestone.id } : current);
+    }
+  }, [related.data, k, p, row, draft.milestone]);
   const mounted=useRef(true);
   useEffect(()=>()=>{mounted.current=false;},[]);
   const [localBusy, setBusy] = useState(false),
@@ -154,7 +177,9 @@ export function RecordEditor({
   function savedAndClose(){pendingDrafts.delete(draftKey);if(mounted.current)close();}
   const [discard, setDiscard] = useState<{ action: () => void } | null>(null);
   const [editorRole, setEditorRole] = useState("");
-  const [panel, setPanel] = useState<string | null>(editor.panel || "Details");
+  const existingRun = k === "runs" && !!row;
+  const existingTicket = k === "tickets" && !!row;
+  const [panel, setPanel] = useState<string | null>(editor.panel || (existingRun || existingTicket ? "Summary" : "Details"));
   const [confirmProjectDeletion, setConfirmProjectDeletion] = useState(false);
   const deleteButton = useRef<HTMLButtonElement>(null);
   const editedField = useRef<HTMLElement | null>(null);
@@ -193,9 +218,8 @@ export function RecordEditor({
       else action();
     }
   }
-  const p = String(draft.project || "");
   const current = (key: string) => String(draft[key] ?? "");
-  const set = (key: string, v: string | string[]) => {
+  const set = (key: string, v: string | string[] | TicketCriterion[]) => {
     if (!operations.locked(resources)) setDraft((d) => ({ ...d, [key]: v }));
   };
   const choices = (kind: Kind) =>
@@ -206,7 +230,7 @@ export function RecordEditor({
   const stale = !!row && live?.revision !== row.revision;
   async function submit(ev: FormEvent) {
     ev.preventDefault();
-    if (mutationGate.current.busy || operations.locked(resources)) return;
+    if (waitingForProject || mutationGate.current.busy || operations.locked(resources)) return;
     if (stale) { setError("Load the latest revision before saving. Your draft is still here."); return; }
     if (
       !current("name").trim() ||
@@ -216,7 +240,7 @@ export function RecordEditor({
       requestAnimationFrame(() => (document.querySelector<HTMLElement>("[data-record-form] :invalid") || document.querySelector<HTMLElement>("[data-record-form] .rte-editable, [data-record-form] .rte-source"))?.focus());
       return;
     }
-    if (db[k].some(other => other.id !== row?.id && (k === "projects" || other.project === p) && other.name.trim().toLocaleLowerCase() === current("name").trim().toLocaleLowerCase())) { setError("A "+single[k]+" with this name already exists. Choose another name."); return; }
+    if ((k === "projects" ? parentDB.projects : db[k]).some(other => other.id !== row?.id && (k === "projects" || other.project === p) && other.name.trim().toLocaleLowerCase() === current("name").trim().toLocaleLowerCase())) { setError("A "+single[k]+" with this name already exists. Choose another name."); return; }
     const changes = Object.fromEntries(
       Object.entries(draft)
         .filter(
@@ -293,7 +317,8 @@ export function RecordEditor({
   }
   const links: { kind: Kind; row: Row; label: string }[] = [];
   if (row && (k === "roles" || k === "milestones")) {
-    db.tickets.filter(t => k === "roles" ? t.role === row.id : t.milestone === row.id).forEach(t => links.push({kind:"tickets",row:t,label:"Ticket"}));
+    const tickets = k === "milestones" ? ticketsForMilestone(db.tickets, row) : db.tickets.filter(t => t.project === row.project && t.role === row.id);
+    tickets.forEach(t => links.push({kind:"tickets",row:t,label:"Ticket"}));
   }
   if (row && k === "tickets") {
     db.runs.filter((r) => r.ticket === row.id)
@@ -318,7 +343,9 @@ export function RecordEditor({
     const ticket = db.tickets.find((t) => t.id === row.ticket);
     if (ticket) links.push({ kind: "tickets", row: ticket, label: "Ticket" });
   }
-  const logs = db.activity.filter((l) => l.kind === k && l.record === row?.id);
+  const showHistory = panel === "History" || (existingRun && panel === "Summary");
+  const history = useActivityPage(row && showHistory ? (k === "projects" ? row.id : row.project) : undefined,
+    {record: row?.id || "", action: panel === "Summary" ? "Created" : ""}, db.activity_count);
   return (
     <RecordSurface
       inline={inline}
@@ -330,7 +357,7 @@ export function RecordEditor({
           leave(close);
         }
       }}
-      title={confirmProjectDeletion ? "Permanently delete project?" : (row ? "Edit " : "New ") + single[k]}
+      title={confirmProjectDeletion ? "Permanently delete project?" : existingRun && panel !== "Details" ? "Run report" : existingTicket && panel !== "Details" ? row.name : (row ? "Edit " : "New ") + single[k]}
       position="right"
       size="min(490px, 95vw)"
       padding="lg"
@@ -338,6 +365,10 @@ export function RecordEditor({
       overlayProps={{ opacity: 0.6 }}
     >
       {!inline && <OperationFeedback />}
+      {waitingForProject && !related.error && <p role="status">Loading project details…</p>}
+      {(related.error || directory.error) && <Alert color="red" role="alert">
+        {related.error || directory.error} <button className="link" onClick={related.error ? related.retry : directory.retry}>Retry</button>
+      </Alert>}
       {confirmProjectDeletion && row ? <ProjectDeletion
         id={row.id}
         busy={busy}
@@ -347,7 +378,7 @@ export function RecordEditor({
         refresh={refresh}
         deleted={savedAndClose}
       /> : <>
-      {row && k === "tickets" && <TicketSummary db={db} ticket={row} status/>}
+      {row && k === "tickets" && panel === "Details" && <TicketSummary db={db} ticket={row} status/>}
       {discard && (
         <Alert color="yellow" title="Discard your unsaved changes?" mb="md">
           <Group>
@@ -380,7 +411,19 @@ export function RecordEditor({
         </Alert>
       )}
       <Tabs value={panel} onChange={setPanel} keepMounted={false} className="editor-tabs">
-        {row && <Tabs.List><Tabs.Tab value="Details">Details</Tabs.Tab><Tabs.Tab value="Links">Links</Tabs.Tab><Tabs.Tab value="History">History</Tabs.Tab></Tabs.List>}
+        {row && <Tabs.List>
+          {(existingRun || existingTicket) && <Tabs.Tab value="Summary">Summary</Tabs.Tab>}
+          <Tabs.Tab value="Details">{existingRun ? "Edit report" : existingTicket ? "Edit ticket" : "Details"}</Tabs.Tab>
+          <Tabs.Tab value="Links">Links</Tabs.Tab><Tabs.Tab value="History">History</Tabs.Tab>
+        </Tabs.List>}
+        {existingRun && row && <Tabs.Panel value="Summary">
+          <ActivityPageContents page={history}>
+          <RunReport db={db} run={live || row} history={history.items} openTicket={ticket => leave(() => open({kind: "tickets", row: ticket}))} />
+          </ActivityPageContents>
+        </Tabs.Panel>}
+        {existingTicket && row && <Tabs.Panel value="Summary">
+          <TicketReader db={db} ticket={live || row} openRun={run => leave(() => open({kind: "runs", row: run}))} />
+        </Tabs.Panel>}
       <Tabs.Panel value="Details">
       {k !== "projects" && !db.projects.length ? (
         <>
@@ -407,7 +450,7 @@ export function RecordEditor({
                     if (k === 'documents' && currentReview(db, row.id)?.operation !== 'Delete') {
                       void operations.run({resources,label:"Requesting removal review",completed:"Review requested",
                         write:()=>request('reviews/start/documents/'+row.id,'POST',{revision:row.revision,operation:'Delete',request:'Remove '+row.name+' from the project requirements.'}),
-                        reconcile:async()=>{const data=await request<Workspace>("workspace");if(!data.reviews.some(v=>v.subject===row.id&&!v.superseded&&v.operation==='Delete'))throw Error('Review not confirmed');},
+                        reconcile:async()=>{const data=await request<Workspace>(workspacePath(p));if(!data.reviews.some(v=>v.subject===row.id&&!v.superseded&&v.operation==='Delete'))throw Error('Review not confirmed');},
                         sync:()=>refresh(data=>data.reviews.some(v=>v.subject===row.id&&!v.superseded&&v.operation==='Delete')),
                         confirmed:()=>setError('Ask your agent to check the linked documents before removal. Findings and your scope decision are logged in Runs & activity.')
                       }).catch(err=>setError(errorText(err)));
@@ -432,7 +475,7 @@ export function RecordEditor({
                 className="save"
                 type="submit"
                 loading={busy}
-                disabled={busy || stale || (k === "tickets" && !draft.milestone)}
+                disabled={waitingForProject || busy || stale || (k === "tickets" && !draft.milestone)}
               >
                 {k === "runs" ? "Save report" : "Save " + single[k]}
               </Button>
@@ -463,13 +506,14 @@ export function RecordEditor({
                             role: "",
                             documents: [],
                             output_documents: [],
+                            criteria: [],
                           }
                         : k === "runs"
                           ? { ticket: "" }
                           : {}),
                     }));
                   }}
-                  data={options(db.projects)}
+                  data={options(projectOptions)}
                 />
               ))}
             {row && (k === "tickets" || k === "documents") && (
@@ -528,6 +572,7 @@ export function RecordEditor({
                   <Checkbox.Group
                     key={field}
                     label={label + " documents"}
+                    description={field === "documents" ? "Requirements and approved inputs." : "Reports and captures produced by the work."}
                     value={draft[field] as string[]}
                     onChange={(value) => set(field, value)}
                   >
@@ -538,6 +583,8 @@ export function RecordEditor({
                     </Stack>
                   </Checkbox.Group>
                 )) : <small>No documents in this project.</small>}
+                <CriteriaEditor documents={db.documents.filter(document => document.project === p)}
+                  outputIds={draft.output_documents as string[]} value={draft.criteria as TicketCriterion[]} onChange={value => set("criteria", value)} />
               </>
             )}
             {k === "runs" && (
@@ -568,7 +615,7 @@ export function RecordEditor({
           </fieldset>
         </form>
       )}
-      {k === "projects" && row && <ProjectResources db={db} project={row.id}/>}
+      {k === "projects" && row && !waitingForProject && <ProjectResources db={db} project={row.id}/>}
       </Tabs.Panel>
       {row && <>
         <Tabs.Panel value="Links">
@@ -588,10 +635,13 @@ export function RecordEditor({
         </Tabs.Panel>
         <Tabs.Panel value="History">
           <h3 className="detail">Change history</h3>
-          {logs.map((l) => (
+          {row?.project && (k === "tickets" || k === "documents") && <ReviewHistory key={row.id} project={row.project} subject={row.id} />}
+          <ActivityPageContents page={history}>
+          {history.items.map((l) => (
             <History key={l.id} entry={l} db={db} />
           ))}
-          {!logs.length && <Empty>No recorded changes.</Empty>}
+          {!history.items.length && <Empty>No recorded changes.</Empty>}
+          </ActivityPageContents>
         </Tabs.Panel>
       </>}
       </Tabs>

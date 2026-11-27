@@ -2,6 +2,7 @@ import { TicketSummary, ticketRole, ticketMilestone } from "./features/tickets/T
 import "./features/monitoring/monitoring.css";
 import { Avatar } from "@mantine/core";
 import { Empty, Icon, Tag } from "./Common";
+import { reviewDecision } from "./features/monitoring/report-view";
 import { attentionStates, newestRuns, nameOf, runSubject, single, stamp, type Change, type Editor, type Row, type Workspace } from "./model";
 
 export type RunGrouping = "Agent" | "Status" | "None";
@@ -61,11 +62,12 @@ export function ActivityTimeline({ changes, inspect }: { changes: Change[]; insp
     <h2>{day}</h2>
     <ol>{entries.map((entry) => {
       const change = entry.changes.find(([field]) => field === "status");
+      const decision = reviewDecision(entry);
       const time = new Date(entry.time).toLocaleTimeString(undefined, {hour: "numeric", minute: "2-digit"});
       return <li key={entry.id}><button className="event-entry" onClick={() => inspect(entry)}>
         <time dateTime={entry.time}>{time}</time><span className="event-node"><Icon page={entry.kind} /></span>
         <span className="event-copy"><strong>{entry.name || entry.action + " " + single[entry.kind]}</strong><small>{entry.actor} · {entry.action.toLowerCase()} {single[entry.kind]}</small></span>
-        <span className="event-diff">{change ? <>{String(change[1] || "—")} <span aria-hidden="true">→</span><span className="sr-only"> to </span><Tag value={String(change[2] || "—")} /></> : entry.changes.length + (entry.changes.length === 1 ? " field" : " fields")}</span>
+        <span className="event-diff">{decision ? <Tag value={decision.result} /> : change ? <>{String(change[1] || "—")} <span aria-hidden="true">→</span><span className="sr-only"> to </span><Tag value={String(change[2] || "—")} /></> : entry.changes.length + (entry.changes.length === 1 ? " field" : " fields")}</span>
         <Icon page="arrow" />
       </button></li>;
     })}</ol>

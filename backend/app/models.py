@@ -67,6 +67,54 @@ class Document(TaggedRecord):
         return values
 
 
+CriterionId = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9_-]{0,79}$")]
+ProofStatus = Literal["unverified", "verified", "superseded"]
+PreviewDigest = Annotated[str, StringConstraints(pattern=r"^[a-f0-9]{64}$")]
+
+
+class CriterionTarget(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    document_id: Name
+
+
+class CriterionDesign(CriterionTarget):
+    version: int = Field(gt=0)
+
+
+class ReportProof(CriterionTarget):
+    kind: Literal["report"]
+    revision: int = Field(gt=0)
+    section_line: int | None = Field(default=None, ge=0)
+    status: ProofStatus = "unverified"
+
+
+class ScreenshotProof(CriterionTarget):
+    kind: Literal["screenshot"]
+    filename: Annotated[str, StringConstraints(min_length=1, max_length=124)]
+    digest: PreviewDigest
+    status: ProofStatus = "unverified"
+
+
+CriterionProof = Annotated[ReportProof | ScreenshotProof, Field(discriminator="kind")]
+
+
+class TicketCriterion(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+    id: CriterionId
+    text: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=4000)]
+    evidence_required: bool = False
+    design: CriterionDesign | None = None
+    evidence: list[CriterionProof] = Field(default_factory=list, max_length=20)
+
+    @field_validator("evidence")
+    @classmethod
+    def unique_targets(cls, values):
+        targets = [tuple(proof.model_dump(exclude={"status"}).items()) for proof in values]
+        if len(targets) != len(set(targets)):
+            raise ValueError("List each exact evidence target once per criterion.")
+        return values
+
+
 class Ticket(Milestone, TaggedRecord):
     milestone: Name
     status: Literal["Planned", "In progress", "Blocked", "Done"] = "Planned"
@@ -76,6 +124,7 @@ class Ticket(Milestone, TaggedRecord):
     execution_role: Literal["", "FE", "BE"] = ""
     documents: list[Name] = Field(default_factory=list, max_length=200, description="Context document IDs used as inputs.")
     output_documents: list[Name] = Field(default_factory=list, max_length=200, description="Output document IDs produced by the work.")
+    criteria: list[TicketCriterion] = Field(default_factory=list, max_length=60, description="Stable acceptance criteria with optional pinned design and evidence references.")
 
     @field_validator("due")
     @classmethod
@@ -89,6 +138,13 @@ class Ticket(Milestone, TaggedRecord):
     def unique_documents(cls, values):
         if len(values) != len(set(values)):
             raise ValueError("Each document may be linked once per relationship.")
+        return values
+
+    @field_validator("criteria")
+    @classmethod
+    def unique_criteria(cls, values):
+        if len(values) != len({criterion.id for criterion in values}):
+            raise ValueError("Use a distinct ID for each acceptance criterion.")
         return values
 
 

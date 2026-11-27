@@ -192,6 +192,8 @@ Updates back up managed copies. Modified copies are preserved. Uninstall does no
 
 ## 🛠️ Development and verification
 
+Browser clients read the directory at `GET /api/workspace?view=projects` and a project at `GET /api/workspace?project=<id>`. An older tab polling `GET /api/workspace` receives HTTP 410 with a reload instruction. A local integration that needs every record and review snapshot can request `GET /api/workspace?view=export` with the `X-AgentBoard-UI: 1` header. This full JSON export supports ETag revalidation.
+
 Use Python 3.12+ and Node.js 22:
 
 ```sh

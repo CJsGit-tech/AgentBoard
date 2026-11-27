@@ -35,7 +35,7 @@ class DocumentContentIntegration(unittest.TestCase):
         self.assertEqual(stale.status_code, 409)
         blank = self.http.patch(path, json={'revision': 2, 'changes': {'content': ' \n\t'}})
         self.assertEqual(blank.status_code, 422)
-        workspace = self.http.get('/api/workspace').json()
+        workspace = self.http.get('/api/workspace?view=export').json()
         saved = next(row for row in workspace['documents'] if row['id'] == document['id'])
         self.assertEqual(saved['content'], changed)
         history = next(row for row in workspace['activity'] if row['record'] == document['id'] and row['action'] == 'Updated')

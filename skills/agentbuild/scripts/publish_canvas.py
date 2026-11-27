@@ -41,11 +41,15 @@ def main():
     parser.add_argument("manifest", type=Path)
     parser.add_argument("document_url")
     parser.add_argument("--publication", required=True, type=Path,
-                        help="JSON containing change_note and source document_id/revision pairs used to build the draft")
+                        help="JSON containing change_note, source document_id/revision pairs, and optional verified screen_count")
     args = parser.parse_args()
     publication = json.loads(args.publication.read_text(encoding="utf-8"))
-    if not isinstance(publication, dict) or set(publication) != {"change_note", "sources"}:
-        raise ValueError("Publication metadata must contain change_note and sources.")
+    required = {"change_note", "sources"}
+    if not isinstance(publication, dict) or not required <= publication.keys() <= required | {"screen_count"}:
+        raise ValueError("Enter change_note, sources, and an optional verified screen_count.")
+    count = publication.get("screen_count")
+    if "screen_count" in publication and (type(count) is not int or not 1 <= count <= 2147483647):
+        raise ValueError("Use a positive screen_count verified against the reviewed gallery, or omit it.")
 
     files, digest = package(args.manifest)
     with subprocess.Popen([str(args.launcher.resolve()), args.client], stdin=subprocess.PIPE,
@@ -72,8 +76,9 @@ def main():
             references = sorted([{"document_id": source["document_id"], "revision": source["revision"]}
                                  for source in latest["sources"]], key=lambda source: source["document_id"])
             expected = sorted(publication["sources"], key=lambda source: source["document_id"])
-            if latest["digest"] != digest or latest["change_note"] != publication["change_note"].strip() or references != expected:
-                raise RuntimeError("The latest saved canvas differs from the reviewed files. Check its history.")
+            if (latest["digest"] != digest or latest["change_note"] != publication["change_note"].strip()
+                    or references != expected or latest.get("screen_count") != count):
+                raise RuntimeError("The saved canvas differs from the reviewed files or metadata. Check its version history.")
             print(f"{saved['name']} · Version {latest['version']} · {len(files)} files\n{saved['record_url']}")
         finally:
             process.stdin.close()

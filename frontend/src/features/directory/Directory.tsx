@@ -6,11 +6,12 @@ import { Meter } from "../../Dashboard";
 import { Empty } from "../../Common";
 import { RecordEditor } from "../../RecordEditor";
 import { TicketSummary } from "../tickets/TicketSummary";
+import { ticketsForMilestone } from "../tickets/milestone";
 import "./directory.css";
 export function Directory({kind,db,rows,edit,milestone,refresh}:{kind:"roles"|"milestones";db:Workspace;rows:Row[];edit:(editor:Editor)=>void;milestone:(id:string)=>void;refresh?:WorkspaceRefresh}) {
  const [selected,setSelected]=useState<Row|null>(null),[linked,showLinked]=useState(false);
  const opener=useRef<HTMLButtonElement|null>(null);
- const related=(row:Row)=>db.tickets.filter(t=>kind==="roles"?t.role===row.id:t.milestone===row.id);
+ const related=(row:Row)=>kind==="milestones"?ticketsForMilestone(db.tickets,row):db.tickets.filter(ticket=>ticket.project===row.project&&ticket.role===row.id);
  function select(row:Row,button:HTMLButtonElement) {if(!window.dispatchEvent(new Event("agentboard:before-navigate",{cancelable:true})))return;opener.current=button;setSelected(row);showLinked(false);}
  function close(){setSelected(null);showLinked(false);requestAnimationFrame(()=>opener.current?.focus());}
  if(!rows.length)return <Empty>No matching records.</Empty>;
@@ -21,7 +22,7 @@ export function Directory({kind,db,rows,edit,milestone,refresh}:{kind:"roles"|"m
  {selected&&<section className="directory-detail"><header><h2>{selected.name}</h2><button className="link" onClick={()=>showLinked(true)}>View linked tickets ({related(selected).length})</button><Button variant="default" size="xs" onClick={()=>{if(window.dispatchEvent(new Event("agentboard:before-navigate",{cancelable:true})))close();}}>Close details</Button></header>
  <RecordEditor key={selected.id} inline db={db} editor={{kind:"roles",row:selected}} scope={selected.project||""} close={close} open={edit} refresh={refresh||(async()=>{})}/>
  <Drawer opened={linked} onClose={()=>showLinked(false)} title={"Linked tickets · "+selected.name} position="right" size="min(520px,95vw)" closeButtonProps={{"aria-label":"Close linked tickets"}}>
- {related(selected).map(ticket=><div className="log" key={ticket.id}><TicketSummary db={db} ticket={ticket} open={row=>edit({kind:"tickets",row})} status/></div>)}{!related(selected).length&&<Empty>No linked tickets.</Empty>}
+ {related(selected).map(ticket=><div className="log" key={ticket.id}><TicketSummary db={db} ticket={ticket} open={row=>edit({kind:"tickets",row})} metadata="none" status/></div>)}{!related(selected).length&&<Empty>No linked tickets.</Empty>}
  </Drawer></section>}
  </div>;
 }

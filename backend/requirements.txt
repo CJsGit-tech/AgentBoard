@@ -3,3 +3,4 @@ fastmcp==4.2.2
 uvicorn==0.54.0
 psycopg[binary]==3.2.6
 openai-agents==0.25.0
+Pillow==13.0.0

@@ -41,6 +41,8 @@ Follow the [Create Visuals contract](references/visuals.md) for the local files,
 
 Before marking a ticket **Done** or its implementation run **Completed**, save the factual verification report and relevant screenshots in AgentBoard, link them through the affected ticket's `output_documents`, and verify that the report and previews open from the ticket. Local files alone do not complete the handoff. Publishing implementation evidence is part of authorized ticket execution; proposed requirements and design changes retain their review-before-publication boundary. Honor explicit local-only or chat-only instructions. Follow the [evidence completion procedure](references/tickets.md#evidence-completion-gate) for storage, verification, partial uploads and failure handling.
 
+To continue an existing reviewed ticket, ask for implementation by ticket name or link in Codex or Claude Code. This is an execution request within the existing ticket scope. Use the [PocketReminder walkthrough](references/commands.md#continue-an-existing-ticket) to pin the approved design, record proof on each criterion, and verify the handoff from the ticket.
+
 ## Browser testing and visual evidence
 
 Prefer an in-app or headless browser when running tests or capturing visual evidence. If you need an external Chrome window, close the task-created window or session immediately after taking the screenshots. Apply the same cleanup if a test or capture fails, and leave the user's pre-existing browser windows and tabs untouched.

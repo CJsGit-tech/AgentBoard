@@ -17,15 +17,16 @@
 .bi-status-legend>span,.bi-chart-key>span {display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#63695f;white-space:nowrap}
 .bi-status-legend b {margin-left:auto;color:#454b42}
 .bi-status-legend i,.bi-chart-key i {display:inline-block;width:7px;height:7px;border-radius:50%;flex:none}
-.bi-attention {border-left:1px solid var(--bi-rule);padding-left:32px}
+.bi-next-milestone, .bi-delivery-summary {border-inline-start:1px solid var(--bi-rule);padding-inline-start:32px}
 .bi-health-values {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px;margin-bottom:12px}
 .bi-health-values button {display:grid;justify-items:start;gap:3px;background:none;border:0;padding:0;text-align:left}
 .bi-health-values strong {font-size:35px;font-weight:550;line-height:1.2;letter-spacing:-.05em}
 .bi-health-values span {font-size:12px;color:#63695f}
 .bi-green {color:var(--bi-green)}.bi-amber {color:#916019}.bi-red {color:#a3473d}.bi-muted-number {color:#6c7568}
 .bi-main-row {display:grid;grid-template-columns:minmax(0,1.55fr) minmax(250px,1fr);gap:32px;padding:25px 0;border-bottom:1px solid var(--bi-rule)}
-.bi-milestones {padding-left:32px;border-left:1px solid var(--bi-rule)}
-.bi-milestones article+article {margin-top:26px}
+.bi-other-milestones {padding:24px 0;border-block-end:1px solid var(--bi-rule)}
+.bi-milestone-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:18px 24px}
+.bi-dashboard article h3 .plain {text-align:start;overflow-wrap:anywhere}
 .bi-meter-label {display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:11px 0 7px}
 .bi-meter-label strong {font-size:21px;line-height:1.2;letter-spacing:-.04em;color:var(--bi-green)}
 .bi-meter-label span {font-size:11px;color:#63695f}
@@ -48,8 +49,8 @@
 .bi-inspect button:hover {background:#f1f4ee}
 .bi-inspect button[aria-pressed=true] {background:#eaf3ee;color:#276653;font-weight:600}
 .bi-chart-readout {font-size:12px;color:#3a6556;margin-top:8px;min-height:18px}
-@media(max-width:1050px){.bi-completion{gap:15px}.bi-summary{gap:22px}.bi-attention{padding-left:22px}.bi-ring{width:113px;height:113px}.bi-main-row{gap:24px;grid-template-columns:minmax(0,1.3fr) minmax(230px,1fr)}.bi-milestones{padding-left:24px}.bi-status-legend{column-gap:9px}}
-@media(max-width:800px){.bi-summary{grid-template-columns:1fr}.bi-attention{border-left:0;border-top:1px solid var(--bi-rule);padding:22px 0 0}.bi-main-row{grid-template-columns:1fr;gap:25px}.bi-milestones{padding:25px 0 0;border-left:0;border-top:1px solid var(--bi-rule)}.bi-completion{gap:24px}.bi-status-legend{column-gap:20px}.bi-subtle-label{display:none}}
+@media(max-width:1050px){.bi-completion{gap:15px}.bi-summary{gap:22px}.bi-next-milestone,.bi-delivery-summary{padding-inline-start:22px}.bi-ring{width:113px;height:113px}.bi-main-row{gap:24px;grid-template-columns:minmax(0,1.3fr) minmax(230px,1fr)}.bi-status-legend{column-gap:9px}}
+@media(max-width:800px){.bi-summary{grid-template-columns:1fr}.bi-next-milestone,.bi-delivery-summary{border-inline-start:0;border-block-start:1px solid var(--bi-rule);padding:22px 0 0}.bi-main-row{grid-template-columns:1fr;gap:25px}.bi-completion{gap:24px}.bi-status-legend{column-gap:20px}.bi-subtle-label{display:none}}
 @media(max-width:480px){.bi-ring{width:104px;height:104px}.bi-completion{gap:17px}.bi-status-legend{gap:6px 12px}.bi-main-row,.bi-summary,.bi-bottom-row{padding-block:20px}.bi-dashboard h2{font-size:15px}.bi-health-values strong{font-size:30px}.bi-inspect{gap:2px}.bi-inspect button{padding-inline:6px}}
 @media(pointer:coarse){.bi-inspect button,.bi-dashboard .text-action,.bi-health-values button{min-height:44px}}
 @media(forced-colors:active){.bi-meter,.bi-ring circle{outline:1px solid CanvasText}.bi-inspect button[aria-pressed=true]{outline:1px solid Highlight}}
@@ -86,12 +87,20 @@
 @media(max-width:480px){.bi-workload-head{align-items:flex-start}.bi-workload-head>div{display:block}.bi-workload-total{margin-top:3px}.bi-agent-grid{gap:12px}.bi-agent-compact+.bi-agent-compact{padding-left:12px}.bi-agent-kpi{gap:4px;flex-wrap:wrap}.bi-agent-kpi .bi-agent-state{margin-left:4px}.bi-hero .bi-ring{width:110px;height:110px}.bi-hero h2{font-size:16px}}
 @media(max-width:480px){.bi-agent-grid:has(.bi-agent-tasks){grid-template-columns:1fr}.bi-agent-grid:has(.bi-agent-tasks) .bi-agent-compact+.bi-agent-compact{padding:14px 0 0;border-left:0;border-top:1px solid var(--bi-rule)}}
 @media(pointer:coarse){.bi-active-task .title-link{min-height:44px}}
-.agent-workload { padding-block-end: 20px; border-block-end: 1px solid var(--line); margin-block-end: 28px; }
+.agent-workload { padding-block: 18px; }
+.agent-workload .bi-section-head { margin-block-end: 6px; }
 .agent-workload h2 { font-size: 14px; }
-.workload-agents { display: flex; flex-wrap: wrap; gap: 12px 28px; margin-block: 8px; }
-.workload-agents button { display: grid; gap: 4px; text-align: start; padding: 8px 0; }
-.workload-agents span { font-size: 12px; color: var(--muted); }
-.bi-dashboard .bi-completion { min-width: 0; }
+.workload-agents { display: flex; flex-wrap: wrap; gap: 5px 24px; list-style: none; padding: 0; margin: 0; }
+.workload-agents li { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; font-size: 12px; }
+.workload-agents span { color: var(--muted); }
+.bi-dashboard .bi-completion { min-width: 0; flex-wrap: wrap; }
 .bi-dashboard .bi-completion .completion-dial { margin: 0; padding: 0; }
+.bi-ticket-breakdown { flex: 1; min-width: 100px; display: grid; gap: 6px; margin: 0; font-size: 13px; }
+.bi-ticket-breakdown div { display: flex; justify-content: space-between; gap: 12px; }
+.bi-ticket-breakdown dt { color: var(--muted); }
+.bi-ticket-breakdown dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
 .bi-inspect select { max-width: 100%; padding: 6px; border: 1px solid var(--input-edge); border-radius: 4px; color: var(--ink); background: var(--surface); }
-@media (max-width: 600px) { .bi-dashboard .bi-completion { flex-wrap: wrap; } }
+.bi-checkpoint ul { display: grid; gap: 6px; font-size: 12px; list-style: none; padding: 0; margin: 6px 0 0; }
+.bi-checkpoint li { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.bi-checkpoint a { font-weight: 600; overflow-wrap: anywhere; }
+.bi-checkpoint li span { color: var(--muted); }

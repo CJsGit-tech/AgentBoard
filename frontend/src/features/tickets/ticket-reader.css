@@ -1,0 +1,14 @@
+.ticket-reader { display: grid; gap: 20px; line-height: 1.5; overflow-wrap: anywhere; }
+.ticket-reader > dl { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0; }
+.ticket-reader dt { color: var(--muted); font-size: .82rem; }
+.ticket-reader dd { margin: 0; }
+.ticket-reader h3 { margin: 0 0 8px; font-size: .95rem; }
+.ticket-reader ul, .ticket-reader ol { margin-block: 4px; padding-inline-start: 1.3rem; }
+.ticket-reader li + li { margin-block-start: 5px; }
+.ticket-reader a { color: var(--signal); }
+.ticket-criteria > li { border-block-start: 1px solid var(--line); padding: 10px 0; }
+.ticket-criterion-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.ticket-criteria p { margin: 4px 0; }
+.criteria-editor > summary { cursor: pointer; font-weight: 650; }
+.criteria-editor fieldset { margin: 8px 0; border: 1px solid var(--line); border-radius: 8px; }
+.criteria-editor legend { padding-inline: 6px; }

@@ -7,7 +7,7 @@ from psycopg.types.json import Jsonb
 
 from .db import connect
 from .store import Problem, get_row, mutate, public
-from . import reviews
+from . import reviews, ticket_evidence
 
 TERMINAL = {'Completed', 'Failed', 'Cancelled'}
 ACTIVE = {'Queued', 'Running'}
@@ -126,8 +126,15 @@ def require_scope(conn, row):
     ticket = get_row(conn, 'tickets', row['ticket_id'])
     if ticket['project'] != row['project']:
         raise Problem(422, 'The ticket must belong to this project.')
-    reviews.sync_project(conn, row['project'], 'InApp Assistant')
     reviews.require_ready(conn, row['ticket_id'])
+
+
+def require_completion_evidence(key):
+    with connect() as conn:
+        row = run_row(conn, key)
+        if row['mode'] == 'Edit' and row['ticket_id']:
+            ticket = get_row(conn, 'tickets', row['ticket_id'])
+            ticket_evidence.require_for_completion(conn, ticket['data'])
 
 
 def create_run(conversation_id, payload, checkout_key='', workspace_config=''):

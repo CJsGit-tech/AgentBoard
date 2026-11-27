@@ -12,7 +12,7 @@ Use the live schema to validate every outgoing field. The names below match the 
 | `create_record` | `kind`, `fields`, optional `editor_role_id` | Saved record with allocated ID |
 | `update_record` | `kind`, `id`, `revision`, `changes`, optional `editor_role_id` | Saved record |
 
-Use `publish_canvas(document_id, revision, files, change_note, sources)` on the project's Design Profile (`design-topic`). The destination uses its current record revision. `files` maps relative paths to base64, and each source is `{"document_id":"<verified-id>","revision":3}`. Read back `canvas_versions` to verify the saved version, digest, change note, source names and revisions, publisher, and publication time. Canvas publication numbers and Design Profile record revisions are separate values.
+Use `publish_canvas(document_id, revision, files, change_note, sources, screen_count?)` on the project's Design Profile (`design-topic`). The destination uses its current record revision. `files` maps relative paths to base64, and each source is `{"document_id":"<verified-id>","revision":3}`. Supply `screen_count` only when verified against the reviewed package. Read back `canvas_versions` to verify the saved version, digest, change note, source names and revisions, publisher, publication time, and optional count. Canvas publication numbers and Design Profile record revisions are separate values.
 
 The Design Profile owns the canvas attachment. Canvas in the sidebar lists published profiles and opens each full canvas in a new tab. Use `/#canvas/<profile-id>/<version>` for a verified publication link on the same app origin. Legacy `design-canvas` records may exist in older workspaces. Resolve their ownership before publishing to avoid creating a second history.
 

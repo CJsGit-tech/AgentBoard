@@ -1,0 +1,13 @@
+.canvas-delivery { display: grid; gap: 6px; margin-block-end: 12px; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.canvas-delivery p, .canvas-delivery ul { margin-block: 0; }
+.canvas-delivery ul { padding-inline-start: 16px; }
+.canvas-delivery summary { min-block-size: 24px; color: var(--signal); cursor: pointer; }
+.canvas-delivery a { color: var(--signal); text-decoration: underline; text-underline-offset: 2px; }
+.canvas-viewer-name { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.canvas-viewer-name small { color: var(--muted); }
+.canvas-viewer-delivery { display: flex; align-items: start; flex-wrap: wrap; gap: 4px 16px; padding: 0 16px 6px; color: var(--muted); font-size: 12px; }
+.canvas-viewer-delivery .canvas-delivery { margin: 0; min-width: 0; }
+.canvas-viewer-delivery ul { max-block-size: 6rem; overflow: auto; }
+.canvas-preview-stage { flex: 1; min-height: 0; min-width: 0; position: relative; overflow: hidden; background: var(--subtle); }
+.canvas-preview-frame { position: absolute; inset-block-start: 0; inset-inline-start: 50%; border: 0; transform-origin: top center; }
+.canvas-preview-message { position: relative; z-index: 1; display: grid; justify-items: start; gap: 8px; margin: 16px; color: var(--ink-2); }

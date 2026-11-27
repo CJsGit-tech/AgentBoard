@@ -485,6 +485,12 @@ class Runtime:
                     if not ticket_complete:
                         result['output_text']+='\n\nTicket stays in progress: '+remaining
                     await asyncio.to_thread(store.assert_active,key)
+                    try:
+                        await asyncio.to_thread(store.require_completion_evidence,key)
+                    except Problem as err:
+                        await asyncio.to_thread(store.finish,key,scrub(result['output_text']),clean_items(result['items']),
+                                                'Waiting for input','Ticket evidence needs review',str(err))
+                        return
                     commit=await asyncio.to_thread(workspace.commit_verified,root,point,checks=checks)
                     await asyncio.to_thread(store.assert_active,key)
                     await asyncio.to_thread(store.emit,key,'commit.verified',commit)
@@ -667,7 +673,6 @@ class Runtime:
             with connect() as conn:
                 document=get_row(conn,'documents',document_id)
                 if document['project']!=row['project']: raise Problem(422,'Document belongs to another project.')
-                reviews.sync_project(conn,row['project'],'InApp Assistant')
                 current=reviews.current(conn,document_id)
                 return scrub(dict(current) if current else {'message':'This evidence document does not define scope.'})
 
@@ -690,7 +695,6 @@ class Runtime:
             with connect() as conn:
                 ticket=get_row(conn,'tickets',ticket_id)
                 if ticket['project']!=row['project']: raise Problem(422,'Ticket belongs to another project.')
-                reviews.sync_project(conn,row['project'],'InApp Assistant')
                 review=reviews.current(conn,ticket_id)
                 return scrub(dict(review) if review else {'message':'No current review.'})
 

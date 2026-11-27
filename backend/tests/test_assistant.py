@@ -112,7 +112,7 @@ class AssistantIntegration(unittest.TestCase):
         self.assertEqual(saved['status'],'Completed',saved)
         transcript=store.transcript(self.chat['id'])
         self.assertEqual(transcript['messages'][-1]['role'],'assistant')
-        workspace=self.http.get('/api/workspace').json()
+        workspace=self.http.get('/api/workspace?view=export').json()
         board=next(r for r in workspace['runs'] if r['id']==run['board_run_id'])
         self.assertEqual(board['assistant_run_id'],run['id'])
         override=self.http.patch('/api/runs/'+board['id'],json={'revision':board['revision'],'changes':{'status':'Failed'}})
@@ -162,7 +162,7 @@ class AssistantIntegration(unittest.TestCase):
                 snapshot.assert_not_called()
         saved=store.get_run(result.json()['id'])
         self.assertEqual(saved['status'],'Waiting for input',saved)
-        checks=self.http.get('/api/workspace').json()['reviews']
+        checks=self.http.get('/api/workspace?view=export').json()['reviews']
         self.assertTrue(any(r['subject']==ticket['id'] and r['status']=='Awaiting confirmation' and not r['superseded'] for r in checks))
 
     def test_unready_queue_never_reports_running_and_cancel_is_preserved(self):
@@ -200,7 +200,7 @@ class AssistantIntegration(unittest.TestCase):
             ticket=json.loads(asyncio.run(tool.on_invoke_tool(ctx,args)))
         saved=store.get_run(run['id'])
         self.assertEqual(saved['ticket_id'],ticket['id'])
-        state=self.http.get('/api/workspace').json()
+        state=self.http.get('/api/workspace?view=export').json()
         board=next(r for r in state['runs'] if r['id']==run['board_run_id'])
         self.assertEqual(board['ticket'],ticket['id'])
         self.assertEqual(ticket['status'],'Planned')

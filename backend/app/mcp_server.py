@@ -79,17 +79,17 @@ def build_server(actor: str):
 
     @server.tool
     def publish_canvas(document_id: str, revision: Revision, files: dict[str, str],
-                       change_note: str, sources: list[dict[str, Any]]) -> dict:
-        """Publish reviewed HTML files on a Design Profile with a change note and source document_id/revision pairs."""
-        return publish(actor, document_id, revision, files, change_note, sources)
+                       change_note: str, sources: list[dict[str, Any]],
+                       screen_count: Annotated[int, Field(strict=True, gt=0, le=2147483647)] | None = None) -> dict:
+        """Publish reviewed HTML on a Design Profile with source revisions and an optional verified screen count."""
+        return publish(actor, document_id, revision, files, change_note, sources, screen_count)
 
     @server.tool
     def list_change_reviews(project: str | None = None, subject: str | None = None,
                             limit: PageSize = 50, offset: Annotated[int, Field(ge=0)] = 0) -> list[dict]:
         """Read impact/scope reviews and immutable input snapshots, including superseded history. Page all results."""
         with connect() as conn:
-            rows = reviews.list_reviews(conn, project)
-            return [row for row in rows if subject is None or row['subject'] == subject][offset:offset+limit]
+            return reviews.list_reviews(conn, project, subject, limit, offset)
 
     @server.tool
     def start_change_review(kind: Kind, id: str, revision: Revision, request: str,

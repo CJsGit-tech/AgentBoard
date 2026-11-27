@@ -98,7 +98,7 @@ Use the agentboard-mvp MCP server to list projects.
 
 技能安裝位置: Codex 使用 `.agents/skills/agentbuild`; Claude 使用 `.claude/skills/agentbuild`。
 
-個人安裝、其他程式庫或連線修復, 請看[連線指南](skills/agentbuild/references/connection.md)。安裝技能與註冊 MCP 是兩個步驟。
+個人安裝、其他程式庫或連線修復, 請看[連線指南](skills/agentbuild/references/connection.md)。安裝技能與註冊 MCP 是兩個步驟。詳見[技能安裝指南](skills/README.md) (英文)。
 
 <a id="first-project"></a>
 
@@ -216,7 +216,8 @@ backend/app/         API、MCP 與應用邏輯
 backend/migrations/  資料庫遷移
 frontend/src/        React 應用程式
 frontend/public/     圖示、字型與授權聲明
-skills/agentbuild/   技能指引與輔助工具
+skills/agentbuild/   共用技能指引與輔助工具
+skills/agentbuild-claude/  Claude Code 入口與使用指引
 scripts/             安裝、設定與檢查
 assets/              README 圖解與 GIF
 README.md            繁體中文指南

@@ -12,7 +12,7 @@ The command guide is available offline. Setup checks the live session before cha
 
 Install from the AgentBoard checkout using `python3 scripts/install-skill.py install --host codex --scope project` or `--host claude`. Project targets are `.agents/skills/agentbuild` for Codex and `.claude/skills/agentbuild` for Claude. Use `--project /path/to/your/project` for another checkout, or `--scope personal` for `~/.agents/skills/agentbuild` or `~/.claude/skills/agentbuild`. Existing legacy `~/.codex/skills/agentbuild` installations are not changed automatically; avoid duplicate installations.
 
-Use the same options with `update` or `uninstall`. Updates preserve the previous managed bundle outside skill discovery. Modified or unmanaged installations are refused. Codex invocation policy ships in `agents/openai.yaml`; the installer adds Claude's explicit-only frontmatter to its generated copy. The installer does not register MCP or change credentials.
+Use the same options with `update` or `uninstall`. Updates preserve the previous managed bundle outside skill discovery. Modified or unmanaged installations are refused. Both hosts share the same references and helper scripts. Codex invocation policy ships in `agents/openai.yaml`. For Claude Code, the installer adds the files in `skills/agentbuild-claude`, including its explicit-only entry file, and leaves out the Codex metadata. The installer does not register MCP or change credentials.
 
 Use the actual AgentBoard README startup instructions. With the app running, register the MCP launcher from the **AgentBoard checkout**, even when the tracked project's code lives somewhere else. These are host setup commands, entered only for the client the user wants to configure.
 

@@ -1,4 +1,8 @@
-"""Install/update/remove the canonical AgentBuild bundle for one local host."""
+"""Install/update/remove the AgentBuild bundle for one local host.
+
+Both hosts share skills/agentbuild. The Claude Code bundle adds the files in
+skills/agentbuild-claude on top and leaves out the Codex-only metadata.
+"""
 import argparse
 import hashlib
 import json
@@ -8,6 +12,7 @@ import tempfile
 import time
 
 SOURCE = Path(__file__).resolve().parents[1] / 'skills' / 'agentbuild'
+CLAUDE_SOURCE = SOURCE.with_name('agentbuild-claude')
 MARKER = '.agentbuild-install.json'
 
 
@@ -36,10 +41,11 @@ def install(target, host, action):
     target.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(dir=target.parent) as scratch:
         staged = Path(scratch) / 'agentbuild'
-        shutil.copytree(SOURCE, staged, ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
+        ignore = shutil.ignore_patterns('__pycache__', '*.pyc', '.DS_Store')
+        shutil.copytree(SOURCE, staged, ignore=ignore)
         if host == 'claude':
-            entry = staged / 'SKILL.md'
-            entry.write_text(entry.read_text().replace('name: agentbuild\n', 'name: agentbuild\ndisable-model-invocation: true\n', 1))
+            shutil.rmtree(staged / 'agents')
+            shutil.copytree(CLAUDE_SOURCE, staged, ignore=ignore, dirs_exist_ok=True)
         (staged / MARKER).write_text(json.dumps({'host': host, 'files': hashes(staged)}, indent=2))
         if target.exists():
             backup = target.parent.parent / 'agentbuild-backups' / str(time.time_ns())

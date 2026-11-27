@@ -98,7 +98,7 @@ An empty list means the connection works. The host needs local Docker access.
 
 Project skill paths: `.agents/skills/agentbuild` for Codex; `.claude/skills/agentbuild` for Claude.
 
-For personal installs, another repository or connection repairs, use the [connection guide](skills/agentbuild/references/connection.md). Skill installation and MCP registration are separate steps.
+For personal installs, another repository or connection repairs, use the [connection guide](skills/agentbuild/references/connection.md). Skill installation and MCP registration are separate steps. See the [skill install guide](skills/README.md).
 
 <a id="first-project"></a>
 
@@ -216,7 +216,8 @@ backend/app/         API, MCP and application logic
 backend/migrations/  Database migrations
 frontend/src/        React application
 frontend/public/     Icons, fonts and license notices
-skills/agentbuild/   Skill instructions and helpers
+skills/agentbuild/   Shared skill instructions and helpers
+skills/agentbuild-claude/  Claude Code entry and host guide
 scripts/             Setup, installation and checks
 assets/              README illustrations and GIF
 README.md            Traditional Chinese guide

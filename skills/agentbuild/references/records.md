@@ -16,7 +16,7 @@ Use `publish_canvas(document_id, revision, files, change_note, sources, screen_c
 
 The Design Profile owns the canvas attachment. Canvas in the sidebar lists published profiles and opens each full canvas in a new tab. Use `/#canvas/<profile-id>/<version>` for a verified publication link on the same app origin. Legacy `design-canvas` records may exist in older workspaces. Resolve their ownership before publishing to avoid creating a second history.
 
-Use `attach_visual` to store and version PNGs on a screen inventory. Document readbacks include a `previews` array with filenames and SHA-256 digests.
+Store upload-ready JPGs on a screen inventory with `attach_visual` (`image_base64`) or the bundled helper, which converts originals to JPG; see the [JPG upload rule](image-uploads.md). Document readbacks include a `previews` array with filenames and SHA-256 digests; verify these against the uploaded JPG bytes.
 
 Record lists default to 50, accept up to 200 and use an offset. Page until a short page for complete lookup or counts. If records change while paging and it matters, refresh and confirm before acting.
 

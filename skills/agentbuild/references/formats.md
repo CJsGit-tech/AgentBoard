@@ -82,7 +82,7 @@ Only when the user requests a local `DESIGN.md` export, write the Design Profile
 
 ### Screen Inventory
 
-For HTML visuals, attach the canvas to Design Profile with a change note and exact source revisions. Follow the [local review and publication flow](visuals.md). For requested still images, use a `screen-inventory` with screen names, states, devices, sources and PNG paths.
+For HTML visuals, attach the canvas to Design Profile with a change note and exact source revisions. Follow the [local review and publication flow](visuals.md). For requested still images, use a `screen-inventory` with screen names, states, devices, sources and upload-ready JPG paths. Follow [JPG image uploads](image-uploads.md).
 
 ## Ticket payload example
 

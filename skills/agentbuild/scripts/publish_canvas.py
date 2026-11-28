@@ -27,6 +27,10 @@ def package(manifest):
         if total > 12 * 1024**2:
             raise ValueError("The complete canvas must fit within 12 MiB.")
         data = source.read_bytes()
+        if source.suffix.lower() == ".png" or data.startswith(b"\x89PNG\r\n\x1a\n"):
+            raise ValueError(f"PNG uploads are blocked: {path}. Convert to JPG format before uploading and update the canvas references.")
+        if source.suffix.lower() in (".html", ".css", ".js") and b"data:image/png" in data.lower():
+            raise ValueError(f"PNG uploads are blocked: embedded PNG in {path}. Convert to JPG format before uploading.")
         digest.update(path.encode() + b"\0" + hashlib.sha256(data).digest())
         files[path] = base64.b64encode(data).decode("ascii")
     return files, digest.hexdigest()

@@ -11,6 +11,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from uuid import UUID
 
 from .canvas import asset_etag, read_asset
+from .visuals import media_type as visuals_media_type
 from .visuals import read_thumbnail
 from .db import connect, migrate
 from .models import Kind
@@ -231,7 +232,7 @@ def visual(document_id: str, filename: str, v: Annotated[str | None, Query(patte
                            (document_id, filename, v, v)).fetchone()
         if not row:
             raise Problem(404, "This screenshot version is unavailable." if v else "Preview unavailable.")
-        return Response(bytes(row["image"]), media_type="image/png",
+        return Response(bytes(row["image"]), media_type=visuals_media_type(filename),
                         headers={"X-Content-Type-Options":"nosniff"})
 
 

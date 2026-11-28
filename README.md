@@ -10,7 +10,7 @@
 ![Docker 本機部署](https://img.shields.io/badge/deployment-local%20Docker-585b58)
 ![Codex 與 Claude Code](https://img.shields.io/badge/agents-Codex%20%2B%20Claude%20Code-5148a4)
 
-[🚀 啟動](#install-the-service) · [🧩 技能](#install-the-skill) · [🗂️ 專案](#first-project) · [🛠️ 開發](#development-and-verification)
+[🚀 啟動](#install-the-service) · [🧩 技能](#install-the-skill) · [🗂️ 專案](#first-project) · [📊 報表](#track-progress) · [🛠️ 開發](#development-and-verification) · [📝 更新紀錄](CHANGELOG.md)
 
 </div>
 
@@ -22,7 +22,7 @@
   <img src="assets/agentboard-walkthrough.gif" alt="AgentBoard 操作導覽: 專案、文件、Canvas、任務、里程碑、角色與助理設定。" width="960">
 </p>
 
-*44 秒介面導覽 · 43 個畫面 · [查看原尺寸](assets/agentboard-walkthrough.gif)。含虛構示範專案, 非端對端測試報告。*
+*44 秒介面導覽 · 43 個畫面 · [查看原尺寸](assets/agentboard-walkthrough.gif)。含虛構示範專案, 非端對端測試報告。錄製於 V5 介面更新之前, 變更內容見[更新紀錄](CHANGELOG.md)。*
 
 ---
 
@@ -40,6 +40,19 @@
   <source media="(max-width: 600px)" srcset="assets/agentboard-system-mobile.svg">
   <img src="assets/agentboard-system.svg" alt="瀏覽器、Codex 與 Claude Code 透過 AgentBoard 和 AgentBuild 共用專案紀錄。" width="100%">
 </picture>
+
+<a id="track-progress"></a>
+
+## 📊 掌握進度
+
+| 位置 | 可以看到什麼 |
+| --- | --- |
+| **Dashboard** | 依專案目標顯示計分卡: 完成率、證據覆蓋率、執行成功率與「到最後更新的時間」中位數。頁首摘要會點出未達標的項目。圖表包含範圍與交付進度、每日證據覆蓋率、各里程碑與各角色的工作分布, 以及里程碑計分表。 |
+| **Portfolio report** | 唯讀檢視所有專案: 完成率、執行成功率、每日累計完成、未完成工作的分布與各代理的執行次數。**Export report** 可下載 CSV。 |
+| **Tickets** | 可篩選看板的狀態列、自動收合的空白欄位, 以及列出每項驗收條件與證據的側邊面板。 |
+| **Milestones · Runs · Roles** | 里程碑時間軸與完成時間分布、代理執行時間軸, 以及各角色的工作量排名。 |
+
+目標預設為完成率 100%、證據覆蓋率 90%、執行成功率 95%、中位數 4 小時以內, 可在**專案設定 → Dashboard targets** 調整。每張圖表都提供 **Table** 檢視。按 **⌘K** (Ctrl+K) 可快速跳到任一專案、文件或任務。
 
 <a id="install-the-service"></a>
 
@@ -192,7 +205,7 @@ python3 scripts/install-skill.py uninstall --host codex --scope project
 
 ## 🛠️ 開發與驗證
 
-瀏覽器透過 `GET /api/workspace?view=projects` 讀取專案清單, 透過 `GET /api/workspace?project=<id>` 讀取單一專案. 舊版分頁查詢 `GET /api/workspace` 時會收到 HTTP 410 與重新載入提示. 需要所有紀錄與審查快照的本機整合可使用 `GET /api/workspace?view=export`, 並傳入 `X-AgentBoard-UI: 1` 標頭. 完整 JSON 匯出支援 ETag 重新驗證.
+瀏覽器透過 `GET /api/workspace?view=projects` 讀取專案清單, 透過 `GET /api/workspace?project=<id>` 讀取單一專案. 舊版分頁查詢 `GET /api/workspace` 時會收到 HTTP 410 與重新載入提示. 需要所有紀錄與審查快照的本機整合可使用 `GET /api/workspace?view=export`, 並傳入 `X-AgentBoard-UI: 1` 標頭. 完整 JSON 匯出支援 ETag 重新驗證. Dashboard 與 Portfolio 的數據來自唯讀的 `GET /api/projects/<id>/metrics` 與 `GET /api/portfolio`, 兩者皆接受 `start`、`end` (日期) 與 `tz_offset` (分鐘) 參數.
 
 使用 Python 3.12+ 與 Node.js 22:
 
@@ -224,6 +237,7 @@ scripts/             安裝、設定與檢查
 assets/              README 圖解與 GIF
 README.md            繁體中文指南
 README.en.md         英文指南
+CHANGELOG.md         依日期記錄的重要變更
 compose.yaml         本機服務設定
 ```
 

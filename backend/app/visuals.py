@@ -1,4 +1,4 @@
-"""Store PNG previews on the inventory they illustrate."""
+"""Store PNG or JPEG previews on the inventory they illustrate."""
 import base64
 import binascii
 from hashlib import sha256
@@ -14,6 +14,33 @@ from psycopg.types.json import Jsonb
 from .db import connect
 from .store import Problem, get_row, public
 from . import reviews
+
+
+def _decode_base64(encoded, label):
+    if len(encoded) > 12_000_000:
+        raise Problem(422, f"Use a {label} below 8 MiB.")
+    try:
+        return base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error) as err:
+        raise Problem(422, "Invalid base64 image.") from err
+
+
+def decode_jpeg(encoded):
+    image = _decode_base64(encoded, "JPEG")
+    if len(image) > 8 * 1024**2 or not image.startswith(b"\xff\xd8\xff"):
+        raise Problem(422, "Use a JPEG below 8 MiB.")
+    try:
+        with Image.open(BytesIO(image), formats=("JPEG",)) as source:
+            if not source.width or not source.height or source.width * source.height > 24_000_000:
+                raise Problem(422, "Use a preview up to 24 megapixels.")
+            source.load()
+    except (OSError, SyntaxError, Image.DecompressionBombError) as err:
+        raise Problem(422, "The JPEG is incomplete or damaged.") from err
+    return image
+
+
+def media_type(filename):
+    return "image/jpeg" if filename.lower().endswith((".jpg", ".jpeg")) else "image/png"
 
 
 def decode_png(encoded):
@@ -51,7 +78,7 @@ _thumbnail_slots = BoundedSemaphore(2)
 
 def _thumbnail(image):
     try:
-        with _thumbnail_slots, Image.open(BytesIO(image), formats=("PNG",)) as source:
+        with _thumbnail_slots, Image.open(BytesIO(image), formats=("PNG", "JPEG")) as source:
             if source.width * source.height > 24_000_000:
                 raise ValueError("Screenshot exceeds preview size limit.")
             source.thumbnail((384, 384), Image.Resampling.LANCZOS)
@@ -82,10 +109,10 @@ def read_thumbnail(document_id, filename, digest):
         return preview
 
 
-def attach(actor, document_id, revision, filename, png_base64):
-    if not re.fullmatch(r"[\w .-]{1,120}\.png", filename, flags=re.ASCII | re.IGNORECASE):
-        raise Problem(422, "Use a simple PNG filename.")
-    image = decode_png(png_base64)
+def attach(actor, document_id, revision, filename, image_base64):
+    if not re.fullmatch(r"[\w .-]{1,120}\.(png|jpe?g)", filename, flags=re.ASCII | re.IGNORECASE):
+        raise Problem(422, "Use a simple .jpg or .png filename.")
+    image = decode_jpeg(image_base64) if media_type(filename) == "image/jpeg" else decode_png(image_base64)
     digest = sha256(image).hexdigest()
     with connect() as conn:
         conn.execute("SELECT pg_advisory_xact_lock(625016)")

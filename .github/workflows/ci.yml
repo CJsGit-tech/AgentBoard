@@ -29,6 +29,9 @@ jobs:
           mkdir -p .local
           umask 077
           openssl rand -hex 32 > .local/db_password
+          # On Linux the mounted secret keeps its file mode, and the API runs as another user.
+          # This throwaway password exists only on the temporary runner.
+          chmod 644 .local/db_password
           docker compose up --build -d --wait db api
       - name: Run isolated database and MCP contract tests
         run: docker compose exec -T api python -m unittest discover -s tests -v

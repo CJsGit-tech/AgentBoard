@@ -51,3 +51,21 @@
 .ia-needs-review { color:var(--amber-ink); padding:12px 0; border-block-end:1px solid var(--line); }
 .ia-scope-card details { font-size:12px; margin-block:10px; }
 .ia-scope-card summary { color:var(--signal); cursor:pointer; }
+/* Design Profile V5: connection first, suggestion chips, send reason, one-line interruption disclosure. */
+.ia-connect-banner { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 12px; margin: 8px 0 12px; padding: 12px 14px; border-radius: 14px; background: var(--tint-amber); }
+.ia-connect-banner.is-error { background: var(--tint-red); }
+.ia-connect-banner.is-testing { background: var(--tint-violet); }
+.ia-connect-banner__dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c-blocked); }
+.ia-connect-banner.is-error .ia-connect-banner__dot { background: var(--c-failed); }
+.ia-connect-banner.is-testing .ia-connect-banner__dot { background: var(--c-progress); }
+.ia-connect-banner strong { display: block; font-size: 14px; }
+.ia-connect-banner small { color: var(--muted); font-size: 12.5px; }
+.ia-suggestions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.ia-suggestion { padding: 6px 12px; border-radius: 999px; background: var(--surface); box-shadow: 0 0 0 1px var(--line-2); color: var(--ink); font-size: 13px; text-align: left; }
+.ia-suggestion:hover:not(:disabled) { background: var(--tint-violet); box-shadow: 0 0 0 1px var(--signal-line); color: var(--signal); }
+.ia-send-reason { margin-inline-start: auto; color: var(--muted); font-size: 12px; }
+.ia-page .ia-reliability { display: block; margin: 6px 0 0; padding: 0; background: transparent; border: 0; font-size: 12px; color: var(--muted); }
+.ia-page .ia-reliability summary { cursor: pointer; list-style: none; }
+.ia-page .ia-reliability summary::-webkit-details-marker { display: none; }
+.ia-page .ia-reliability[open] summary { color: var(--ink); }
+.ia-page .ia-reliability p { margin: 6px 0 0; color: var(--ink); }

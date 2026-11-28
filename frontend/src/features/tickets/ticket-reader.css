@@ -12,3 +12,28 @@
 .criteria-editor > summary { cursor: pointer; font-weight: 650; }
 .criteria-editor fieldset { margin: 8px 0; border: 1px solid var(--line); border-radius: 8px; }
 .criteria-editor legend { padding-inline: 6px; }
+/* Design Profile V5 ticket panel. */
+.ticket-props { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px !important; padding: 14px 16px; border-radius: var(--r-card); background: var(--hover); }
+.ticket-props dd { display: flex; align-items: center; gap: 6px; font-weight: 550; }
+.ticket-props dd .icon { width: 14px; height: 14px; color: var(--muted); }
+.ticket-props dd.is-muted { color: var(--muted); font-weight: 400; }
+.ticket-design-card { display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-card); background: var(--tint-violet); color: var(--ink) !important; text-decoration: none; }
+.ticket-design-card:hover { box-shadow: inset 0 0 0 1px var(--signal-line); }
+.ticket-design-card__icon { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--surface); color: var(--signal); }
+.ticket-design-card b { display: block; }
+.ticket-design-card small { color: var(--muted); }
+.ticket-criteria-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.ticket-checklist { list-style: none; padding: 0 !important; margin: 0; display: grid; gap: 2px; }
+.ticket-checklist > li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); margin: 0 !important; }
+.ticket-check { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--tint-neutral); color: var(--muted); font-size: 12px; font-weight: 700; }
+.ticket-checklist > li[data-verified] .ticket-check { background: var(--tint-green); color: var(--teal); }
+.ticket-checklist p { margin: 0 0 4px; }
+.ticket-check__meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font-size: 12.5px; }
+.ticket-check__meta small { color: var(--muted); }
+.ticket-check__meta summary { cursor: pointer; color: var(--muted); }
+.ticket-list { list-style: none; padding: 0 !important; margin: 0; }
+.ticket-list > li { display: grid; gap: 2px; padding: 10px 0; border-top: 1px solid var(--line); margin: 0 !important; }
+.ticket-list small { color: var(--muted); }
+.ticket-list__meta { display: flex; align-items: center; gap: 8px; }
+.ticket-note { margin: 0; color: var(--muted); font-size: 13px; }
+@media (max-width: 480px) { .ticket-props { grid-template-columns: minmax(0, 1fr); } }

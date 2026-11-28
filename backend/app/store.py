@@ -6,7 +6,7 @@ from pydantic import ValidationError
 
 from .catalog import check_catalog, core_name
 from .db import connect
-from .models import MODELS, PREFIX, timestamp
+from .models import KPI_TARGET_DEFAULTS, MODELS, PREFIX, timestamp
 from . import reviews, ticket_evidence
 
 
@@ -17,7 +17,7 @@ class Problem(ValueError):
 
 
 def record_data(row):
-    defaults = {"checkout_path": ""} if row["kind"] == "projects" else {}
+    defaults = {"checkout_path": "", **KPI_TARGET_DEFAULTS} if row["kind"] == "projects" else {}
     if row["kind"] == "documents":
         defaults = {"document_type": "unclassified", "description": "", "source_documents": []}
     elif row["kind"] == "tickets":

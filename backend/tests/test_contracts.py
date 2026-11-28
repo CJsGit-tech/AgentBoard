@@ -14,7 +14,7 @@ from pydantic import ValidationError
 
 from app.api import app
 from app.db import connect
-from app.models import Ticket
+from app.models import MODELS, Ticket
 
 
 class DataRules(unittest.TestCase):
@@ -97,6 +97,66 @@ class WorkspaceIntegration(unittest.TestCase):
                 invalid=self.http.post("/api/tickets",json={"name":"Mismatch","milestone":m["id"],"project":other["id"]})
                 self.assertEqual(invalid.status_code,422)
         asyncio.run(run())
+
+    def test_project_kpi_targets_default_validate_and_check_revisions(self):
+        project = self.create("projects", name="Targets")
+        listed = next(row for row in self.http.get("/api/workspace?view=projects").json()["projects"] if row["id"] == project["id"])
+        self.assertEqual((listed["target_completion"], listed["target_evidence"], listed["target_run_success"], listed["target_median_hours"]),
+                         (100, 90, 95, 4.0))
+        for changes in ({"target_evidence": 101}, {"target_completion": -1}, {"target_median_hours": 0}, {"target_run_success": "95"}):
+            rejected = self.http.patch("/api/projects/" + project["id"], json={"revision": project["revision"], "changes": changes})
+            self.assertEqual(rejected.status_code, 422, changes)
+        saved = self.http.patch("/api/projects/" + project["id"], json={"revision": project["revision"],
+                                "changes": {"target_evidence": 80, "target_median_hours": 2.5}})
+        self.assertEqual(saved.status_code, 200, saved.text)
+        self.assertEqual((saved.json()["target_evidence"], saved.json()["target_median_hours"]), (80, 2.5))
+        stale = self.http.patch("/api/projects/" + project["id"], json={"revision": project["revision"], "changes": {"target_evidence": 70}})
+        self.assertEqual(stale.status_code, 409)
+        schema = MODELS["projects"].model_json_schema()["properties"]
+        self.assertEqual((schema["target_evidence"]["minimum"], schema["target_evidence"]["maximum"], schema["target_median_hours"]["maximum"]), (0, 100, 720))
+
+    def test_dashboard_and_portfolio_metrics_are_read_only_and_match_records(self):
+        empty = self.create("projects", name="Empty metrics")
+        metrics = self.http.get(f"/api/projects/{empty['id']}/metrics").json()
+        self.assertEqual(metrics["tickets"]["total"], 0)
+        self.assertEqual((metrics["completion"]["percent"], metrics["evidence_coverage"]["percent"], metrics["run_success"]["percent"],
+                          metrics["median_hours_to_last_update"], metrics["runs_by_agent"]), (None, None, None, None, {}))
+        self.assertEqual([d["count"] for d in metrics["done_per_day"]], [0] * 7)
+        self.assertEqual(metrics["targets"]["target_evidence"], 90)
+
+        project = self.create("projects", name="Metrics")
+        milestone = self.create("milestones", name="M", project=project["id"])
+        spec = self.create("documents", name="Spec", project=project["id"], content="Metrics behavior")
+        proof = self.create("documents", name="Proof", project=project["id"], content="Evidence", document_type="review-evidence")
+        shipped = self.create("tickets", name="Shipped", project=project["id"], milestone=milestone["id"], documents=[spec["id"]])
+        self.create("tickets", name="Planned work", project=project["id"], milestone=milestone["id"], documents=[spec["id"]])
+        self.finish_reviews(project["id"])
+        done = self.http.patch("/api/tickets/" + shipped["id"], json={"revision": shipped["revision"],
+                               "changes": {"status": "Done", "output_documents": [proof["id"]]}})
+        self.assertEqual(done.status_code, 200, done.text)
+        before = self.http.get("/api/workspace?view=export").json()["activity"]
+
+        no_runs = self.http.get(f"/api/projects/{project['id']}/metrics").json()
+        self.assertEqual(no_runs["tickets"]["statuses"], {"Done": 1, "In progress": 0, "Blocked": 0, "Planned": 1})
+        self.assertEqual((no_runs["completion"]["percent"], no_runs["evidence_coverage"]["percent"]), (50.0, 100.0))
+        self.assertIsNone(no_runs["run_success"]["percent"])
+        self.assertEqual(sum(d["count"] for d in no_runs["done_per_day"]), 1)
+
+        for status in ("Completed", "Failed", "Running"):
+            self.create("runs", name="Run " + status, project=project["id"], agent="Codex", status=status, mode="Read only")
+        with_runs = self.http.get(f"/api/projects/{project['id']}/metrics").json()
+        self.assertEqual((with_runs["run_success"]["value"], with_runs["run_success"]["total"]), (1, 2))
+        self.assertEqual(with_runs["runs_by_agent"]["Codex"]["total"], 3)
+
+        portfolio = self.http.get("/api/portfolio").json()
+        rows = {row["name"]: row for row in portfolio["projects"]}
+        self.assertEqual((rows["Metrics"]["total"], rows["Metrics"]["open"], rows["Empty metrics"]["total"]), (2, 1, 0))
+        self.assertEqual(rows["Metrics"]["runs_by_agent"]["Codex"]["statuses"], {"Completed": 1, "Failed": 1, "Running": 1})
+        self.assertEqual(rows["Empty metrics"]["runs_by_agent"], {})
+        self.assertEqual(self.http.get("/api/portfolio", params={"start": "2026-02-10", "end": "2026-02-01"}).status_code, 422)
+        self.assertEqual(self.http.get("/api/projects/P-missing/metrics").status_code, 404)
+        after = self.http.get("/api/workspace?view=export").json()["activity"]
+        self.assertEqual(len(after), len(before) + 3)  # only the three run creations wrote activity
 
     def test_retired_unscoped_read_always_returns_a_reload_instruction(self):
         with patch("app.api.state") as full_export, patch("app.api.browser_workspace.browser_state") as scoped:

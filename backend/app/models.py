@@ -18,9 +18,19 @@ class Record(BaseModel):
     name: Name
 
 
+Percent = Annotated[int, Field(ge=0, le=100)]
+# Design Profile V5 decision D: per-project KPI targets with agreed defaults.
+KPI_TARGET_DEFAULTS = {"target_completion": 100, "target_evidence": 90, "target_run_success": 95, "target_median_hours": 4.0}
+
+
 class Project(Record):
     description: Text = ""
     checkout_path: Annotated[str, StringConstraints(strip_whitespace=True, max_length=4096)] = ""
+    target_completion: Percent = Field(default=100, description="Completion target, percent of tickets done.")
+    target_evidence: Percent = Field(default=90, description="Evidence coverage target, percent of done tickets with an Output link.")
+    target_run_success: Percent = Field(default=95, description="Run success target, percent of finished runs that completed.")
+    target_median_hours: Annotated[float, Field(ge=0.25, le=720)] = Field(
+        default=4.0, description="Upper target for median hours from filing to last update of done tickets.")
 
 
 class Milestone(Record):

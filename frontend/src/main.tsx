@@ -4,6 +4,8 @@ import "@mantine/core/styles.css";
 import "./style.css";
 import "./features/workspace/foundation.css";
 import App from "./App";
+// V5 foundation loads after feature styles so its tokens and card rules take precedence.
+import "./features/workspace/v5.css";
 import { prepareHelp } from "./features/help/support";
 
 const theme = createTheme({

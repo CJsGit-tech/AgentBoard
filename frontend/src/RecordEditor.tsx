@@ -57,6 +57,18 @@ import {
 } from "./model";
 
 type Draft = Record<string, string | string[] | TicketCriterion[]>;
+/** Design Profile V5 decision D: per-project KPI targets and their agreed defaults. */
+const KPI_TARGETS = [
+  { key: "target_completion", label: "Completion", unit: "%", min: 0, max: 100, step: 1, fallback: 100 },
+  { key: "target_evidence", label: "Evidence coverage", unit: "%", min: 0, max: 100, step: 1, fallback: 90 },
+  { key: "target_run_success", label: "Run success", unit: "%", min: 0, max: 100, step: 1, fallback: 95 },
+  { key: "target_median_hours", label: "Median time to last update", unit: "h or less", min: 0.25, max: 720, step: 0.25, fallback: 4 },
+] as const;
+function NumberField({ label, unit, min, max, step, value, onChange }: { label: string; unit: string; min: number; max: number; step: number; value: string; onChange: (value: string) => void }) {
+  return <label className="kpi-target"><span>{label}</span>
+    <span className="kpi-target__input"><input type="number" required inputMode="decimal" min={min} max={max} step={step} value={value} onChange={e => onChange(e.currentTarget.value)} /><small>{unit}</small></span>
+  </label>;
+}
 const pendingDrafts = new Map<string, {initial:Draft;draft:Draft}>();
 function fields(
   kind: Kind,
@@ -67,7 +79,8 @@ function fields(
   const base = { name: r.name || "" };
   switch (kind) {
     case "projects":
-      return { ...base, description: r.description || "", checkout_path: r.checkout_path || "" };
+      return { ...base, description: r.description || "", checkout_path: r.checkout_path || "",
+        ...Object.fromEntries(KPI_TARGETS.map(t => [t.key, String(r[t.key] ?? t.fallback)])) };
     case "milestones":
       return { ...base, project, description: r.description || "" };
     case "roles":
@@ -249,7 +262,7 @@ export function RecordEditor({
         )
         .map(([key, value]) => [
           key,
-          typeof value === "string" && key !== "content" ? value.trim() : value,
+          key.startsWith("target_") && typeof value === "string" ? Number(value) : typeof value === "string" && key !== "content" ? value.trim() : value,
         ]),
     );
     if (row && Object.keys(changes).length === 0) {
@@ -359,7 +372,9 @@ export function RecordEditor({
       }}
       title={confirmProjectDeletion ? "Permanently delete project?" : existingRun && panel !== "Details" ? "Run report" : existingTicket && panel !== "Details" ? row.name : (row ? "Edit " : "New ") + single[k]}
       position="right"
-      size="min(490px, 95vw)"
+      size={existingTicket ? "min(560px, 100vw)" : "min(490px, 95vw)"}
+      withOverlay={!existingTicket}
+      classNames={existingTicket ? { content: "ticket-panel" } : undefined}
       padding="lg"
       closeButtonProps={{ "aria-label": "Close editor" }}
       overlayProps={{ opacity: 0.6 }}
@@ -413,17 +428,19 @@ export function RecordEditor({
       <Tabs value={panel} onChange={setPanel} keepMounted={false} className="editor-tabs">
         {row && <Tabs.List>
           {(existingRun || existingTicket) && <Tabs.Tab value="Summary">Summary</Tabs.Tab>}
-          <Tabs.Tab value="Details">{existingRun ? "Edit report" : existingTicket ? "Edit ticket" : "Details"}</Tabs.Tab>
-          <Tabs.Tab value="Links">Links</Tabs.Tab><Tabs.Tab value="History">History</Tabs.Tab>
+          {existingTicket && <><Tabs.Tab value="Context">Context</Tabs.Tab><Tabs.Tab value="Outputs">Outputs</Tabs.Tab><Tabs.Tab value="Runs">Runs</Tabs.Tab></>}
+          {!existingTicket && <Tabs.Tab value="Details">{existingRun ? "Edit report" : "Details"}</Tabs.Tab>}
+          {!existingTicket && <Tabs.Tab value="Links">Links</Tabs.Tab>}<Tabs.Tab value="History">History</Tabs.Tab>
+          {existingTicket && <Tabs.Tab value="Details" className="editor-tab-edit">Edit</Tabs.Tab>}
         </Tabs.List>}
         {existingRun && row && <Tabs.Panel value="Summary">
           <ActivityPageContents page={history}>
           <RunReport db={db} run={live || row} history={history.items} openTicket={ticket => leave(() => open({kind: "tickets", row: ticket}))} />
           </ActivityPageContents>
         </Tabs.Panel>}
-        {existingTicket && row && <Tabs.Panel value="Summary">
-          <TicketReader db={db} ticket={live || row} openRun={run => leave(() => open({kind: "runs", row: run}))} />
-        </Tabs.Panel>}
+        {existingTicket && row && (["Summary", "Context", "Outputs", "Runs"] as const).map(view => <Tabs.Panel key={view} value={view}>
+          <TicketReader db={db} ticket={live || row} view={view} openRun={run => leave(() => open({kind: "runs", row: run}))} />
+        </Tabs.Panel>)}
       <Tabs.Panel value="Details">
       {k !== "projects" && !db.projects.length ? (
         <>
@@ -532,6 +549,12 @@ export function RecordEditor({
             ) : null}
             {row && <a href={`#${k}/${row.id}`}>Record link</a>}
             {k === "projects" && input("checkout_path", "Local checkout path (optional)")}
+            {k === "projects" && <fieldset className="kpi-targets">
+              <legend>Dashboard targets</legend>
+              <p className="kpi-targets__hint">The scorecard compares this project with these targets. Defaults: 100%, 90%, 95% and 4 hours.</p>
+              <div className="kpi-targets__grid">{KPI_TARGETS.map(t => <NumberField key={t.key} label={t.label} unit={t.unit} min={t.min} max={t.max} step={t.step}
+                value={current(t.key)} onChange={value => set(t.key, value)} />)}</div>
+            </fieldset>}
             {"description" in draft &&
               input("description", "Description", true)}
             {k === "roles" &&

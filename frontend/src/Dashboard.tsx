@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { Button, RingProgress } from "@mantine/core";
 import { deliveryHistory, deliveryChartX, stepPath, agentWorkload } from "./features/dashboard/metrics";
 import "./features/dashboard/dashboard.css";
+import { Scorecard } from "./features/dashboard/Scorecard";
 import { Empty, Icon, Tag } from "./Common";
 import { InfoHelp } from "./features/help/InfoHelp";
 import {
@@ -140,65 +141,9 @@ export function Dashboard({ db, scope, go, milestone, guide }: {
   db: Workspace; scope: string; go: (page: Page, view?: TicketView) => void;
   milestone: (id: string) => void; guide?: () => void;
 }) {
-  const [checkpoint, inspect] = useState<{ scope: string; time: number } | null>(null);
   const tickets = scoped(db.tickets, scope, "tickets"), milestones = scoped(db.milestones, scope, "milestones"), runs = scoped(db.runs, scope, "runs");
-  const reasons = attentionReasons(tickets, runs), flagged = tickets.filter(t => reasons.has(t.id)), overdue = tickets.filter(isOverdue);
-  const projectAlerts = projectRunAlerts(runs);
-  const workload = agentWorkload(runs, [], tickets, db.roles);
-  const milestonesWithWork = milestones.map(record => ({ record, work: tickets.filter(ticket => ticket.milestone === record.id) }));
-  const next = milestonesWithWork.find(({ work }) => done(work) < work.length);
-  const ticketById = new Map(tickets.map(ticket => [ticket.id, ticket]));
-  const history = deliveryHistory(tickets, db.activity), last = history.points.at(-1);
-  const inspected = (checkpoint?.scope === scope && history.checkpoints.find(p => p.time === checkpoint.time)) || history.checkpoints.at(-1);
-  const max = Math.max(1, ...history.points.map(p => p.total));
-  const chartCursor = inspected && last ? deliveryChartX(inspected.time, history.points[0].time, last.time) : null;
   if (!tickets.length && !milestones.length && !runs.length) return <AwaitingData db={db} scope={scope} guide={guide}/>;
-  return <div className="bi-dashboard">
-    <h1 className="sr-only">Project dashboard</h1>
-    <div className="bi-hero"><div className="bi-summary">
-      <section className="bi-attention"><div className="bi-section-head"><h2>Needs attention</h2></div>
-        <div className="bi-health-values"><button onClick={() => go("tickets", "attention")}><strong>{flagged.length}</strong><span>Tickets needing review</span></button><button onClick={() => go("tickets", "overdue")}><strong>{overdue.length}</strong><span>Overdue tickets</span></button></div>
-        {projectAlerts.length > 0 && <button className="link" onClick={() => go("runs")}>{projectAlerts.length} project runs need attention</button>}
-      </section>
-      <section className="bi-next-milestone">
-        <div className="bi-section-head"><h2>Next milestone</h2><button className="link" onClick={() => go("milestones")}>View milestones →</button></div>
-        {next ? <MilestoneProgress {...next} open={milestone}/> : <Empty>{milestones.length ? "No unfinished milestones with tickets." : "No milestones saved."}</Empty>}
-      </section>
-    </div><div className="bi-main-row">
-      <section className="bi-trend"><div className="bi-section-head"><div className="with-info"><h2>Recorded delivery</h2><InfoHelp label="recorded delivery">Current ticket cohort · saved status history</InfoHelp></div></div>
-        {last ? <><p className="bi-note">Solid green: Done · Dashed gray: Tickets recorded</p><svg viewBox="0 0 640 204" className="bi-line-chart" role="img" aria-label={`Recorded delivery: ${last.done} of ${last.total} recorded tickets done`}>
-          {[...new Set([0,Math.round(max/2),max])].map(value => <g key={value}><line x1="38" x2="624" y1={174-value/max*156} y2={174-value/max*156} stroke="var(--line)"/><text x="27" y={178-value/max*156} textAnchor="end" className="bi-axis-text">{value}</text></g>)}
-          <path d={stepPath(history.points,"total")} fill="none" stroke="var(--muted)" strokeDasharray="4 4"/><path d={stepPath(history.points,"done")} fill="none" stroke="var(--teal)" strokeWidth="2.8"/>
-          {inspected && chartCursor !== null && <g aria-hidden="true">
-            <line x1={chartCursor} x2={chartCursor} y1={18} y2={174} stroke="var(--muted)" strokeDasharray="3 4"/>
-            <circle cx={chartCursor} cy={174 - inspected.done / max * 156} r={4} fill="var(--surface)" stroke="var(--teal)" strokeWidth={2}/>
-          </g>}
-        </svg><div className="bi-inspect"><label htmlFor="delivery-checkpoint">Inspect recorded step</label><select id="delivery-checkpoint" value={inspected?.time} onChange={e=>inspect({scope,time:Number(e.target.value)})}>{history.checkpoints.map(point => <option key={point.time} value={point.time}>{deliveryTime.format(point.time)} · {point.done} of {point.total} done</option>)}</select></div>
-        {inspected && <div className="bi-checkpoint">
-          <p role="status" className="bi-chart-readout">{inspected.done} of {inspected.total} recorded tickets done · {inspected.changes.length} saved status {inspected.changes.length === 1 ? "change" : "changes"}</p>
-          {inspected.changes.length > 0 && <ul aria-label="Ticket status changes at this step">{inspected.changes.map(change => <li key={change.id}>
-            <a href={`#tickets/${change.ticketId}`}>{ticketById.get(change.ticketId)?.name || change.ticketId}</a>
-            <span>{change.to === null ? `Removed from recorded totals · previously ${change.from}` : change.from ? `${change.from} → ${change.to}` : change.created ? `Created as ${change.to}` : `Recorded as ${change.to} · previous status unavailable`}</span>
-          </li>)}</ul>}
-        </div>}
-        {!history.complete && <p className="bi-note">History covers {history.covered} of {tickets.length} current tickets.</p>}{!history.matchesCurrent && <p className="bi-note">The latest saved board status differs from the available history.</p>}</> : <Empty>A trend appears when ticket status changes are recorded.</Empty>}
-        {history.unavailable > 0 && <p className="bi-note">Some saved status changes could not be read. The trend may be incomplete.</p>}
-      </section>
-      <section className="bi-delivery-summary"><div className="bi-section-head"><h2>Ticket completion</h2></div>
-        <div className="bi-completion"><CompletionDial tickets={tickets} compact/>{tickets.length > 0 && <dl className="bi-ticket-breakdown">{counts(tickets).map(part => <div key={part.key}><dt>{part.status}</dt><dd>{part.count}</dd></div>)}</dl>}</div>
-      </section>
-    </div></div>
-    {milestonesWithWork.some(item => item !== next) && <section className="bi-other-milestones">
-      <div className="bi-section-head"><h2>{next ? "Other milestones" : "Milestone progress"}</h2></div>
-      <div className="bi-milestone-grid">{milestonesWithWork.filter(item => item !== next).map(item => <MilestoneProgress key={item.record.id} {...item} open={milestone}/>)}</div>
-    </section>}
-    <section className="agent-workload" aria-label="Reported agent workload">
-      <div className="bi-section-head"><div className="with-info"><h2>Agent workload</h2><InfoHelp label="agent workload">Last reported states. Completed reports count as past work.</InfoHelp></div><button className="link" onClick={() => go("runs")}>View reports →</button></div>
-      {workload.agents.length > 0 ? <ul className="workload-agents">{workload.agents.map(agent => <li key={agent.agent}>
-        <b>{agent.agent}</b><span>{agent.active.length ? `${agent.running} running · ${agent.queued} queued · ${agent.waiting} waiting or blocked` : agent.state === "Unknown" ? "Activity unavailable" : "Idle"}</span>
-      </li>)}</ul> : <p className="bi-note">No agent reports yet.</p>}
-    </section>
-  </div>;
+  return <Scorecard db={db} scope={scope} go={go} milestone={milestone} />;
 }
 
 function MilestoneProgress({ record, work, open }: { record: Row; work: Row[]; open: (id: string) => void }) {

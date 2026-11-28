@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import Body, FastAPI, Query, Request
+from fastapi import Body, FastAPI, Path, Query, Request
 from fastapi.responses import JSONResponse, Response
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, ConfigDict, Field
@@ -14,7 +14,7 @@ from .canvas import asset_etag, read_asset
 from .visuals import read_thumbnail
 from .db import connect, migrate
 from .models import Kind
-from . import browser_workspace, canvas_viewer, reviews
+from . import browser_workspace, canvas_viewer, metrics, reviews
 from .store import Problem, project_deletion_preview, purge_project, state, write
 
 
@@ -156,6 +156,21 @@ def project_history(project: str, before: Annotated[int | None, Query(gt=0, le=9
                     search: Annotated[str, Query(max_length=2000)] = "", start: datetime | None = None,
                     end: datetime | None = None):
     return browser_workspace.history_page(project, before, limit, record, actor, action, kind, search, start, end)
+
+
+@app.get("/api/projects/{project}/metrics")
+def read_project_metrics(project: Annotated[str, Path(pattern=r"^[a-zA-Z0-9_-]{1,128}$")],
+                         start: date | None = None, end: date | None = None,
+                         tz_offset: Annotated[int, Query(ge=-840, le=840)] = 0):
+    """Read-only Dashboard metrics for one project (Design Profile V5)."""
+    return metrics.project_metrics(project, start, end, tz_offset)
+
+
+@app.get("/api/portfolio")
+def read_portfolio(start: date | None = None, end: date | None = None,
+                   tz_offset: Annotated[int, Query(ge=-840, le=840)] = 0):
+    """Read-only Portfolio report summary across projects (Design Profile V5)."""
+    return metrics.portfolio_summary(start, end, tz_offset)
 
 
 @app.get("/api/projects/{key}/deletion-preview")

@@ -10,7 +10,7 @@
 ![Local Docker deployment](https://img.shields.io/badge/deployment-local%20Docker-585b58)
 ![Codex and Claude Code](https://img.shields.io/badge/agents-Codex%20%2B%20Claude%20Code-5148a4)
 
-[🚀 Start](#install-the-service) · [🧩 Skill](#install-the-skill) · [🗂️ Workflows](#first-project) · [🛠️ Develop](#development-and-verification)
+[🚀 Start](#install-the-service) · [🧩 Skill](#install-the-skill) · [🗂️ Workflows](#first-project) · [📊 Reports](#track-progress) · [🛠️ Develop](#development-and-verification) · [📝 Changes](CHANGELOG.md)
 
 </div>
 
@@ -22,7 +22,7 @@ No model key is needed for the board or external agent connection. New installat
   <img src="assets/agentboard-walkthrough.gif" alt="AgentBoard walkthrough: projects, documents, Canvas, tickets, milestones, roles and assistant settings." width="960">
 </p>
 
-*44-second interface tour · 43 views · [Open full size](assets/agentboard-walkthrough.gif). Includes fictional demo projects; not an end-to-end test report.*
+*44-second interface tour · 43 views · [Open full size](assets/agentboard-walkthrough.gif). Includes fictional demo projects; not an end-to-end test report. Recorded before the V5 interface update; see [what changed](CHANGELOG.md).*
 
 ---
 
@@ -40,6 +40,19 @@ No model key is needed for the board or external agent connection. New installat
   <source media="(max-width: 600px)" srcset="assets/agentboard-system-mobile.svg">
   <img src="assets/agentboard-system.svg" alt="The browser and coding agents share the same project records through AgentBoard and AgentBuild." width="100%">
 </picture>
+
+<a id="track-progress"></a>
+
+## 📊 Track progress
+
+| Where | What you see |
+| --- | --- |
+| **Dashboard** | A scorecard against the project's targets: completion, evidence coverage, run success and median time to last update. Missed targets are named in the page summary. Charts show scope against delivery, evidence by day, work by milestone and by role, plus a milestone scorecard. |
+| **Portfolio report** | Every project in one read-only view: completion, run success, tickets done over time, where open work sits and runs by agent. **Export report** downloads a CSV. |
+| **Tickets** | A status strip that filters the board, collapsed empty lanes, and a side panel with each acceptance criterion and its proof. |
+| **Milestones · Runs · Roles** | A milestone timeline and time-to-last-update plot, an agent run timeline, and ranked work per role. |
+
+Targets default to 100% completion, 90% evidence coverage, 95% run success and 4 hours or less. Change them in **project settings → Dashboard targets**. Every chart has a **Table** view. Press **⌘K** (Ctrl+K) to jump to any project, document or ticket.
 
 <a id="install-the-service"></a>
 
@@ -192,7 +205,7 @@ Updates back up managed copies. Modified copies are preserved. Uninstall does no
 
 ## 🛠️ Development and verification
 
-Browser clients read the directory at `GET /api/workspace?view=projects` and a project at `GET /api/workspace?project=<id>`. An older tab polling `GET /api/workspace` receives HTTP 410 with a reload instruction. A local integration that needs every record and review snapshot can request `GET /api/workspace?view=export` with the `X-AgentBoard-UI: 1` header. This full JSON export supports ETag revalidation.
+Browser clients read the directory at `GET /api/workspace?view=projects` and a project at `GET /api/workspace?project=<id>`. An older tab polling `GET /api/workspace` receives HTTP 410 with a reload instruction. A local integration that needs every record and review snapshot can request `GET /api/workspace?view=export` with the `X-AgentBoard-UI: 1` header. This full JSON export supports ETag revalidation. Dashboard and Portfolio figures come from the read-only `GET /api/projects/<id>/metrics` and `GET /api/portfolio` endpoints; both accept `start`, `end` (dates) and `tz_offset` (minutes).
 
 Use Python 3.12+ and Node.js 22:
 
@@ -224,6 +237,7 @@ scripts/             Setup, installation and checks
 assets/              README illustrations and GIF
 README.md            Traditional Chinese guide
 README.en.md         English guide
+CHANGELOG.md         Notable changes by date
 compose.yaml         Local service configuration
 ```
 

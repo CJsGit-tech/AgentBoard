@@ -37,6 +37,9 @@ app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost","127.0.0.1"
 
 @app.middleware("http")
 async def protect_browser_api(request: Request, call_next):
+    # The canvas listener serves published canvases and nothing else. nginx sets this header.
+    if request.headers.get("x-canvas-origin") == "1" and not request.url.path.startswith("/canvas-content/"):
+        return JSONResponse({"detail":"Not found."},status_code=404)
     if request.url.path.startswith("/api/"):
         origin = request.headers.get("origin")
         if (origin and origin != f"http://{request.headers.get('host')}") or request.headers.get("x-agentboard-ui") != "1":
@@ -247,9 +250,16 @@ def canvas_content(request: Request, asset_key: UUID, path: str):
     data, size, media = read_asset(asset_key, path, include_content=request.method == "GET" and not unchanged)
     # Browser subresources cannot send the UI header. Limit them to one immutable bundle.
     source = f"{str(request.base_url).rstrip('/')}/canvas-content/{asset_key}/"
-    policy = (f"sandbox allow-scripts allow-forms; default-src 'none'; script-src 'unsafe-inline' {source}; "
+    # Only the canvas listener, a separate origin from the app, may give a canvas a real origin.
+    # Some browsers block an opaque origin from loading local files. Never allow this on the app's origin.
+    isolated = request.headers.get("x-canvas-origin") == "1"
+    sandbox = "sandbox allow-scripts allow-forms" + (" allow-same-origin" if isolated else "")
+    policy = (f"{sandbox}; default-src 'none'; script-src 'unsafe-inline' {source}; "
               f"style-src 'unsafe-inline' {source}; frame-src {source}; img-src data: {source}; "
               f"font-src data: {source}; connect-src 'none'; base-uri 'none'; form-action 'none'")
+    if isolated:
+        # A real origin must not add service workers. Only the app and this bundle may frame a canvas.
+        policy += f"; worker-src 'none'; frame-ancestors http://localhost:8080 http://127.0.0.1:8080 {source}"
     headers = {"Content-Security-Policy": policy, "X-Content-Type-Options": "nosniff",
                "Referrer-Policy": "no-referrer", "Cache-Control": "private, no-cache", "ETag": etag}
     if unchanged:

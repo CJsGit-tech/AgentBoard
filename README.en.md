@@ -278,7 +278,7 @@ Versions: [npm lockfile](frontend/package-lock.json) · [Python dependencies](ba
 | Problem | Next step |
 | --- | --- |
 | Docker unavailable | Start Docker, then rerun setup. |
-| Port 8080 occupied | Stop the conflicting process you own. |
+| Port 8080 or 8081 occupied | Stop the conflicting process you own. |
 | Agent tools missing | Check MCP registration and local Docker access; restart the host session. |
 | Skill missing | Check host, installation scope and duplicate legacy copies. |
 | Empty project list | Run Setup with your project name. |

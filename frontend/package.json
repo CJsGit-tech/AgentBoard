@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "vite",
     "typecheck": "tsc --noEmit",
-    "typecheck:canvas": "tsc -p design-drafts/v2 && tsc -p design-drafts/v3",
     "build": "npm run typecheck && vite build",
     "test:forms": "node --test tests/form-actions.test.mjs",
     "test": "node --test tests/*.test.mjs"

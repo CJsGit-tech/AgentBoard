@@ -11,6 +11,7 @@ import {
   Drawer,
   Group,
   Loader,
+  Tooltip,
 } from "@mantine/core";
 import { useFocusTrap, useMediaQuery } from "@mantine/hooks";
 import { CanvasWorkspace, DesignCanvas } from "./DesignCanvas";
@@ -21,8 +22,9 @@ import { Guide } from "./Guide";
 import { Listing } from "./Listing";
 import { milestoneFromTicketRoute, withMilestoneTicketFilter } from "./features/tickets/milestone";
 import { Projects } from "./Projects";
-import { InfoHelp } from "./features/help/InfoHelp";
+import { Portfolio } from "./features/portfolio/Portfolio";
 import { RecordEditor } from "./RecordEditor";
+import { QuickSwitcher, shortcutLabel, useQuickSwitcherShortcut } from "./features/navigation/QuickSwitcher";
 import {
   type Page,
   type Change,
@@ -35,7 +37,6 @@ import {
   single,
   done,
   nameOf,
-  percent,
   request,
   workspacePath,
   errorText,
@@ -43,7 +44,7 @@ import {
 } from "./model";
 
 const navigation = [
-  { label: "Workspace", pages: ["projects"] },
+  { label: "Workspace", pages: ["projects", "portfolio"] },
   { label: "Project work", pages: ["dashboard", "documents", "canvas", "tickets", "milestones"] },
   { label: "Operations", pages: ["runs", "assistant"] },
   { label: "Project settings", pages: ["roles"] },
@@ -90,6 +91,24 @@ function ticketViewFromURL(route = location.hash): TicketView {
   if (segment === "overdue") return "overdue";
   return "";
 }
+const lockedReason = "Choose a project to open its workspace";
+/** One rail entry. Without a project, project pages stay focusable and explain themselves in one tooltip. */
+function NavItem({ active, locked, onClick, icon, label }: { active: boolean; locked: boolean; onClick: () => void; icon: JSX.Element; label: string }) {
+  const button = (
+    <button
+      className={active ? "active" : ""}
+      aria-current={active ? "page" : undefined}
+      aria-disabled={locked || undefined}
+      aria-description={locked ? lockedReason : undefined}
+      onClick={locked ? undefined : onClick}
+    >
+      <span className="nav-icon">{icon}</span>
+      {label}
+    </button>
+  );
+  return locked ? <Tooltip label={lockedReason} position="right" withArrow openDelay={150} events={{ hover: true, focus: true, touch: true }}>{button}</Tooltip> : button;
+}
+
 export default function App() {
   const [view, setView] = useState<{ key: string; snapshot: Snapshot<Workspace> } | null>(null),
     [error, setError] = useState(""),
@@ -106,6 +125,9 @@ export default function App() {
   const [guide, showGuide] = useState(false),
     [mobileOpen, setMobileOpen] = useState(false),
     [routeMessage, setRouteMessage] = useState("");
+  const [quickOpen, setQuickOpen] = useState(false);
+  const openQuick = useCallback(() => setQuickOpen(true), []);
+  useQuickSwitcherShortcut(openQuick);
   const guideButton = useRef<HTMLButtonElement>(null);
   const mobileMenuButton = useRef<HTMLButtonElement>(null);
   const isNarrow = useMediaQuery("(max-width: 900px)") || false;
@@ -148,14 +170,14 @@ export default function App() {
   const canvasViewer = page === "canvas" && !!id;
   const bareKind = !requestedProject && page !== "projects" && recordRoute ? page as Kind : null;
   const readKey = canvasViewer ? `canvases/${encodeURIComponent(id)}/viewer`
-    : page === "projects" ? workspacePath("")
+    : page === "projects" || page === "portfolio" ? workspacePath("")
     : requestedProject ? workspacePath(requestedProject)
     : bareKind ? `records/${bareKind}/${encodeURIComponent(id)}/project` : workspacePath(scope);
   const db = view?.key === readKey ? view.snapshot.data : null;
   const target = db && recordRoute ? db[page as Kind].find(row => row.id === id) : undefined;
   const targetMismatch = !!requestedProject && !!target?.project && target.project !== requestedProject;
   const routeTarget = targetMismatch ? undefined : target;
-  const routeScope = page === "projects"
+  const routeScope = page === "projects" || page === "portfolio"
     ? ""
     : requestedProject || (recordRoute ? routeTarget?.project || "" : "") || scope;
   const activeProject = db?.projects.find(project => project.id === routeScope);
@@ -276,7 +298,7 @@ export default function App() {
       setPage(pageFromURL());
       setTicketView(ticketViewFromURL());
       const destinationPage = pageFromURL(location.hash);
-      const destinationScope = destinationPage === "projects" ? "" : projectFromURL() || scopeRef.current;
+      const destinationScope = destinationPage === "projects" || destinationPage === "portfolio" ? "" : projectFromURL() || scopeRef.current;
       setScope(destinationScope);
       scopeRef.current = destinationScope;
       setMobileOpen(false);
@@ -297,7 +319,7 @@ export default function App() {
     if (!db || canvasViewer) return;
     const resolvedProject = requestedProject || routeTarget?.project || (routeTarget?.id && page === "projects" ? routeTarget.id : "") || activeProject?.id || (page === "projects" ? "" : scope);
     const invalidProject = !!resolvedProject && !db.projects.some(project => project.id === resolvedProject);
-    const missingContext = page !== "projects" && !resolvedProject && !viewerProfile;
+    const missingContext = page !== "projects" && page !== "portfolio" && !resolvedProject && !viewerProfile;
     if (!invalidProject && !missingContext) {
       handledInvalidRoute.current = "";
       return;
@@ -320,8 +342,9 @@ export default function App() {
     history.replaceState({}, "", "#projects");
   }, [db, canvasViewer, page, recordRoute, requestedProject, scope, routeTarget, viewerProfile, route, activeProject]);
   function go(p: Page, nextView: TicketView = "", milestoneId = "", skipGuard = false) {
-    const nextScope = p === "projects" ? "" : selectedProjectId;
-    if (p !== "projects" && !nextScope) {
+    const workspaceLevel = p === "projects" || p === "portfolio";
+    const nextScope = workspaceLevel ? "" : selectedProjectId;
+    if (!workspaceLevel && !nextScope) {
       go("projects", "", "", skipGuard);
       setRouteMessage("Choose a project before opening its workspace.");
       return;
@@ -331,8 +354,8 @@ export default function App() {
     setTicketView(nextView);
     setScope(nextScope);
     scopeRef.current = nextScope;
-    const path = p === "projects"
-      ? "#projects"
+    const path = workspaceLevel
+      ? "#" + p
       : `#project/${encodeURIComponent(nextScope)}/${p}` + (p === "tickets" && nextView ? "/" + nextView : "");
     const hash = p === "tickets" ? withMilestoneTicketFilter(path, milestoneId) : path;
     openedRoute.current = "";
@@ -426,6 +449,7 @@ export default function App() {
         : "tickets"
       : page === "canvas" ? "documents" : page === "activity"
         ? "projects" : page === "assistant" ? "tickets"
+        : page === "portfolio" ? "projects"
         : page;
   const newRecord = () => setEditor({ kind: createKind });
   const monitoring = page === "runs" || page === "activity";
@@ -505,41 +529,31 @@ export default function App() {
             <span aria-hidden="true">×</span>
           </button>
         </div>
-        <div className="project-context" data-empty={!activeProject || undefined}>
-          {activeProject ? <>
-            <small>Current project</small>
-            <b className="project-context-name" title={activeProject.name}>{activeProject.name}</b>
-            <span className="project-context-line">
-              {scoped(db?.tickets || [], selectedProjectId, "tickets").length
-                ? `${percent(scoped(db?.tickets || [], selectedProjectId, "tickets"))}% complete`
-                : "Progress pending"}
-              {db && scoped(db.tickets, selectedProjectId, "tickets").some(ticket => ticket.status === "Blocked") && (
-                <span className="warn"> · {scoped(db.tickets, selectedProjectId, "tickets").filter(ticket => ticket.status === "Blocked").length} blocked</span>
-              )}
-            </span>
-            <span className={`project-context-bar${db && scoped(db.tickets, selectedProjectId, "tickets").length ? "" : " is-empty"}`} aria-hidden="true">
-              <i style={{ width: `${percent(scoped(db?.tickets || [], selectedProjectId, "tickets"))}%` }} />
-            </span>
-            <button className="link" onClick={() => go("projects")}>Switch project <Icon page="arrow" /></button>
-          </> : <>
-            <div className="with-info"><small>No project selected</small><InfoHelp label="project navigation">Choose a project to open its dashboard, documents, Canvas and work.</InfoHelp></div>
-          </>}
-        </div>
+        <button type="button" className="project-switch" data-empty={!activeProject || undefined} onClick={() => go("projects")}
+          aria-label={activeProject ? `Current project ${activeProject.name}. Switch project` : "Choose a project"}>
+          <span className="overline">{activeProject ? "Current project" : "No project"}</span>
+          <b className="project-switch__name" title={activeProject?.name}>{activeProject ? activeProject.name : "Choose a project"}</b>
+          {activeProject && db && scoped(db.tickets, selectedProjectId, "tickets").some(ticket => ticket.status === "Blocked") && (
+            <span className="project-switch__warn">◆ {scoped(db.tickets, selectedProjectId, "tickets").filter(ticket => ticket.status === "Blocked").length} blocked</span>
+          )}
+          <span className="project-switch__chev" aria-hidden="true">⌄</span>
+        </button>
+        <button type="button" className="quick-jump" onClick={() => { setMobileOpen(false); openQuick(); }} aria-keyshortcuts="Meta+K Control+K">
+          <Icon page="search" /><span>Jump to…</span><kbd>{shortcutLabel()}</kbd>
+        </button>
         <nav aria-label="Workspace">
           {navigation.map(({ label, pages }) => (
             <Fragment key={label}>
               <small>{label}</small>
               {pages.map((k) => (
-                <button
+                <NavItem
                   key={k}
-                  className={navPage === k ? "active" : ""}
-                  aria-current={navPage === k ? "page" : undefined}
-                  disabled={k !== "projects" && !selectedProjectId}
+                  active={navPage === k}
+                  locked={k !== "projects" && k !== "portfolio" && !selectedProjectId}
                   onClick={() => go(k)}
-                >
-                  <Icon page={k === "canvas" ? "Design" : k === "assistant" ? "runs" : k} />
-                  {k === "runs" ? "Runs & activity" : k === "assistant" ? "Project assistant" : names[k]}
-                </button>
+                  icon={<Icon page={k === "canvas" ? "Design" : k === "assistant" ? "runs" : k === "portfolio" ? "dashboard" : k} />}
+                  label={k === "runs" ? "Runs & activity" : k === "assistant" ? "Project assistant" : names[k]}
+                />
               ))}
             </Fragment>
           ))}
@@ -556,7 +570,7 @@ export default function App() {
           </ol>
         </header>
         <div id="page">
-          {page !== "canvas" && page !== "projects" && page !== "assistant" && page !== "dashboard" && page !== "tickets" && <div className="heading">
+          {page !== "canvas" && page !== "projects" && page !== "portfolio" && page !== "assistant" && page !== "dashboard" && page !== "tickets" && <div className="heading">
             <div>
               <h1>{monitoring ? <>Runs <em>&amp;</em> activity</> : section}</h1>
               <p>
@@ -611,8 +625,8 @@ export default function App() {
               <span>Loading workspace…</span>
             </Group>
           )}
-          {db && ((!recordRoute || routeTarget) || page === "projects") &&
-            (page === "projects" ? <Projects db={db} openProject={openProject} editProject={(row) => setEditor({ kind: "projects", row })} /> : page === "canvas" ? <CanvasWorkspace db={db} scope={selectedProjectId} /> : page === "assistant" ? (
+          {db && ((!recordRoute || routeTarget) || page === "projects" || page === "portfolio") &&
+            (page === "projects" ? <Projects db={db} openProject={openProject} editProject={(row) => setEditor({ kind: "projects", row })} /> : page === "portfolio" ? <Portfolio db={db} openProject={openProject} /> : page === "canvas" ? <CanvasWorkspace db={db} scope={selectedProjectId} /> : page === "assistant" ? (
               <Assistant
                 key={selectedProjectId}
                 projectId={selectedProjectId}
@@ -654,6 +668,7 @@ export default function App() {
             ))}
         </div>
       </main>
+      <QuickSwitcher opened={quickOpen} onClose={() => setQuickOpen(false)} db={db} scope={selectedProjectId} openProject={openProject} />
       <Guide opened={guide} close={closeGuide} project={activeProject?.name} />
       {db && editor && (
         <RecordEditor

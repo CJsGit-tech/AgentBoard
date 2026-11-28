@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
-import { Button, TextInput } from "@mantine/core";
+import { Button, SegmentedControl, TextInput } from "@mantine/core";
 import "./features/library/cards.css";
 import { Icon } from "./Common";
 import { InfoHelp } from "./features/help/InfoHelp";
+import { ago, perDay, SparkColumns, StatusBar, StatusLegend } from "./features/charts/primitives";
 import {
   type Row,
   type Workspace,
@@ -15,25 +16,39 @@ type Props = {
   editProject: (row?: Row) => void;
 };
 
-const meterStatuses = ["Done", "In progress", "Blocked", "Planned"] as const;
+type Sort = "Recent" | "Name" | "Progress";
+const progress = (project: Row) => {
+  const total = totalTickets(project.summary);
+  return total ? (project.summary?.statuses.Done || 0) / total : -1;
+};
 
 export function Projects({ db, openProject, editProject }: Props) {
   const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<Sort>("Recent");
   const matches = useMemo(() => {
     const term = query.trim().toLocaleLowerCase();
-    return db.projects.filter((project) =>
+    const found = db.projects.filter((project) =>
       !term || `${project.name}\n${project.description || ""}`.toLocaleLowerCase().includes(term),
     );
-  }, [db.projects, query]);
+    return [...found].sort((a, b) => sort === "Name" ? a.name.localeCompare(b.name)
+      : sort === "Progress" ? progress(b) - progress(a)
+      : (Date.parse(b.summary?.last_activity || "") || 0) - (Date.parse(a.summary?.last_activity || "") || 0));
+  }, [db.projects, query, sort]);
   const completed = matches.reduce((n, project) => n + (project.summary?.statuses.Done || 0), 0);
   const total = matches.reduce((n, project) => n + totalTickets(project.summary), 0);
   const blockerProjects = matches.filter(project => project.summary?.statuses.Blocked).length;
+  const idle = matches.find(project => totalTickets(project.summary) && !project.summary?.statuses.Done && !project.summary?.statuses["In progress"]);
 
   return (
     <>
       <header className="heading">
         <div>
           <div className="with-info"><h1>Projects</h1><InfoHelp label="projects">Choose a project to open its workspace.</InfoHelp></div>
+          <p aria-live="polite">
+            <b>{completed}</b> of {total} tickets done across {matches.length} {matches.length === 1 ? "project" : "projects"}
+            {blockerProjects ? <> · <b className="warn">{blockerProjects}</b> with blockers</> : null}
+            {idle ? <> · <b>{idle.name}</b> has {totalTickets(idle.summary)} planned tickets and none started</> : null}
+          </p>
         </div>
         <Button className="mast-action" leftSection={<Icon page="plus" />} onClick={() => editProject()}>
           New project
@@ -49,26 +64,24 @@ export function Projects({ db, openProject, editProject }: Props) {
           value={query}
           onChange={(event) => setQuery(event.currentTarget.value)}
         />
-        <p className="folder-summary" aria-live="polite">
-          <b>{matches.length}</b> {matches.length === 1 ? "project" : "projects"}
-          <span aria-hidden="true">·</span>
-          <b>{completed}</b> of {total} tickets done
-          <span aria-hidden="true">·</span>
-          <b className="warn">{blockerProjects}</b> with blockers
-        </p>
+        <SegmentedControl className="folder-sort" size="xs" radius="xl" value={sort} onChange={(value) => setSort(value as Sort)}
+          data={["Recent", "Name", "Progress"]} aria-label="Sort projects" />
       </div>
 
       {matches.length ? (
-        <div className="folders" aria-label="Projects">
-          {matches.map((project) => (
-            <ProjectFolder
-              key={project.id}
-              project={project}
-              open={() => openProject(project.id)}
-              edit={() => editProject(project)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="folders" aria-label="Projects">
+            {matches.map((project) => (
+              <ProjectFolder
+                key={project.id}
+                project={project}
+                open={() => openProject(project.id)}
+                edit={() => editProject(project)}
+              />
+            ))}
+          </div>
+          <div className="folder-legend"><StatusLegend /></div>
+        </>
       ) : (
         <div className="folder-empty">
           <h2>{db.projects.length ? "No matching projects" : "No projects yet"}</h2>
@@ -96,26 +109,15 @@ function ProjectFolder({ project, open, edit }: {
   const total = totalTickets(project.summary);
   const blocked = counts.Blocked || 0;
   const completed = counts.Done || 0;
-  const health = !total ? "pending" : blocked ? "blocked" : "clear";
-  const accessibleBreakdown = meterStatuses.map(status => `${status}: ${counts[status] || 0}`).join(", ");
-  const meterSegments = meterStatuses.flatMap(status => {
-    const count = counts[status] || 0;
-    if (total > 40) return count ? [{ status, key: status, weight: count }] : [];
-    return Array.from({ length: count }, (_, i) => ({ status, key: status + i, weight: 1 }));
-  });
+  const days = perDay(project.summary?.recent_done || []);
+  const week = days.reduce((a, b) => a + b, 0);
+  const milestones = project.summary?.milestones || 0;
   return (
-    <article className="folder" data-health={health}>
-      <div className="folder-tab" data-status={health}>
-        <i aria-hidden="true" />
-        {health === "pending" ? "Awaiting work" : blocked ? `${blocked} blocked` : "No blockers"}
-      </div>
+    <article className="folder v5-project" data-health={!total ? "pending" : blocked ? "blocked" : "clear"}>
       <div className="folder-body">
-        <div className="folder-head">
-          <h2>
-            <button className="folder-title" title={project.name} onClick={open}>
-              {project.name}
-            </button>
-          </h2>
+        <div className="v5-project__top">
+          <span className="overline"><Icon page="milestones" /> {milestones} {milestones === 1 ? "milestone" : "milestones"}</span>
+          {blocked ? <span className="v5-chip" data-tone="amber"><span aria-hidden="true">◆</span> {blocked} blocked</span> : null}
           <button
             type="button"
             className="folder-settings"
@@ -126,31 +128,28 @@ function ProjectFolder({ project, open, edit }: {
             <Icon page="edit" />
           </button>
         </div>
-        <p className="folder-description">{project.description || "No description"}</p>
-        <div className="folder-metric">
-          <b>{total ? `${Math.round(100 * completed / total)}%` : "—"}</b>
-          <span>{total ? `${completed} of ${total} tickets complete` : "Progress pending"}</span>
-        </div>
-        <div
-          className={`folder-meter${total ? "" : " is-empty"}`}
-          role="img"
-          aria-label={total ? `Ticket status. ${accessibleBreakdown}` : "Progress pending. No tickets yet."}
-        >
-          {total ? meterSegments.map((segment) => (
-            <span
-              key={segment.key}
-              data-status={segment.status}
-              style={segment.weight ? { flex: `${segment.weight} 1 0` } : undefined}
-            />
-          )) : <span />}
-        </div>
-        <dl className="folder-facts">
-          <div>
-            <dt>Milestones</dt>
-            <dd>{project.summary?.milestones ? `${project.summary.completed_milestones}/${project.summary.milestones} done` : "—"}</dd>
+        <h2>
+          <button className="folder-title" title={project.name} onClick={open}>
+            {project.name}
+          </button>
+        </h2>
+        {project.description
+          ? <p className="folder-description">{project.description}</p>
+          : <button type="button" className="link v5-project__add" onClick={edit}>Add description</button>}
+        <div className="v5-project__progress">
+          <div className="v5-project__figure">
+            <b>{total ? `${Math.round(100 * completed / total)}%` : "—"}</b>
+            <span>{total ? `${completed} of ${total} done · ${counts.Planned || 0} planned` : "Progress pending"}</span>
           </div>
-          <div><dt>Documents</dt><dd>{project.summary?.documents || 0}</dd></div>
-        </dl>
+          <StatusBar counts={counts} label={`${project.name} ticket status`} />
+        </div>
+        <footer className="v5-project__foot">
+          <span className="v5-project__spark">
+            <SparkColumns values={days} label={`${project.name} tickets done per day, last 7 days`} />
+            <span><b>{week}</b> done this week</span>
+          </span>
+          <span>{ago(project.summary?.last_activity)}</span>
+        </footer>
       </div>
     </article>
   );

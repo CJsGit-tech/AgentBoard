@@ -12,6 +12,7 @@ import { TicketSummary } from "./features/tickets/TicketSummary";
 import { ticketsForMilestone } from "./features/tickets/milestone";
 import { proofHref, resolveProof } from "./features/tickets/proof-links";
 import { CompletionDial } from "./Dashboard";
+import { statusFill, statusShape, type Status } from "./features/charts/primitives";
 import { DocumentLibrary } from "./DocumentLibrary";
 import { useActivityPage, ActivityPageContents } from "./features/monitoring/activity-page";
 import { ActivityTimeline, RunList, type RunGrouping } from "./Monitoring";
@@ -23,7 +24,7 @@ import {
 } from "./model";
 
 type TicketGrouping = "Milestone" | "Status" | "Type" | "None";
-type ListPage = Exclude<Page, "dashboard" | "canvas" | "assistant">;
+type ListPage = Exclude<Page, "dashboard" | "canvas" | "assistant" | "portfolio">;
 type Props = {
   documentId?: string; db: Workspace; page: ListPage; scope: string; milestoneFilter: string; initialTicketView: TicketView;
   edit: (editor: Editor) => void; inspect: (entry: Change) => void; milestone: (id: string) => void;
@@ -135,9 +136,10 @@ export function Listing({ documentId, db, page: k, scope, milestoneFilter: mil, 
   const [ticketGroup, setTicketGroup] = useLocalStorage<TicketGrouping>({ key: "agentboard.ui.tickets.group", defaultValue: "Milestone" });
   const [boardGroup, setBoardGroup] = useLocalStorage<TicketGrouping>({ key: "agentboard.ui.board.group", defaultValue: "Status" });
   const documentGroup = "Family" as const;
-  const [runGroup, setRunGroup] = useLocalStorage<RunGrouping>({ key: "agentboard.ui.runs.group", defaultValue: "Agent" });
+  const [runGroup, setRunGroup] = useLocalStorage<RunGrouping>({ key: "agentboard.ui.runs.group.v5", defaultValue: "Day" });
   const [audit, showAudit] = useLocalStorage({ key: "agentboard.ui.edit-metadata", defaultValue: false });
   const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
+  const [doneAll, setDoneAll] = useState(false);
   const board = k === "tickets" && layout === "Board";
   const monitoring = k === "runs" || k === "activity";
   const tickets = scoped(ticketRows, scope, "tickets");
@@ -197,7 +199,7 @@ export function Listing({ documentId, db, page: k, scope, milestoneFilter: mil, 
   }
   const grouping = k === "documents" ? documentGroup : k === "runs" ? runGroup : board ? boardGroup : ticketGroup;
   const groupingChoices = k === "documents" ? ["Family", "Type", "Project", "None"] :
-    k === "runs" ? ["Agent", "Status", "None"] : board ? ["Status", "Milestone", "Type"] : ["Milestone", "Status", "Type", "None"];
+    k === "runs" ? ["Day", "Agent", "Status", "None"] : board ? ["Status", "Milestone", "Type"] : ["Milestone", "Status", "Type", "None"];
   const showDisplay = k === "tickets" || k === "runs";
   const changeGrouping = (choice: string) => {
     if (k === "runs") setRunGroup(choice as RunGrouping);
@@ -236,23 +238,36 @@ export function Listing({ documentId, db, page: k, scope, milestoneFilter: mil, 
       if (board) {
         const occupied = groups.filter(group => group.rows.length);
         const empty = groups.filter(group => !group.rows.length);
-        const renderLane = (group: typeof groups[number]) => <section className="lane" key={group.key} data-drop={dropTarget===group.label || undefined}
+        const statusLanes = grouping === "Status" && !mil;
+        const renderLane = (group: typeof groups[number]) => {
+          const isDone = statusLanes && group.label === "Done";
+          const laneRows = isDone ? [...group.rows].sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || "")) : group.rows;
+          const shown = isDone && !doneAll ? laneRows.slice(0, DONE_LIMIT) : laneRows;
+          const collapsedEmpty = statusLanes && !group.rows.length;
+          return <section className={"lane" + (collapsedEmpty ? " is-empty" : "")} key={group.key} data-drop={dropTarget===group.label || undefined}
+          aria-label={collapsedEmpty ? `${group.label}: no tickets. Drop a ticket here to move it to ${group.label}.` : undefined}
           onDragOver={event=>{if(grouping!=="Status"||!dragging.current)return;event.preventDefault();event.dataTransfer.dropEffect="move";setDropTarget(group.label||"");}}
           onDragLeave={event=>{if(!event.currentTarget.contains(event.relatedTarget as Node))setDropTarget("");}}
           onDrop={event=>{event.preventDefault();const ticket=tickets.find(t=>t.id===dragging.current);if(ticket&&grouping==="Status"&&group.label)void moveTicket(ticket,group.label);dragging.current="";setDropTarget("");}}>
-          {mil && !group.rows.length ? <h2 className="empty-lane-title">{group.label}<small>0 tickets</small></h2> : <>
+          {collapsedEmpty ? <div className="empty-lane-drop"><h2>{group.label}</h2><small>0</small><span aria-hidden="true">Drop here</span></div> : mil && !group.rows.length ? <h2 className="empty-lane-title">{group.label}<small>0 tickets</small></h2> : <>
           <h2><button className="row-group-label" aria-expanded={!collapsed.has(group.key)} onClick={()=>toggleGroup(group.key)}>{group.label}<small>{group.rows.length}</small></button></h2>
-          {!collapsed.has(group.key)&&group.rows.length>0&&<div className="lane-tickets">{group.rows.map(row=><article className="tile" data-ticket={row.id} key={row.id} draggable={!moving && !operations.locked([projectResource(row.project || scope)])}
+          {!collapsed.has(group.key)&&group.rows.length>0&&<div className="lane-tickets">{shown.map(row=><article className="tile" data-ticket={row.id} key={row.id} draggable={!moving && !operations.locked([projectResource(row.project || scope)])}
             onDragStart={event=>{const target=event.target as HTMLElement;if(target.closest("select,input,a,button:not([data-drag-title])")){event.preventDefault();return;}dragging.current=row.id;event.dataTransfer.setData("text/plain",row.id);event.dataTransfer.effectAllowed="move";}}
             onDragEnd={()=>{dragging.current="";setDropTarget("");}} onClick={event=>{if(!(event.target as HTMLElement).closest("button,select,input,a,label,summary"))open(row);}}>
             <TicketSummary db={db} ticket={row} open={open} metadata="role"/>{row.due&&<small>{dateLabel(row)}</small>}{needsAttention&&<Tag value={attention.get(row.id)||row.status||"Unspecified"}/>}
             <TicketEvidence evidence={evidenceByTicket.get(row.id)} />
-            <label className="ticket-move"><span>{moving===row.id?"Moving…":"Move to"}</span><select aria-label={"Move "+row.name+" to"} disabled={!!moving || operations.locked([projectResource(row.project || scope)])} value={row.status} onChange={event=>void moveTicket(row,event.currentTarget.value)}>{statuses.map(status=><option key={status}>{status}</option>)}</select></label>
-          </article>)}</div>}
+            <TicketMenu row={row} moving={moving===row.id} locked={!!moving || operations.locked([projectResource(row.project || scope)])} onMove={next=>void moveTicket(row,next)} onOpen={()=>open(row)} />
+          </article>)}
+          {isDone && laneRows.length > DONE_LIMIT && <button type="button" className="lane-more" aria-expanded={doneAll} onClick={()=>setDoneAll(v=>!v)}>{doneAll ? "Show recent 6" : `Show all ${laneRows.length}`}</button>}
+          </div>}
           {!collapsed.has(group.key)&&!group.rows.length&&<Empty>No tickets.</Empty>}
           </>}
         </section>;
-        if (!mil) return <div className="board">{groups.map(renderLane)}</div>;
+        };
+        if (!mil) return <>
+          {grouping === "Status" && <StatusStrip counts={statusCountsOf(ticketCohort)} active={status} onPick={value=>setStatus(status===value?"":value)} />}
+          <div className={"board" + (statusLanes ? " status-board" : "")} style={statusLanes ? { gridTemplateColumns: groups.map(g => g.rows.length ? "minmax(232px,1fr)" : "96px").join(" ") } : undefined}>{groups.map(renderLane)}</div>
+        </>;
         return <>
           {occupied.length ? <div className="board milestone-board" data-lanes={occupied.length}>{occupied.map(renderLane)}</div> : <Empty>No matching tickets.</Empty>}
           {!!empty.length && <div className="board milestone-empty-lanes" aria-label="Empty status lanes">{empty.map(renderLane)}</div>}
@@ -334,4 +349,52 @@ export function Listing({ documentId, db, page: k, scope, milestoneFilter: mil, 
       </section>}
     </div>
   </>;
+}
+
+const DONE_LIMIT = 6;
+const statusCountsOf = (rows: Row[]) => Object.fromEntries(statuses.map(value => [value, rows.filter(row => row.status === value).length])) as Record<string, number>;
+
+/** Counts by status; each segment filters the board, and selecting it again clears the filter. */
+function StatusStrip({ counts, active, onPick }: { counts: Record<string, number>; active: string; onPick: (status: string) => void }) {
+  const order = ["Done", "In progress", "Blocked", "Planned"].filter(value => statuses.includes(value));
+  const total = order.reduce((sum, value) => sum + (counts[value] || 0), 0);
+  if (!total) return null;
+  return (
+    <div className="status-strip" role="group" aria-label="Filter the board by status">
+      <div className="status-strip__bar" aria-hidden="true">
+        {order.filter(value => counts[value]).map(value => <span key={value} style={{ flexGrow: counts[value], background: statusFill[value as Status] }} data-dim={active && active !== value || undefined} />)}
+      </div>
+      <div className="status-strip__keys">
+        {order.map(value => (
+          <button key={value} type="button" aria-pressed={active === value} disabled={!counts[value] && active !== value} onClick={() => onPick(value)}>
+            <span className="cv-key-dot" style={{ background: statusFill[value as Status] }} /><span aria-hidden="true">{statusShape[value as Status]}</span>{value}<b>{counts[value] || 0}</b>
+          </button>
+        ))}
+        {active && <button type="button" className="link status-strip__clear" onClick={() => onPick(active)}>Clear filter</button>}
+      </div>
+    </div>
+  );
+}
+
+/** Card actions live in one menu; dragging stays on the card itself. */
+function TicketMenu({ row, moving, locked, onMove, onOpen }: { row: Row; moving: boolean; locked: boolean; onMove: (status: string) => void; onOpen: () => void }) {
+  const [copied, setCopied] = useState(false);
+  const link = `${location.origin}${location.pathname}#project/${encodeURIComponent(row.project || "")}/tickets/${encodeURIComponent(row.id)}`;
+  return (
+    <div className="ticket-actions">
+      {moving && <small role="status">Moving…</small>}
+      {copied && <small role="status">Link copied</small>}
+      <Menu position="bottom-end" shadow="sm" withinPortal>
+        <Menu.Target><button type="button" className="ticket-menu" aria-label={`Actions for ${row.name}`}>⋯</button></Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Label>Move to</Menu.Label>
+          {statuses.filter(value => value !== row.status).map(value => <Menu.Item key={value} disabled={locked} onClick={() => onMove(value)}>
+            <span aria-hidden="true">{statusShape[value as Status]} </span>{value}</Menu.Item>)}
+          <Menu.Divider />
+          <Menu.Item onClick={onOpen}>Open</Menu.Item>
+          <Menu.Item onClick={() => { void navigator.clipboard?.writeText(link).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2000); }); }}>Copy link</Menu.Item>
+        </Menu.Dropdown>
+      </Menu>
+    </div>
+  );
 }

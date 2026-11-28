@@ -187,28 +187,46 @@ export function CanvasWorkspace({ db, scope }: { db: Workspace; scope: string })
         value={query} onChange={event => setQuery(event.currentTarget.value)} />
       <p className="folder-summary"><b>{matches.length}</b> {matches.length === 1 ? "version" : "versions"}</p>
     </div>
-    <div className="folders is-canvas">{matches.map(({ document, version }) =>
-      <article className="folder" key={document.id + "/" + version.version}>
-        <div className="folder-tab">Version {version.version}{document.canvas_versions![0].version === version.version ? " · Latest" : ""}</div>
-        <div className="folder-body">
-          <div className="folder-head"><h2><a className="folder-title" href={canvasURL(document, version.version)}
-            target="_blank" rel="noreferrer" aria-label={document.name + " canvas · Version " + version.version}>
-            {document.name} canvas <Icon page="arrow" /></a></h2></div>
-          <p className="folder-description">{nameOf(db, "projects", document.project)}</p>
-          <div className="canvas-publication-meta">
-            <p><span>Published</span> <b>{stamp(version.published_at)}</b></p>
-            <p><span>Publisher</span> <b>{version.publisher || "Not recorded"}</b></p>
-            <p><span>Screens</span> <b>{verifiedScreenCount(version.screen_count)}</b></p>
+    {documents.map(document => {
+      const versions = matches.filter(item => item.document.id === document.id).map(item => item.version);
+      if (!versions.length) return null;
+      const [latest, ...earlier] = versions;
+      const isLatest = document.canvas_versions![0].version === latest.version;
+      const screens = latest.screen_count;
+      return <section className="canvas-group" key={document.id} aria-label={document.name + " canvas versions"}>
+        <article className="canvas-feature">
+          <a className="canvas-feature__thumb" href={canvasURL(document, latest.version)} target="_blank" rel="noreferrer" aria-hidden="true" tabIndex={-1}>
+            <span className="canvas-feature__frames">{Array.from({ length: 6 }, (_, i) => <i key={i} />)}</span>
+            <b>v{latest.version}</b>
+          </a>
+          <div className="canvas-feature__body">
+            <span className="overline">{isLatest ? "Latest version" : "Best match"} · Version {latest.version}</span>
+            <h2>{document.name} canvas</h2>
+            <p className="canvas-feature__meta">
+              {[stamp(latest.published_at), latest.publisher, screens ? `${screens} screens` : "", !scope ? nameOf(db, "projects", document.project) : ""].filter(Boolean).join(" · ")}
+            </p>
+            {latest.change_note && <p className="canvas-feature__note">{latest.change_note}</p>}
+            <PublicationDelivery db={db} document={document} version={latest.version} />
+            <div className="canvas-feature__actions">
+              <a className="mantine-focus-auto canvas-open" href={canvasURL(document, latest.version)} target="_blank" rel="noreferrer">Open canvas <span aria-hidden="true">↗</span></a>
+              <a className="ghost-link" href={"#documents/" + document.id}>Design Profile</a>
+              <button className="link ghost-link" onClick={() => showHistory({ document, version: latest.version })}>Version history</button>
+            </div>
           </div>
-          <p className="canvas-card-note">{version.change_note || "Publication notes were not recorded."}</p>
-          <PublicationDelivery db={db} document={document} version={version.version} />
-          <div className="folder-foot">
-            <a className="ghost-link" href={"#documents/" + document.id}>Design Profile <Icon page="arrow" /></a>
-            <button className="link ghost-link" onClick={() => showHistory({ document, version: version.version })}>Version history</button>
-          </div>
-        </div>
-      </article>,
-    )}</div>
+        </article>
+        {earlier.length > 0 && <div className="canvas-earlier">
+          <h3 className="overline">Earlier versions</h3>
+          <ul>{earlier.map(version => <li key={version.version}>
+            <a href={canvasURL(document, version.version)} target="_blank" rel="noreferrer" aria-label={`${document.name} canvas · Version ${version.version}`}>
+              <b>Version {version.version}</b>
+              <span className="canvas-earlier__note">{version.change_note || ""}</span>
+              <small>{[stamp(version.published_at), version.publisher, version.screen_count ? `${version.screen_count} screens` : ""].filter(Boolean).join(" · ")}</small>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </li>)}</ul>
+        </div>}
+      </section>;
+    })}
     {!matches.length && <div className="folder-empty">
       <h2>{publications.length ? "No matching canvases" : "No published canvases yet"}</h2>
       {publications.length > 0 && <button className="link" onClick={() => setQuery("")}>Clear search</button>}

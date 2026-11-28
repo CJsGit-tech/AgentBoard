@@ -7,7 +7,7 @@ export const kinds = [
   "documents",
 ] as const;
 export type Kind = (typeof kinds)[number];
-export type Page = Kind | "activity" | "dashboard" | "canvas" | "assistant";
+export type Page = Kind | "activity" | "dashboard" | "canvas" | "assistant" | "portfolio";
 export type TicketView = "" | "attention" | "overdue";
 export type DesignReference = { document_id: string; version: number };
 export type ProofReference = { document_id: string; status: "verified" | "unverified" | "superseded" } & (
@@ -26,6 +26,8 @@ export type ProjectSummary = {
   milestones: number;
   completed_milestones: number;
   documents: number;
+  last_activity?: string | null;
+  recent_done?: string[];
 };
 export type Row = {
   summary?: ProjectSummary;
@@ -35,6 +37,10 @@ export type Row = {
   project?: string;
   description?: string;
   checkout_path?: string;
+  target_completion?: number;
+  target_evidence?: number;
+  target_run_success?: number;
+  target_median_hours?: number;
   milestone?: string;
   status?: string;
   role?: string;
@@ -85,6 +91,7 @@ export type WorkspaceRefresh = (verify?: (data: Workspace) => boolean, verificat
 export type Editor = { kind: Kind; row?: Row; project?: string; panel?: "Links" | "History" };
 export const names: Record<Page, string> = {
   projects: "Projects",
+  portfolio: "Portfolio report",
   dashboard: "Dashboard",
   canvas: "Canvas",
   tickets: "Tickets",

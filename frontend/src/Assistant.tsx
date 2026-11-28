@@ -50,6 +50,15 @@ type Props = {
 };
 
 const API = "assistant/";
+/** Suggested prompts fill the composer only; sending stays a separate, explicit action. */
+function suggestionsFor(ticketName?: string) {
+  return [
+    "What needs my attention in this project?",
+    "Summarize what was delivered this week.",
+    "Which done tickets are missing evidence?",
+    ...(ticketName ? [`Plan the next step for “${ticketName}”.`] : []),
+  ];
+}
 const RELIABILITY_NOTICE = "API sessions can disconnect or stop unexpectedly. Check the latest saved step before continuing. If completion is uncertain, review before retrying.";
 const RUN_POLL_MS = 2200;
 const PROJECT_POLL_MS = 7000;
@@ -622,6 +631,10 @@ export function Assistant({
       : connection.kind === "error" ? "Connection failed"
         : config?.credential.configured ? "Not tested" : "No key configured";
 
+  const sendBlockedReason = connection.kind !== "connected" ? "Connect a model to send."
+    : mode === "Edit" && !editGateReady ? "Edit needs a reviewed ticket and Ready local execution."
+    : !draft.trim() ? "" : "";
+
   return <div className="ia-page">
     <div className="ia-layout">
       <aside className="ia-rail" aria-label="Assistant navigation">
@@ -693,9 +706,15 @@ export function Assistant({
           onOpenTicket={onOpenTicket}
           reliabilityNotice={config?.notice || RELIABILITY_NOTICE}
         /> : <>
+          {connection.kind !== "connected" && <div className={`ia-connect-banner is-${connection.kind}`} role="status">
+            <span className="ia-connect-banner__dot" aria-hidden="true" />
+            <div><strong>{connection.kind === "testing" ? "Testing model connection…" : connection.kind === "error" ? "Model connection failed" : "Model not connected"}</strong>
+              <small>{connection.kind === "error" ? connection.message || "Check the key and model in settings." : config?.credential.configured ? "Test the connection to send messages. Board-only questions and drafts stay available." : "Add an API key and test the connection to send messages."}</small></div>
+            <Button size="xs" variant="default" disabled={connection.kind === "testing"} onClick={() => setSettingsOpen(true)}>Connect model</Button>
+          </div>}
           <div className="ia-conversation-bar">
-            <span>{activeConversation ? `Saved · updated ${stamp(activeConversation.updated_at)}` : "New project conversation"}</span>
             <span className={`ia-connection is-${connection.kind}`}><i aria-hidden="true" />{connectionLabel}</span>
+            <span>{activeConversation ? `Saved · updated ${stamp(activeConversation.updated_at)}` : "New project conversation"}</span>
           </div>
           <div className="ia-transcript" role="log" aria-label="Conversation messages" aria-relevant="additions text">
             {!conversation && <div className="ia-empty-chat">
@@ -735,6 +754,10 @@ export function Assistant({
                 ? `Ticket review: ${currentReviewStatus}. Backend checks Git and local file access again when the run starts.`
                 : <>{!selectedTicket ? "Choose a ticket with a current Ready or Confirmed review." : `Ticket review: ${currentReviewStatus}. Edit is available after the review is current and local execution is Ready.`} {execution?.status !== "Ready" && `Local execution: ${execution?.status || "checking"}.`}<button type="button" className="ia-text-link" onClick={onShowTickets}>{selectedTicket ? "Review tickets" : "Open Tickets"} <Icon page="arrow" /></button></>}
             </div>}
+            {!draft.trim() && <div className="ia-suggestions" role="group" aria-label="Suggested prompts. Choosing one fills the message box; it does not send.">
+              {suggestionsFor(selectedTicket?.name).map(text => <button key={text} type="button" className="ia-suggestion" disabled={actionLocked || submitting || conversationBusy}
+                onClick={() => { setDraft(text); setMessageError(""); requestAnimationFrame(() => { const box = document.querySelector<HTMLTextAreaElement>('.ia-composer textarea[name="message"]'); box?.focus(); box?.setSelectionRange(text.length, text.length); }); }}>{text}</button>)}
+            </div>}
             <div className="ia-compose-row">
               <Textarea
                 name="message"
@@ -751,10 +774,10 @@ export function Assistant({
               />
 
             </div>
-            <div className="ia-compose-tools"><button ref={settingsButton} type="button" className="ia-model-settings" aria-label="Assistant settings" aria-haspopup="dialog" aria-expanded={settingsOpen} onClick={()=>setSettingsOpen(true)}><span>{selectedModel||"Model settings"}</span><span aria-hidden="true">⚙</span></button><span className="ia-task-mode">{mode}</span><InfoHelp label="sending messages" id="ia-composer-help">Press Enter to send. Shift+Enter adds a line. The API must pass the ticket, review, Git, and workspace checks before editing.</InfoHelp><Button className="ia-send" type="submit" aria-label="Start task" title="Start task" loading={submitting} disabled={actionLocked || !draft.trim()||connection.kind!=="connected"||(mode==="Edit"&&!editGateReady)}><Icon page="arrow"/></Button></div>
+            <div className="ia-compose-tools"><button ref={settingsButton} type="button" className="ia-model-settings" aria-label="Assistant settings" aria-haspopup="dialog" aria-expanded={settingsOpen} onClick={()=>setSettingsOpen(true)}><span>{selectedModel||"Model settings"}</span><span aria-hidden="true">⚙</span></button><span className="ia-task-mode">{mode}</span><InfoHelp label="sending messages" id="ia-composer-help">Press Enter to send. Shift+Enter adds a line. The API must pass the ticket, review, Git, and workspace checks before editing.</InfoHelp>{sendBlockedReason && <small className="ia-send-reason" id="ia-send-reason">{sendBlockedReason}</small>}<Button className="ia-send" type="submit" aria-label="Start task" aria-describedby={sendBlockedReason ? "ia-send-reason" : undefined} title={sendBlockedReason || "Start task"} loading={submitting} disabled={actionLocked || !draft.trim()||connection.kind!=="connected"||(mode==="Edit"&&!editGateReady)}><Icon page="arrow"/></Button></div>
             <div className="ia-composer-foot">
               {(messageError || submitNotice) && <p className={messageError ? "ia-inline-error" : "ia-success-note"} role={messageError ? "alert" : "status"}>{messageError || submitNotice}</p>}
-              <p className="ia-reliability" role="note"><Icon page="warning" />{RELIABILITY_NOTICE}</p>
+              <details className="ia-reliability" role="note"><summary><span aria-hidden="true">ⓘ</span> Sessions can disconnect. Check the latest saved step before continuing.</summary><p>{RELIABILITY_NOTICE}</p></details>
             </div>
           </form>
         </>}

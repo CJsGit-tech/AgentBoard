@@ -23,6 +23,20 @@ def _directory(conn, result):
              GROUP BY project, data->>'milestone' HAVING bool_and(data->>'status'='Done')
         ) finished GROUP BY project
     """)}
+    # Read-only activity facts for the Projects cards: last change, and when each currently Done ticket last became Done.
+    last_activity = {row["project"]: row["at"].isoformat() for row in conn.execute(
+        "SELECT project, max(at) AS at FROM activity GROUP BY project")}
+    recent_done = {}
+    for row in conn.execute("""
+        SELECT a.project, max(a.at) AS at FROM activity a
+          JOIN records r ON r.id=a.record AND r.kind='tickets' AND NOT r.deleted AND r.data->>'status'='Done'
+          CROSS JOIN LATERAL jsonb_array_elements(a.changes) AS delta
+         WHERE a.kind='tickets' AND delta->>0='status' AND delta->>2='Done'
+         GROUP BY a.project, a.record
+        HAVING max(a.at) > now() - interval '8 days'
+         ORDER BY 2
+    """):
+        recent_done.setdefault(row["project"], []).append(row["at"].isoformat())
     for row in conn.execute("SELECT * FROM records WHERE kind='projects' ORDER BY created_at,id"):
         project = public(row)
         if row["deleted"]:
@@ -34,6 +48,8 @@ def _directory(conn, result):
             "completed_milestones": completed.get(row["id"], 0),
             "statuses": {status: count.get(field, 0) for status, field in (
                 ("Done", "done"), ("In progress", "working"), ("Planned", "planned"), ("Blocked", "blocked"))},
+            "last_activity": last_activity.get(row["id"]),
+            "recent_done": recent_done.get(row["id"], []),
         }
         result["projects"].append(project)
 

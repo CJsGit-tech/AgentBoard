@@ -55,3 +55,35 @@ class VisualThumbnailIntegration(unittest.TestCase):
         with connect() as conn:
             conn.execute("UPDATE records SET deleted=true WHERE id=%s", (key,))
         self.assertEqual(self.http.get(thumb + "?v=" + latest).status_code, 404)
+
+
+def jpeg(color):
+    output = BytesIO()
+    Image.new("RGB", (800, 1200), color).save(output, format="JPEG", quality=85)
+    return output.getvalue()
+
+
+class JpegVisualIntegration(unittest.TestCase):
+    setUp = fixtures.WorkspaceIntegration.setUp
+    create = fixtures.WorkspaceIntegration.create
+    finish_reviews = fixtures.WorkspaceIntegration.finish_reviews
+
+    def test_jpeg_upload_is_served_as_jpeg_and_mismatches_are_rejected(self):
+        from app.store import Problem
+        project = self.create("projects", name="Jpeg screens")["id"]
+        self.create("documents", project=project, name="Product Brief", document_type="product-vision", content="Review the screen.")
+        inventory = self.create("documents", project=project, name="Captures", document_type="screen-inventory", content="Review evidence.")
+        self.finish_reviews(project)
+        key, data = inventory["id"], jpeg("green")
+        encoded = base64.b64encode(data).decode()
+        for name, payload in (("wrong.png", encoded), ("wrong.jpg", base64.b64encode(png("red")).decode()),
+                              ("cut.jpg", base64.b64encode(data[:len(data)//2]).decode()), ("shot.gif", encoded)):
+            with self.assertRaises(Problem, msg=name):
+                attach("Codex", key, inventory["revision"], name, payload)
+        attach("Codex", key, inventory["revision"], "shot.jpg", encoded)
+        digest = sha256(data).hexdigest()
+        response = self.http.get(f"/api/visuals/{key}/shot.jpg?v={digest}")
+        self.assertEqual((response.status_code, response.headers["content-type"], response.content), (200, "image/jpeg", data))
+        thumb = self.http.get(f"/api/visuals/{key}/shot.jpg/thumbnail?v={digest}")
+        with Image.open(BytesIO(thumb.content)) as image:
+            self.assertEqual(image.format, "WEBP")

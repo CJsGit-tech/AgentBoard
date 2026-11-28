@@ -73,9 +73,15 @@ def build_server(actor: str):
         return write(kind, "Restored", actor, key=id, revision=revision)
 
     @server.tool
-    def attach_visual(document_id: str, revision: Revision, filename: str, png_base64: str) -> dict:
-        """Attach a PNG preview to a screen inventory and return the updated inventory."""
-        return attach(actor, document_id, revision, filename, png_base64)
+    def attach_visual(document_id: str, revision: Revision, filename: str,
+                      image_base64: str | None = None, png_base64: str | None = None) -> dict:
+        """Attach a JPEG (.jpg, preferred to save space) or PNG preview to a screen inventory.
+
+        Send the bytes in image_base64; png_base64 is a legacy alias. Returns the updated inventory."""
+        data = image_base64 or png_base64
+        if not data:
+            raise Problem(422, "Send the image in image_base64.")
+        return attach(actor, document_id, revision, filename, data)
 
     @server.tool
     def publish_canvas(document_id: str, revision: Revision, files: dict[str, str],

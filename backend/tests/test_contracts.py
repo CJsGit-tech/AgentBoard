@@ -445,6 +445,14 @@ class WorkspaceIntegration(unittest.TestCase):
         self.assertIn("sandbox allow-scripts", original.headers["content-security-policy"])
         self.assertNotIn("allow-same-origin", original.headers["content-security-policy"])
         self.assertEqual(original.headers["cache-control"], "private, no-cache")
+        isolated = self.http.get(path, headers={"X-Canvas-Origin": "1"})
+        policy = isolated.headers["content-security-policy"]
+        self.assertIn("sandbox allow-scripts allow-forms allow-same-origin;", policy)
+        self.assertIn("worker-src 'none'; frame-ancestors http://localhost:8080 ", policy)
+        for blocked in ("/api/workspace?view=projects", "/healthz"):
+            self.assertEqual(self.http.get(blocked, headers={"X-Canvas-Origin": "1"}).status_code, 404)
+        self.assertEqual(self.http.get("/api/workspace?view=projects",
+                                       headers={"Origin": "http://localhost:8081"}).status_code, 403)
         tag = original.headers["etag"]
         self.assertFalse(tag.startswith("W/"))
         from app.canvas import read_asset

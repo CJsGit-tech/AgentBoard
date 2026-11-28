@@ -59,6 +59,8 @@ function CanvasPreview({ asset, title, fit, active }: { asset: string; title: st
   const loaded = useRef(false);
   const [state, setState] = useState<"checking" | "loading" | "ready" | "failed">("checking");
   const url = `/canvas-content/${encodeURIComponent(asset)}/gallery.html`;
+  // The frame loads from the canvas-only port. The availability check stays same-origin.
+  const frameURL = `${window.location.protocol}//${window.location.hostname}:8081${url}`;
 
   useLayoutEffect(() => {
     const element = stage.current;
@@ -117,9 +119,9 @@ function CanvasPreview({ asset, title, fit, active }: { asset: string; title: st
       <p>The published preview could not be loaded.</p>
       <Button size="xs" variant="default" onClick={() => { setState("checking"); setAttempt(value => value + 1); }}>Retry preview</Button>
     </div>}
-    {mounted && <iframe title={title} src={url} hidden={!active || state === "checking"}
+    {mounted && <iframe title={title} src={frameURL} hidden={!active || state === "checking"}
       className="canvas-preview-frame" style={{ width: geometry.width, height: geometry.height, transform: `translateX(-50%) scale(${geometry.scale})` }}
-      sandbox="allow-scripts allow-forms" referrerPolicy="no-referrer" onLoad={() => {
+      sandbox="allow-scripts allow-forms allow-same-origin" referrerPolicy="no-referrer" onLoad={() => {
         loaded.current = true;
         setState(current => current === "loading" ? "ready" : current);
       }} onError={() => { loaded.current = false; setMounted(false); setState("failed"); }} />}
